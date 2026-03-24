@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  megatraveller:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./prices.db:/app/prices.db
+      - ./alerts.log:/app/alerts.log
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  # Optional: run monitor every hour via cron container
+  monitor:
+    build: .
+    command: >
+      sh -c "while true; do
+        python run_monitor.py;
+        sleep 3600;
+      done"
+    volumes:
+      - ./prices.db:/app/prices.db
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - megatraveller

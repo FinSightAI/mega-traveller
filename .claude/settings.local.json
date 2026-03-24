@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Bash(chmod:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(.venv/bin/python3 -c \"import ast; ast.parse\\(open\\(''app.py''\\).read\\(\\)\\); print\\(''✅ תחביר תקין''\\)\")",
+      "Bash(.venv/bin/python3 -c \"import ast; ast.parse\\(open\\(''app.py''\\).read\\(\\)\\); ast.parse\\(open\\(''alerts.py''\\).read\\(\\)\\); print\\(''✅ תחביר תקין''\\)\")",
+      "Bash(.venv/bin/python3 -c \":*)",
+      "Bash(\"/Users/s/Desktop/mega traveller/.github/workflows/monitor.yml\":*)",
+      "Bash(ls -1 *.py .github/workflows/*.yml Dockerfile docker-compose.yml)",
+      "Bash(python -c \":*)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(gh auth:*)",
+      "Bash(gh --version)"
+    ]
+  }
+}

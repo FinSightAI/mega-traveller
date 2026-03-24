@@ -1,0 +1,55 @@
+name: Price Monitor
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:        # manual trigger
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore price DB
+        uses: actions/cache@v4
+        with:
+          path: prices.db
+          key: prices-db-${{ github.run_id }}
+          restore-keys: prices-db-
+
+      - name: Run price monitor
+        env:
+          ANTHROPIC_API_KEY:       ${{ secrets.ANTHROPIC_API_KEY }}
+          AMADEUS_CLIENT_ID:       ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET:   ${{ secrets.AMADEUS_CLIENT_SECRET }}
+          NTFY_TOPIC:              ${{ secrets.NTFY_TOPIC }}
+          TELEGRAM_BOT_TOKEN:      ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:        ${{ secrets.TELEGRAM_CHAT_ID }}
+          TWILIO_ACCOUNT_SID:      ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:       ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM:    ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          WHATSAPP_TO:             ${{ secrets.WHATSAPP_TO }}
+          SMTP_USER:               ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD:           ${{ secrets.SMTP_PASSWORD }}
+          ALERT_EMAIL:             ${{ secrets.ALERT_EMAIL }}
+          DISCORD_WEBHOOK_URL:     ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python run_monitor.py
+
+      - name: Upload price DB artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prices-db
+          path: prices.db
+          retention-days: 30
