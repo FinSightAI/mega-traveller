@@ -85,7 +85,7 @@ def _inject_css(rtl: bool):
     d = "rtl" if rtl else "ltr"
     ta = "right" if rtl else "left"
 
-    sidebar_rtl = """
+    sidebar_pos = """
       section[data-testid="stSidebar"] {
         right: 0 !important;
         left: unset !important;
@@ -107,54 +107,52 @@ def _inject_css(rtl: bool):
 
     st.markdown(f"""
 <style>
-  /* ── Global direction ── */
-  html, body {{
+  /* ── Direction on EVERYTHING ── */
+  html, body, * {{
     direction: {d} !important;
   }}
 
-  /* Every Streamlit container */
-  [data-testid="stAppViewContainer"],
-  [data-testid="stAppViewBlockContainer"],
-  [data-testid="stVerticalBlock"],
-  [data-testid="stHorizontalBlock"],
-  [data-testid="block-container"],
-  .main, .main > div,
-  .element-container,
-  .stMarkdown, .stText,
-  .stTextInput > div,
-  .stSelectbox > div,
-  .stRadio > div,
-  .stCheckbox,
-  .stNumberInput,
-  .stDateInput,
-  .stTextArea > div,
-  .stExpander,
-  .stTabs,
-  .stForm,
-  div[data-testid="column"],
-  div[data-baseweb="tab-list"],
-  div[data-baseweb="tab-panel"],
-  div[data-baseweb="select"],
-  div[data-baseweb="input"],
-  div[data-baseweb="textarea"],
-  p, label, span, li, td, th {{
-    direction: {d} !important;
+  /* ── Text alignment on all text-bearing elements ── */
+  p, h1, h2, h3, h4, h5, h6,
+  li, td, th, caption,
+  label, span, small, strong, em, b, i,
+  div, section, article, aside, header, footer,
+  input, textarea, select,
+  [data-testid], [data-baseweb],
+  .stMarkdown, .stText, .stAlert,
+  .element-container, .block-container {{
     text-align: {ta} !important;
   }}
 
-  /* Sidebar */
+  /* ── Exceptions: keep centered ── */
+  [data-testid="stMetricValue"],
+  [data-testid="stMetricLabel"],
+  [data-testid="stMetricDelta"],
+  [data-testid="stMetric"],
+  button, [data-testid="stButton"] > button,
+  .metric-card,
+  [data-testid="stImage"],
+  [data-testid="stPlotlyChart"],
+  [data-testid="stDataFrame"] {{
+    text-align: center !important;
+  }}
+
+  /* ── Sidebar ── */
   [data-testid="stSidebar"],
   [data-testid="stSidebar"] * {{
     direction: {d} !important;
     text-align: {ta} !important;
   }}
 
-  /* Sidebar position */
-  {sidebar_rtl}
+  /* ── Sidebar position ── */
+  {sidebar_pos}
 
-  /* Input placeholders */
-  input, textarea {{
+  /* ── Inputs ── */
+  input, textarea, select {{
     direction: {d} !important;
+    text-align: {ta} !important;
+  }}
+  input::placeholder, textarea::placeholder {{
     text-align: {ta} !important;
   }}
 
