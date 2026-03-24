@@ -45,7 +45,7 @@ def test_connection(token: str, chat_id: str) -> dict:
     """בדוק חיבור ל-Telegram."""
     result = send_message(
         token, chat_id,
-        "✅ <b>MegaTraveller מחובר!</b>\n\n"
+        "✅ <b>Noded מחובר!</b>\n\n"
         "🌍 אני אשלח לך התראות על:\n"
         "• ✈️ ירידות מחיר בטיסות\n"
         "• 🔥 דילים חמים ומבצעים\n"

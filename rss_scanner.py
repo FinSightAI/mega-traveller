@@ -90,7 +90,7 @@ def _fetch_url(url: str, timeout: int = 10) -> str:
     try:
         req = urllib.request.Request(
             url,
-            headers={"User-Agent": "MegaTraveller/1.0 (travel deal aggregator)"}
+            headers={"User-Agent": "Noded/1.0 (travel deal aggregator)"}
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8", errors="replace")

@@ -1,5 +1,5 @@
 """
-MegaTraveller 🌍 - Web UI (Streamlit)
+Noded 🌍 - Web UI (Streamlit)
 """
 import json
 import os
@@ -52,8 +52,8 @@ import whatsapp_bot
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MegaTraveller ✈️",
-    page_icon="✈️",
+    page_title="Noded 🧳",
+    page_icon="🧳",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -185,7 +185,7 @@ def price_chart(watch_id: int, name: str):
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## ✈️ MegaTraveller")
+    st.markdown("## ✈️ Noded")
     st.markdown("*סוכן מחירי נסיעות חכם*")
     st.divider()
 
@@ -2445,9 +2445,9 @@ elif page == "📥 ייצוא נתונים":
             with st.spinner("יוצר קובץ Excel..."):
                 xlsx_bytes = exporters.export_excel()
             st.download_button(
-                label="⬇️ הורד MegaTraveller.xlsx",
+                label="⬇️ הורד Noded.xlsx",
                 data=xlsx_bytes,
-                file_name=f"MegaTraveller_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                file_name=f"Noded_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
             )
@@ -3808,7 +3808,7 @@ elif page == "💬 WhatsApp Bot":
         st.subheader("📤 שלח הודעה אמיתית")
         with st.form("wa_send_form"):
             wa_to = st.text_input("לאן לשלוח", placeholder="+972501234567")
-            wa_msg = st.text_area("הודעה", placeholder="שלום! זה MegaTraveller...", height=80)
+            wa_msg = st.text_area("הודעה", placeholder="שלום! זה Noded...", height=80)
             wa_send = st.form_submit_button("📤 שלח WhatsApp")
 
         if wa_send and wa_to and wa_msg:

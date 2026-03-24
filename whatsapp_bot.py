@@ -28,7 +28,7 @@ COMMANDS = {
     "stop": "cancel",
 }
 
-WELCOME_MSG = """✈️ ברוך הבא ל-MegaTraveller Bot!
+WELCOME_MSG = """✈️ ברוך הבא ל-Noded Bot!
 
 שלח לי:
 • *TLV NYC 15/06* — חפש טיסות
