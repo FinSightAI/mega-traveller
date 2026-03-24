@@ -34,6 +34,13 @@ import stopover_finder
 import cost_calculator
 import deal_insights
 import telegram_bot
+import kiwi_client
+import hidden_city
+import rss_scanner
+import auto_book
+import price_dna
+import positioning
+import whatsapp_bot
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -198,6 +205,13 @@ with st.sidebar:
             "💳 נקודות vs מזומן",
             "📊 תובנות ודפוסים",
             "🤖 בוט טלגרם",
+            "🔍 Kiwi טיסות",
+            "🕵️ Hidden City",
+            "📡 RSS & Reddit",
+            "⚡ Auto-Book",
+            "🧬 Price DNA",
+            "🗺️ Positioning",
+            "💬 WhatsApp Bot",
             "💱 שערי חליפין",
             "📥 ייצוא נתונים",
             "⚙️ הגדרות",
@@ -3126,3 +3140,683 @@ elif page == "🤖 בוט טלגרם":
             st.success("✅ נשלח!")
         else:
             st.error(f"❌ {res.get('error','שגיאה')}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: Kiwi Flight Search
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "🔍 Kiwi טיסות":
+    st.title("🔍 חיפוש טיסות Kiwi / Tequila")
+    st.caption("מחירים אמיתיים, virtual interlining, מסלולים יצירתיים שGoogle Flights מפספס.")
+
+    kiwi_key = os.environ.get("KIWI_API_KEY", "")
+    if kiwi_key:
+        st.success("✅ Kiwi API Key מוגדר — מחירים אמיתיים")
+    else:
+        st.info("ℹ️ ללא API Key — משתמש ב-Claude web search (פחות מדויק). הוסף KIWI_API_KEY ל-.env לתוצאות מדויקות.")
+
+    st.divider()
+
+    with st.form("kiwi_search_form"):
+        c1, c2 = st.columns(2)
+        k_origin = c1.text_input("מוצא (IATA)", value="TLV", max_chars=3).upper()
+        k_dest = c2.text_input("יעד (IATA)", value="", placeholder="NYC / BKK / LON", max_chars=3).upper()
+
+        c3, c4 = st.columns(2)
+        k_date_out = c3.date_input("תאריך יציאה")
+        k_date_back = c4.date_input("תאריך חזרה (אופציונלי)", value=None)
+
+        c5, c6, c7 = st.columns(3)
+        k_adults = c5.number_input("נוסעים", min_value=1, max_value=9, value=1)
+        k_stops = c6.number_input("עצירות מקס", min_value=0, max_value=3, value=2)
+        k_currency = c7.selectbox("מטבע", ["USD", "EUR", "ILS"], index=0)
+
+        k_price_max = st.number_input("מחיר מקסימלי (0 = ללא הגבלה)", min_value=0, value=0)
+
+        k_submit = st.form_submit_button("🔍 חפש טיסות", use_container_width=True)
+
+    if k_submit and k_dest:
+        with st.spinner("מחפש טיסות..."):
+            flights = kiwi_client.search_flights(
+                origin=k_origin,
+                destination=k_dest,
+                date_from=str(k_date_out),
+                date_to=str(k_date_out),
+                return_from=str(k_date_back) if k_date_back else "",
+                adults=int(k_adults),
+                max_stopovers=int(k_stops),
+                currency=k_currency,
+                limit=10,
+                price_to=int(k_price_max) if k_price_max > 0 else 0,
+            )
+
+        if not flights:
+            st.warning("לא נמצאו טיסות.")
+        elif "error" in (flights[0] if flights else {}):
+            st.error(f"שגיאה: {flights[0]['error']}")
+        else:
+            st.success(f"✅ נמצאו {len(flights)} טיסות")
+            for f in flights:
+                price = f.get("price", 0)
+                airline = f.get("airline", "")
+                stops = f.get("stops", 0)
+                dep = f.get("departure", "")
+                arr = f.get("arrival", "")
+                dur = f.get("duration_hours", 0)
+                stop_txt = "✈️ ישיר" if stops == 0 else f"{stops} עצירות"
+                deep_link = f.get("deep_link", "")
+
+                with st.container():
+                    cols = st.columns([1, 2, 2, 1, 1])
+                    cols[0].metric("מחיר", f"${price:,.0f}")
+                    cols[1].write(f"**{airline}** | {stop_txt}")
+                    cols[2].write(f"🛫 {dep[:16]}\n🛬 {arr[:16]}")
+                    cols[3].write(f"⏱ {dur}ש׳")
+                    if deep_link:
+                        cols[4].markdown(f"[הזמן]({deep_link})")
+                    st.divider()
+
+    st.divider()
+    st.subheader("📅 חודש זול — מתי הכי זול לטוס?")
+    with st.form("kiwi_month_form"):
+        cm1, cm2 = st.columns(2)
+        m_origin = cm1.text_input("מוצא", value="TLV", max_chars=3).upper()
+        m_dest = cm2.text_input("יעד", placeholder="NYC", max_chars=3).upper()
+        m_month = st.text_input("חודש (YYYY-MM)", placeholder="2025-08")
+        m_submit = st.form_submit_button("📅 מצא ימים זולים")
+
+    if m_submit and m_dest:
+        with st.spinner("סורק את כל החודש..."):
+            results = kiwi_client.get_cheapest_month(m_origin, m_dest, m_month)
+        if results and "error" not in (results[0] if results else {}):
+            st.write(f"**{len(results)} אפשרויות — ממוין לפי מחיר:**")
+            for r in results[:10]:
+                st.write(f"📅 {r.get('departure','')[:10]} — **${r.get('price',0):,.0f}** | {r.get('airline','')} | {r.get('stops',0)} עצירות")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: Hidden City
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "🕵️ Hidden City":
+    st.title("🕵️ Hidden City Ticketing")
+    st.caption("מוצא כרטיסים זולים יותר דרך יעד ביניים — חוסך 20-50%.")
+
+    with st.expander("⚠️ חשוב לדעת לפני השימוש", expanded=True):
+        st.warning(hidden_city.get_risks_explanation())
+
+    st.divider()
+
+    tab1, tab2 = st.tabs(["🕵️ Hidden City", "🔄 Throwaway Ticketing"])
+
+    with tab1:
+        st.subheader("מצא הזדמנויות Hidden City")
+        with st.form("hc_form"):
+            hc1, hc2 = st.columns(2)
+            hc_origin = hc1.text_input("מוצא", value="TLV", max_chars=3).upper()
+            hc_real_dest = hc2.text_input("יעד אמיתי", placeholder="LHR / AMS / JFK", max_chars=3).upper()
+            hc3, hc4 = st.columns(2)
+            hc_date_out = hc3.date_input("תאריך יציאה", key="hc_out")
+            hc_date_ret = hc4.date_input("תאריך חזרה (אופציונלי)", value=None, key="hc_ret")
+            hc_submit = st.form_submit_button("🔍 חפש הזדמנויות", use_container_width=True)
+
+        if hc_submit and hc_real_dest:
+            with st.spinner("מחפש hidden city deals... (עשוי לקחת כ-30 שניות)"):
+                deals = hidden_city.find_hidden_city_deals(
+                    origin=hc_origin,
+                    real_destination=hc_real_dest,
+                    date_out=str(hc_date_out),
+                    date_return=str(hc_date_ret) if hc_date_ret else "",
+                )
+
+            if not deals:
+                st.info("לא נמצאו הזדמנויות hidden city לנתיב זה.")
+            elif "error" in (deals[0] if deals else {}):
+                st.error(f"שגיאה: {deals[0]['error']}")
+            else:
+                st.success(f"✅ נמצאו {len(deals)} הזדמנויות!")
+                for d in deals:
+                    savings = d.get("savings", 0)
+                    savings_pct = d.get("savings_pct", 0)
+                    color = "🟢" if savings_pct > 25 else "🟡"
+                    with st.expander(f"{color} {d.get('route','')} — חיסכון ${savings:,.0f} ({savings_pct:.0f}%)", expanded=savings_pct > 20):
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("מחיר hidden", f"${d.get('price_hidden',0):,.0f}")
+                        c2.metric("מחיר ישיר", f"${d.get('price_direct',0):,.0f}")
+                        c3.metric("חיסכון", f"${savings:,.0f}")
+                        st.write(f"**חברה:** {d.get('airline','')}")
+                        st.write(f"**למה עובד:** {d.get('why_works','')}")
+                        st.write(f"**סיכון:** {d.get('risk_level','')}")
+                        st.warning(f"⚠️ {d.get('warning','')}")
+                        if d.get("deep_link"):
+                            st.markdown(f"[הזמן כ-{d.get('book_as_if_going_to','')}]({d.get('deep_link','')})")
+
+    with tab2:
+        st.subheader("🔄 Throwaway Ticketing — הלוך-חזור זול מ-One Way?")
+        with st.form("ta_form"):
+            ta1, ta2 = st.columns(2)
+            ta_origin = ta1.text_input("מוצא", value="TLV", max_chars=3).upper()
+            ta_dest = ta2.text_input("יעד", placeholder="NYC", max_chars=3).upper()
+            ta_date = st.date_input("תאריך יציאה", key="ta_date")
+            ta_submit = st.form_submit_button("🔍 בדוק", use_container_width=True)
+
+        if ta_submit and ta_dest:
+            with st.spinner("משווה מחירים..."):
+                result = hidden_city.find_throwaway_ticketing(
+                    ta_origin, ta_dest, str(ta_date)
+                )
+
+            if result and "error" not in result:
+                c1, c2, c3 = st.columns(3)
+                c1.metric("One Way", f"${result.get('oneway_price',0):,.0f}")
+                c2.metric("Round Trip", f"${result.get('roundtrip_price',0):,.0f}")
+                saves = result.get("throwaway_saves", 0)
+                c3.metric("חיסכון", f"${saves:,.0f}", delta=f"{saves:+.0f}" if saves else None)
+
+                if result.get("throwaway_worthwhile"):
+                    st.success(f"✅ {result.get('recommendation','')}")
+                else:
+                    st.info(f"ℹ️ {result.get('recommendation','')}")
+                if result.get("risk"):
+                    st.warning(f"⚠️ {result['risk']}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: RSS & Reddit Scanner
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "📡 RSS & Reddit":
+    st.title("📡 RSS & Reddit Real-Time Scanner")
+    st.caption("סורק Secret Flying, TheFlightDeal, Fly4Free, FlyerTalk ו-Reddit בזמן אמת.")
+
+    col_scan1, col_scan2 = st.columns(2)
+    if col_scan1.button("🔄 סרוק RSS עכשיו", use_container_width=True):
+        with st.spinner("סורק RSS feeds..."):
+            new_deals = rss_scanner.scan_rss_feeds()
+        st.success(f"✅ נמצאו {len(new_deals)} דילים חדשים")
+        st.session_state["rss_scanned"] = True
+
+    if col_scan2.button("🔴 חפש ב-Reddit", use_container_width=True):
+        with st.spinner("מחפש ב-Reddit... (עשוי לקחת 30 שניות)"):
+            reddit_deals = rss_scanner.scan_reddit_deals()
+        if reddit_deals and "error" not in (reddit_deals[0] if reddit_deals else {}):
+            st.success(f"✅ נמצאו {len(reddit_deals)} דילים מ-Reddit")
+        else:
+            st.warning("לא נמצאו דילים חדשים ב-Reddit.")
+
+    st.divider()
+
+    min_score = st.slider("ציון מינימלי", 0.0, 10.0, 5.0, 0.5)
+    deals = rss_scanner.get_recent_rss_deals(limit=50, min_score=min_score)
+
+    if not deals:
+        st.info("אין דילים במסד הנתונים. לחץ 'סרוק RSS עכשיו' להתחלה.")
+    else:
+        st.write(f"**{len(deals)} דילים (ציון ≥ {min_score}):**")
+
+        unseen = rss_scanner.get_unseen_deals(min_score=6.0)
+        if unseen:
+            st.markdown("### 🔥 חדשים — לא נצפו")
+            for d in unseen[:5]:
+                score = d.get("score", 0)
+                color = "🔴" if score >= 8 else "🟠" if score >= 6 else "🟡"
+                with st.expander(f"{color} [{score:.1f}] {d.get('title','')[:80]}", expanded=score >= 8):
+                    st.write(d.get("description", "")[:300])
+                    c1, c2, c3 = st.columns(3)
+                    c1.write(f"**מקור:** {d.get('source','')}")
+                    if d.get("price"):
+                        c2.metric("מחיר", f"${d['price']:.0f}")
+                    c3.write(f"**ציון:** {score:.1f}/10")
+                    if d.get("url"):
+                        st.markdown(f"[🔗 לדיל המלא]({d['url']})")
+                    if st.button(f"✓ סמן כנצפה", key=f"seen_{d['id']}"):
+                        rss_scanner.mark_seen(d["id"])
+                        st.rerun()
+            st.divider()
+
+        st.markdown("### 📋 כל הדילים")
+        for d in deals:
+            score = d.get("score", 0)
+            icon = "🔴" if score >= 8 else "🟠" if score >= 6 else "🟡"
+            title = d.get("title", "")[:70]
+            source = d.get("source", "")
+            price = d.get("price")
+            price_txt = f" | ${price:.0f}" if price else ""
+            with st.expander(f"{icon} {title}{price_txt} [{source}]"):
+                st.write(d.get("description", "")[:400])
+                if d.get("url"):
+                    st.markdown(f"[🔗 לדיל]({d['url']})")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: Auto-Book
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "⚡ Auto-Book":
+    st.title("⚡ Auto-Book Engine")
+    st.caption("הגדר כלל: 'אם TLV→BKK < $350 — שלח התראה ופתח browser'")
+
+    tab_rules, tab_log, tab_passenger = st.tabs(["📋 כללים", "📜 לוג", "👤 פרטי נוסע"])
+
+    with tab_rules:
+        st.subheader("➕ הוסף כלל חדש")
+        auto_book.ensure_auto_book_table()
+
+        with st.form("ab_add_rule"):
+            ab1, ab2 = st.columns(2)
+            ab_name = ab1.text_input("שם הכלל", placeholder="TLV-NYC זול")
+            ab_mode = ab2.selectbox("מצב", ["notify", "open_browser", "auto_fill"],
+                                     format_func=lambda x: {"notify": "📲 התראה בלבד", "open_browser": "🌐 פתח browser", "auto_fill": "🤖 מלא אוטומטית"}[x])
+            ab3, ab4, ab5 = st.columns(3)
+            ab_origin = ab3.text_input("מוצא", value="TLV", max_chars=3).upper()
+            ab_dest = ab4.text_input("יעד", placeholder="NYC", max_chars=3).upper()
+            ab_max_price = ab5.number_input("מחיר מקסימלי ($)", min_value=50, value=400)
+
+            ab6, ab7 = st.columns(2)
+            ab_date_from = ab6.text_input("תאריך מ- (YYYY-MM-DD)", placeholder="2025-06-01")
+            ab_date_to = ab7.text_input("תאריך עד (YYYY-MM-DD)", placeholder="2025-09-01")
+
+            ab_submit = st.form_submit_button("➕ הוסף כלל", use_container_width=True)
+
+        if ab_submit and ab_name and ab_dest:
+            rule_id = auto_book.add_rule(
+                name=ab_name, origin=ab_origin, destination=ab_dest,
+                max_price=ab_max_price, date_from=ab_date_from,
+                date_to=ab_date_to, mode=ab_mode,
+            )
+            st.success(f"✅ כלל #{rule_id} נוסף!")
+            st.rerun()
+
+        st.divider()
+        st.subheader("📋 כללים פעילים")
+        rules = auto_book.get_rules(enabled_only=False)
+        if not rules:
+            st.info("אין כללים. הוסף כלל למעלה.")
+        else:
+            for rule in rules:
+                enabled = bool(rule.get("enabled", 1))
+                icon = "🟢" if enabled else "⚫"
+                triggered = rule.get("trigger_count", 0)
+                with st.expander(f"{icon} {rule['name']} — {rule['origin']}→{rule['destination']} < ${rule['max_price']}"):
+                    c1, c2, c3 = st.columns(3)
+                    c1.write(f"**מצב:** {rule.get('mode','notify')}")
+                    c2.metric("הופעל", f"{triggered}x")
+                    c3.write(f"**נוצר:** {rule.get('created_at','')[:10]}")
+                    if rule.get("triggered_at"):
+                        st.write(f"**הופעל לאחרונה:** {rule['triggered_at'][:16]}")
+
+                    btn1, btn2 = st.columns(2)
+                    if btn1.button("🔄 הפעל/כבה", key=f"toggle_{rule['id']}"):
+                        auto_book.toggle_rule(rule["id"], not enabled)
+                        st.rerun()
+                    if btn2.button("🗑 מחק", key=f"del_rule_{rule['id']}"):
+                        auto_book.delete_rule(rule["id"])
+                        st.rerun()
+
+    with tab_log:
+        st.subheader("📜 לוג הזמנות")
+        log = auto_book.get_booking_log(limit=20)
+        if not log:
+            st.info("אין רשומות בלוג עדיין.")
+        else:
+            for entry in log:
+                st.write(f"**{entry.get('rule_name','')}** | {entry.get('action','')} | {entry.get('booked_at','')[:16]}")
+                if entry.get("deal_json"):
+                    try:
+                        deal = json.loads(entry["deal_json"])
+                        st.json(deal)
+                    except Exception:
+                        pass
+                st.divider()
+
+    with tab_passenger:
+        st.subheader("👤 פרטי נוסע לאוטו-מילוי")
+        st.caption("פרטים אלו ישמשו למילוי אוטומטי בטפסי הזמנה (auto_fill mode)")
+
+        with st.form("passenger_form"):
+            p1, p2 = st.columns(2)
+            p_first = p1.text_input("שם פרטי", value=os.environ.get("PASSENGER_FIRST_NAME", ""))
+            p_last = p2.text_input("שם משפחה", value=os.environ.get("PASSENGER_LAST_NAME", ""))
+            p3, p4 = st.columns(2)
+            p_email = p3.text_input("אימייל", value=os.environ.get("PASSENGER_EMAIL", ""))
+            p_phone = p4.text_input("טלפון", value=os.environ.get("PASSENGER_PHONE", ""))
+            p5, p6 = st.columns(2)
+            p_passport = p5.text_input("מספר דרכון", value=os.environ.get("PASSENGER_PASSPORT", ""), type="password")
+            p_dob = p6.text_input("תאריך לידה (YYYY-MM-DD)", value=os.environ.get("PASSENGER_DOB", ""))
+            p_submit = st.form_submit_button("💾 שמור", use_container_width=True)
+
+        if p_submit:
+            auto_book.save_passenger_config({
+                "first_name": p_first, "last_name": p_last,
+                "email": p_email, "phone": p_phone,
+                "passport": p_passport, "dob": p_dob,
+            })
+            st.success("✅ נשמר ב-.env")
+
+        playwright_ok = auto_book.check_playwright_installed()
+        if playwright_ok:
+            st.success("✅ Playwright מותקן — auto_fill mode זמין")
+        else:
+            st.warning("⚠️ Playwright לא מותקן. הרץ: `pip install playwright && playwright install chromium`")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: Price DNA
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "🧬 Price DNA":
+    st.title("🧬 Price DNA — פרופיל מחירים אישי")
+    st.caption("מנתח את כל ההיסטוריה שלך ובונה פרופיל: מתי זול, מתי יקר, מה התבנית.")
+
+    watch_items = db.get_watch_items()
+    options = ["כל ההיסטוריה"] + [f"{w['name'] or w['origin']+'→'+w['destination']} (#{w['id']})" for w in watch_items]
+
+    selected = st.selectbox("בחר מסלול לניתוח", options)
+    watch_id = None
+    if selected != "כל ההיסטוריה":
+        import re as _re
+        m = _re.search(r'#(\d+)', selected)
+        if m:
+            watch_id = int(m.group(1))
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("🧬 נתח DNA (סטטיסטי)", use_container_width=True):
+            with st.spinner("מנתח היסטוריה..."):
+                dna = price_dna.generate_price_dna(watch_id)
+            if "error" in dna:
+                st.warning(dna["error"])
+            else:
+                st.session_state["price_dna_result"] = dna
+
+    with col_b:
+        if st.button("🤖 AI Price DNA (עמוק יותר)", use_container_width=True):
+            with st.spinner("Claude מנתח DNA... (30-60 שניות)"):
+                ai_result = price_dna.get_ai_price_dna(watch_id)
+            if "error" in ai_result:
+                st.error(ai_result["error"])
+            else:
+                st.session_state["ai_price_dna"] = ai_result
+                if "dna" in ai_result:
+                    st.session_state["price_dna_result"] = ai_result["dna"]
+
+    dna_data = st.session_state.get("price_dna_result")
+    if dna_data and "error" not in dna_data:
+        st.divider()
+        currency = dna_data.get("currency", "USD")
+        price_range = dna_data.get("price_range", {})
+        current = dna_data.get("current_price", 0)
+        avg = price_range.get("avg", 0)
+        vs_avg = dna_data.get("price_now_vs_avg", 0)
+
+        st.subheader("📊 סטטיסטיקות מחיר")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("מינימום", f"${price_range.get('min',0):,.0f}")
+        m2.metric("מקסימום", f"${price_range.get('max',0):,.0f}")
+        m3.metric("ממוצע", f"${avg:,.0f}")
+        delta_color = "inverse" if vs_avg > 0 else "normal"
+        m4.metric("מחיר עכשיו vs ממוצע", f"{vs_avg:+.1f}%")
+
+        col1, col2, col3 = st.columns(3)
+        col1.info(f"📅 **חודש זול:** {dna_data.get('best_month','?')}")
+        col2.warning(f"📅 **חודש יקר:** {dna_data.get('worst_month','?')}")
+        col3.success(f"📆 **יום זול:** {dna_data.get('best_day_of_week','?')}")
+
+        trend = dna_data.get("trend", "stable")
+        vol = dna_data.get("volatility_pct", 0)
+        trend_icon = "📈" if trend == "rising" else "📉" if trend == "falling" else "➡️"
+        st.write(f"{trend_icon} **טרנד:** {trend} | **תנודתיות:** {vol:.1f}%")
+
+        savings = dna_data.get("potential_savings", 0)
+        savings_pct = dna_data.get("potential_savings_pct", 0)
+        st.success(f"💰 **חיסכון פוטנציאלי:** ${savings:,.0f} ({savings_pct:.1f}%)")
+
+        if dna_data.get("month_avg"):
+            st.subheader("📅 ממוצע חודשי")
+            month_data = dna_data["month_avg"]
+            fig = go.Figure(go.Bar(
+                x=list(month_data.keys()),
+                y=list(month_data.values()),
+                marker_color=["#00ff88" if v == min(month_data.values()) else "#ff4444" if v == max(month_data.values()) else "#667eea" for v in month_data.values()]
+            ))
+            fig.update_layout(template="plotly_dark", height=300, showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+
+    ai_dna = st.session_state.get("ai_price_dna")
+    if ai_dna and "error" not in ai_dna:
+        st.divider()
+        st.subheader("🤖 AI Analysis")
+
+        verdict = ai_dna.get("verdict", "")
+        emoji = ai_dna.get("verdict_emoji", "")
+        confidence = ai_dna.get("confidence", "")
+
+        if "קנה" in verdict or "🟢" in emoji:
+            st.success(f"{emoji} **{verdict}** | ביטחון: {confidence}")
+        elif "המתן" in verdict or "🔴" in emoji:
+            st.error(f"{emoji} **{verdict}** | ביטחון: {confidence}")
+        else:
+            st.warning(f"{emoji} **{verdict}** | ביטחון: {confidence}")
+
+        st.write(f"**דפוס מרכזי:** {ai_dna.get('main_pattern','')}")
+        st.write(f"**מתי לקנות:** {ai_dna.get('best_booking_window','')}")
+        st.write(f"**תחזית 2 חודשים:** {ai_dna.get('forecast_2months','')}")
+        st.write(f"**טיפ חיסכון:** {ai_dna.get('savings_tip','')}")
+
+        actions = ai_dna.get("actions", [])
+        if actions:
+            st.write("**פעולות מומלצות:**")
+            for action in actions:
+                st.write(f"• {action}")
+
+    if watch_id:
+        st.divider()
+        st.subheader("🎯 Sweet Spot אישי")
+        if st.button("מצא Sweet Spot"):
+            spot = price_dna.find_personal_sweet_spot(watch_id)
+            if spot and "error" not in spot:
+                if "sweet_spot" in spot:
+                    st.success(f"✅ **Sweet Spot:** {spot['sweet_spot']}")
+                    col1, col2 = st.columns(2)
+                    col1.metric("מחיר מינימלי", f"${spot.get('min_price',0):,.0f}")
+                    col2.metric("תאריך", spot.get("min_price_date",""))
+                    if spot.get("is_past_sweet_spot"):
+                        st.warning("⚠️ עברת את ה-sweet spot — קנה כמה שקודם!")
+                elif "best_period" in spot:
+                    st.info(f"**תקופה מומלצת:** {spot.get('best_period','')}")
+                    st.write(f"**מחיר באותה תקופה:** ${spot.get('best_period_price',0):,.0f}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: Positioning
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "🗺️ Positioning":
+    st.title("🗺️ Positioning Flight Optimizer")
+    st.caption("האם כדאי לטוס תחילה לאמסטרדם/לונדון ומשם לכיוון היעד? לפעמים שווה 40% פחות!")
+
+    st.divider()
+
+    with st.form("pos_form"):
+        p1, p2 = st.columns(2)
+        pos_dest = p1.text_input("יעד סופי (IATA)", placeholder="JFK / BKK / LAX").upper()
+        pos_date = p2.date_input("תאריך יציאה")
+        p3, p4 = st.columns(2)
+        pos_ret = p3.date_input("תאריך חזרה (אופציונלי)", value=None)
+        pos_travelers = p4.number_input("נוסעים", min_value=1, max_value=9, value=1)
+        pos_budget = st.number_input("תקציב ($, 0 = ללא הגבלה)", min_value=0, value=0)
+        pos_submit = st.form_submit_button("🔍 מצא הזדמנויות Positioning", use_container_width=True)
+
+    if pos_submit and pos_dest:
+        with st.spinner("מחפש הזדמנויות positioning... (עשוי לקחת 30-60 שניות)"):
+            opps = positioning.find_positioning_opportunities(
+                destination=pos_dest,
+                travel_date=str(pos_date),
+                return_date=str(pos_ret) if pos_ret else "",
+                budget=float(pos_budget) if pos_budget else 0,
+                travelers=int(pos_travelers),
+            )
+
+        if not opps:
+            st.info("לא נמצאו הזדמנויות positioning לנתיב זה.")
+        elif "error" in (opps[0] if opps else {}):
+            st.error(f"שגיאה: {opps[0]['error']}")
+        else:
+            st.success(f"✅ נמצאו {len(opps)} הזדמנויות!")
+            for opp in opps:
+                savings = opp.get("savings", 0)
+                savings_pct = opp.get("savings_pct", 0)
+                hub = opp.get("positioning_airport", "")
+                hub_city = opp.get("positioning_city", hub)
+                color = "🟢" if savings_pct > 20 else "🟡"
+                worth_it = opp.get("worth_it", False)
+
+                with st.expander(f"{color} דרך {hub_city} ({hub}) — חיסכון ${savings:,.0f} ({savings_pct:.0f}%)", expanded=worth_it):
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("TLV→" + hub, f"${opp.get('tlv_to_hub_price',0):,.0f}")
+                    c2.metric(hub + "→" + pos_dest, f"${opp.get('hub_to_dest_price',0):,.0f}")
+                    c3.metric("סה״כ vs ישיר", f"${opp.get('total_positioning',0):,.0f} vs ${opp.get('direct_tlv_to_dest',0):,.0f}")
+
+                    st.write(f"**חברת positioning:** {opp.get('positioning_airline','')}")
+                    st.write(f"**זמן נסיעה נוסף:** {opp.get('extra_travel_time_hours',0)} שעות")
+                    if opp.get("overnight_needed"):
+                        st.info("🌙 דורש לינה בעיר הביניים")
+                    st.write(f"**למה משתלם:** {opp.get('why','')}")
+                    st.write(f"**טיפים:** {opp.get('tips','')}")
+
+                    if worth_it and opp.get("overnight_needed"):
+                        if st.button(f"🌙 ניתוח לינה ב-{hub_city}", key=f"overnight_{hub}"):
+                            with st.spinner("מנתח אפשרות לינה..."):
+                                ov_analysis = positioning.analyze_overnight_positioning(hub, pos_dest, str(pos_date))
+                            if ov_analysis and "error" not in ov_analysis:
+                                st.write(f"**עלות לינה:** ${ov_analysis.get('accommodation_price',0):,.0f} ({ov_analysis.get('accommodation_type','')})")
+                                st.write(f"**שווה להוסיף לינה?** {'✅ כן' if ov_analysis.get('worth_adding_night') else '❌ לא'}")
+                                activities = ov_analysis.get("top_activities", [])
+                                if activities:
+                                    st.write("**מה לעשות בלילה אחד:**")
+                                    for act in activities:
+                                        st.write(f"• {act}")
+
+    st.divider()
+    st.subheader("✈️ נתיבי Positioning הזולים ביותר מ-TLV")
+    if st.button("🔍 מצא נתיבי positioning זולים", use_container_width=True):
+        with st.spinner("בודק מחירים..."):
+            cheap_routes = positioning.get_cheapest_tlv_positioning_routes()
+        if cheap_routes and "error" not in (cheap_routes[0] if cheap_routes else {}):
+            for r in cheap_routes[:10]:
+                st.write(f"✈️ **{r.get('city','')} ({r.get('airport','')})** — מ-${r.get('price_from',0)} | {r.get('airline','')} | {r.get('why_good_positioning','')}")
+
+    st.divider()
+    st.subheader("🧮 מחשבון ROI")
+    with st.form("roi_form"):
+        r1, r2, r3 = st.columns(3)
+        roi_tlv_hub = r1.number_input("TLV→Hub ($)", min_value=0, value=80)
+        roi_hub_dest = r2.number_input("Hub→Dest ($)", min_value=0, value=350)
+        roi_direct = r3.number_input("ישיר מ-TLV ($)", min_value=0, value=600)
+        r4, r5 = st.columns(2)
+        roi_extra_time = r4.number_input("זמן נוסף (שעות)", min_value=0.0, value=6.0)
+        roi_hourly = r5.number_input("שווי שעה שלך ($)", min_value=0, value=20)
+        roi_calc = st.form_submit_button("🧮 חשב ROI")
+
+    if roi_calc:
+        roi = positioning.calculate_positioning_roi(
+            tlv_to_hub=roi_tlv_hub,
+            hub_to_dest=roi_hub_dest,
+            direct_price=roi_direct,
+            extra_time_hours=roi_extra_time,
+            hourly_rate=roi_hourly,
+        )
+        st.write(roi.get("verdict", ""))
+        c1, c2, c3 = st.columns(3)
+        c1.metric("חיסכון גולמי", f"${roi.get('gross_savings',0):,.0f} ({roi.get('gross_savings_pct',0):.1f}%)")
+        c2.metric("עלות זמן", f"${roi.get('time_cost',0):,.0f}")
+        c3.metric("חיסכון נטו", f"${roi.get('net_savings',0):,.0f}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: WhatsApp Bot
+# ══════════════════════════════════════════════════════════════════════════════
+elif page == "💬 WhatsApp Bot":
+    st.title("💬 WhatsApp Bot — חיפוש טיסות בוואטסאפ")
+    st.caption("שלח 'TLV NYC 15/06' בוואטסאפ וקבל מחירים תוך שניות.")
+
+    tab_setup, tab_test, tab_stats = st.tabs(["⚙️ הגדרות Twilio", "🧪 בדיקה", "📊 סטטיסטיקות"])
+
+    with tab_setup:
+        twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID", "")
+        twilio_token = os.environ.get("TWILIO_AUTH_TOKEN", "")
+        twilio_from = os.environ.get("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
+
+        if twilio_sid and twilio_token:
+            st.success("✅ Twilio מחובר")
+        else:
+            st.warning("⚠️ Twilio לא מוגדר")
+
+        with st.expander("📖 איך מגדירים Twilio WhatsApp Sandbox?", expanded=not bool(twilio_sid)):
+            st.markdown("""
+**שלב 1 — צור חשבון Twilio:**
+1. עבור ל-twilio.com והרשם (חינם)
+2. קבל **Account SID** ו-**Auth Token** מלוח הבקרה
+
+**שלב 2 — הפעל WhatsApp Sandbox:**
+1. ב-Twilio Console → Messaging → Try it Out → Send a WhatsApp message
+2. עקוב אחרי ההוראות לחיבור ה-Sandbox
+3. שמור את מספר ה-Sandbox (בד"כ +14155238886)
+
+**שלב 3 — הגדר Webhook:**
+1. הרץ את האפליקציה עם ngrok: `ngrok http 8501`
+2. הגדר את כתובת ה-webhook ל: `https://YOUR_NGROK/whatsapp_webhook`
+
+**פקודות בוואטסאפ:**
+- `TLV NYC 15/06` — חפש טיסה
+- `דיל` — דילים חמים
+- `מחירים` — רשימת מעקב
+- `עזרה` — עזרה
+            """)
+
+        with st.form("wa_config_form"):
+            new_sid = st.text_input("Account SID", value=twilio_sid, type="password")
+            new_auth = st.text_input("Auth Token", value=twilio_token, type="password")
+            new_from = st.text_input("WhatsApp From Number", value=twilio_from)
+            wa_save = st.form_submit_button("💾 שמור", use_container_width=True)
+
+        if wa_save and new_sid and new_auth:
+            _save_env("TWILIO_ACCOUNT_SID", new_sid)
+            _save_env("TWILIO_AUTH_TOKEN", new_auth)
+            _save_env("TWILIO_WHATSAPP_FROM", new_from)
+            st.success("✅ נשמר! הפעל מחדש.")
+
+    with tab_test:
+        st.subheader("🧪 בדיקת הבוט")
+        test_msg = st.text_input("שלח הודעה לבוט", placeholder="TLV NYC 15/06 / דיל / עזרה")
+        if st.button("📨 שלח") and test_msg:
+            reply = whatsapp_bot.process_incoming_message("test_user", test_msg)
+            st.text_area("תגובת הבוט:", value=reply, height=200)
+
+        st.divider()
+        st.subheader("🔄 הרץ סדרת בדיקות")
+        if st.button("הרץ בדיקות אוטומטיות"):
+            results = whatsapp_bot.test_bot()
+            for r in results:
+                with st.expander(f"📩 Input: {r['input']}"):
+                    st.write(r["reply"])
+
+        st.divider()
+        st.subheader("📤 שלח הודעה אמיתית")
+        with st.form("wa_send_form"):
+            wa_to = st.text_input("לאן לשלוח", placeholder="+972501234567")
+            wa_msg = st.text_area("הודעה", placeholder="שלום! זה MegaTraveller...", height=80)
+            wa_send = st.form_submit_button("📤 שלח WhatsApp")
+
+        if wa_send and wa_to and wa_msg:
+            if os.environ.get("TWILIO_ACCOUNT_SID"):
+                result = whatsapp_bot.send_whatsapp_message(wa_to, wa_msg)
+                if "error" not in result:
+                    st.success("✅ נשלח!")
+                else:
+                    st.error(f"❌ {result['error']}")
+            else:
+                st.error("❌ הגדר Twilio קודם")
+
+    with tab_stats:
+        stats = whatsapp_bot.get_stats()
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("סה״כ הודעות", stats.get("total_messages", 0))
+        m2.metric("משתמשים", stats.get("unique_users", 0))
+        m3.metric("היום", stats.get("messages_today", 0))
+        m4.metric("חיפושי טיסות", stats.get("flight_searches", 0))
