@@ -108,15 +108,11 @@ def _inject_css(rtl: bool):
 
     st.markdown(f"""
 <style>
-  /* ── Direction on EVERYTHING ── */
-  html, body, * {{
-    direction: {d} !important;
-  }}
+  /* ── Direction ── */
+  html, body, * {{ direction: {d} !important; }}
 
-  /* ── Text alignment on all text-bearing elements ── */
   p, h1, h2, h3, h4, h5, h6,
-  li, td, th, caption,
-  label, span, small, strong, em, b, i,
+  li, td, th, caption, label, span, small, strong, em, b, i,
   div, section, article, aside, header, footer,
   input, textarea, select,
   [data-testid], [data-baseweb],
@@ -125,7 +121,6 @@ def _inject_css(rtl: bool):
     text-align: {ta} !important;
   }}
 
-  /* ── Exceptions: keep centered ── */
   [data-testid="stMetricValue"],
   [data-testid="stMetricLabel"],
   [data-testid="stMetricDelta"],
@@ -138,17 +133,14 @@ def _inject_css(rtl: bool):
     text-align: center !important;
   }}
 
-  /* ── Sidebar ── */
   [data-testid="stSidebar"],
   [data-testid="stSidebar"] * {{
     direction: {d} !important;
     text-align: {ta} !important;
   }}
 
-  /* ── Sidebar position ── */
   {sidebar_pos}
 
-  /* ── Inputs ── */
   input, textarea, select {{
     direction: {d} !important;
     text-align: {ta} !important;
@@ -157,40 +149,152 @@ def _inject_css(rtl: bool):
     text-align: {ta} !important;
   }}
 
-  /* ── Background ── */
+  /* ── Aurora background ── */
   [data-testid="stAppViewContainer"] {{
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) !important;
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2e 40%, #1a0a2e 70%, #0a1a1a 100%) !important;
   }}
-  [data-testid="stSidebar"] {{
-    background: rgba(15,12,41,0.95) !important;
+  [data-testid="stAppViewContainer"]::before {{
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(102,126,234,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(118,75,162,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 60% 80%, rgba(0,200,150,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
   }}
 
-  /* ── Cards ── */
-  .metric-card {{
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 16px 20px;
-    text-align: center !important;
+  /* ── Sidebar glass ── */
+  [data-testid="stSidebar"] {{
+    background: rgba(10,10,30,0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(102,126,234,0.2) !important;
   }}
-  .alert-box {{
-    background: rgba(255,75,75,0.15);
-    border: 1px solid rgba(255,75,75,0.5);
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
+
+  /* ── Expanders → glass cards ── */
+  [data-testid="stExpander"] {{
+    background: rgba(255,255,255,0.04) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255,255,255,0.09) !important;
+    border-radius: 16px !important;
+    margin-bottom: 10px !important;
+    transition: border-color 0.3s, box-shadow 0.3s !important;
   }}
+  [data-testid="stExpander"]:hover {{
+    border-color: rgba(102,126,234,0.35) !important;
+    box-shadow: 0 8px 32px rgba(102,126,234,0.12) !important;
+  }}
+
+  /* ── Metrics glass ── */
+  [data-testid="stMetric"] {{
+    background: rgba(255,255,255,0.04) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 14px !important;
+    padding: 12px 16px !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+  }}
+  [data-testid="stMetric"]:hover {{
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.18) !important;
+  }}
+  [data-testid="stMetricValue"] {{
+    color: #a78bfa !important;
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+  }}
+
+  /* ── Buttons ── */
+  .stButton button {{
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s !important;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.28) !important;
+  }}
+  .stButton button:hover {{
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(102,126,234,0.42) !important;
+  }}
+  .stButton button:active {{
+    transform: translateY(0) !important;
+  }}
+
+  /* ── Inputs glass ── */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {{
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 10px !important;
+    color: white !important;
+  }}
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {{
+    border-color: rgba(102,126,234,0.6) !important;
+    box-shadow: 0 0 0 2px rgba(102,126,234,0.18) !important;
+  }}
+
+  /* ── Progress bar gradient ── */
+  [data-testid="stProgressBar"] > div > div {{
+    background: linear-gradient(90deg, #667eea, #00ff88) !important;
+    border-radius: 4px !important;
+  }}
+
+  /* ── Price drop pulse animation ── */
+  @keyframes priceDrop {{
+    0%   {{ box-shadow: 0 0 0 0 rgba(0,255,136,0.5); }}
+    70%  {{ box-shadow: 0 0 0 10px rgba(0,255,136,0); }}
+    100% {{ box-shadow: 0 0 0 0 rgba(0,255,136,0); }}
+  }}
+  .price-drop-pulse {{ animation: priceDrop 1.5s ease-out 3; border-radius: 8px; }}
+
+  /* ── Divider ── */
+  hr {{ border-color: rgba(255,255,255,0.07) !important; }}
+
+  /* ── Typography ── */
+  h1 {{ color: white !important; font-weight: 700 !important; }}
+  h2 {{ color: #e2d9f3 !important; font-weight: 600 !important; }}
+  h3 {{ color: #c4b5fd !important; }}
+
+  /* ── Alert boxes ── */
+  [data-testid="stAlert"] {{
+    background: rgba(255,255,255,0.04) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    backdrop-filter: blur(8px) !important;
+  }}
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar {{ width: 6px; height: 6px; }}
+  ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.02); }}
+  ::-webkit-scrollbar-thumb {{ background: rgba(102,126,234,0.4); border-radius: 3px; }}
+  ::-webkit-scrollbar-thumb:hover {{ background: rgba(102,126,234,0.65); }}
+
+  /* ── Deal colors ── */
   .deal-excellent {{ color: #00ff88; font-weight: bold; }}
   .deal-good      {{ color: #88ff44; }}
   .deal-average   {{ color: #ffcc00; }}
   .deal-poor      {{ color: #ff4444; }}
-  h1, h2, h3 {{ color: white !important; }}
-  .stButton button {{
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
+
+  /* ── Alert box legacy ── */
+  .alert-box {{
+    background: rgba(255,75,75,0.12);
+    border: 1px solid rgba(255,75,75,0.4);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }}
+
+  /* ── Chat messages ── */
+  [data-testid="stChatMessage"] {{
+    background: rgba(255,255,255,0.03) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
   }}
 </style>
 """, unsafe_allow_html=True)
@@ -336,6 +440,56 @@ def sparkline(watch_id: int):
         yaxis=dict(visible=False),
     )
     return fig
+
+
+def _booking_links(item: dict) -> dict:
+    """Generate deep links to booking sites with pre-filled parameters."""
+    import urllib.parse
+    dest = item.get("destination", "")
+    origin = item.get("origin", "TLV")
+    date_from = item.get("date_from", "")
+    date_to = item.get("date_to", "")
+    category = item.get("category", "flight")
+    links = {}
+
+    if category == "flight":
+        links["🔍 Google Flights"] = (
+            f"https://www.google.com/travel/flights?q={urllib.parse.quote(f'Flights from {origin} to {dest}')}"
+            + (f"&departure_date={date_from}" if date_from else "")
+        )
+        links["🛫 Kayak"] = (
+            f"https://www.kayak.com/flights/{origin}-{dest[:3].upper()}"
+            + (f"/{date_from}" if date_from else "")
+            + (f"/{date_to}" if date_to else "")
+        )
+        links["🌐 Skyscanner"] = (
+            f"https://www.skyscanner.net/transport/flights/{origin.lower()}/{dest[:4].lower()}/"
+            + (date_from.replace("-", "")[:6] if date_from else "")
+        )
+        links["✈️ Israir"] = "https://www.israirairlines.com/"
+        links["🇮🇱 Arkia"] = "https://www.arkia.com/"
+
+    elif category == "hotel":
+        links["🏨 Booking.com"] = (
+            f"https://www.booking.com/search.html?ss={urllib.parse.quote(dest)}"
+            + (f"&checkin={date_from}&checkout={date_to}" if date_from else "")
+        )
+        links["🏩 Hotels.com"] = f"https://www.hotels.com/search.do?q-destination={urllib.parse.quote(dest)}"
+        links["🌍 Expedia"] = f"https://www.expedia.com/Hotel-Search?destination={urllib.parse.quote(dest)}"
+
+    elif category == "apartment":
+        links["🏠 Airbnb"] = (
+            f"https://www.airbnb.com/s/{urllib.parse.quote(dest)}/homes"
+            + (f"?checkin={date_from}&checkout={date_to}" if date_from and date_to else "")
+        )
+        links["🏡 Vrbo"] = f"https://www.vrbo.com/search?destination={urllib.parse.quote(dest)}"
+
+    elif category == "package":
+        links["📦 Expedia"] = f"https://www.expedia.com/Vacation-Packages?destination={urllib.parse.quote(dest)}"
+        links["🌍 Booking.com"] = f"https://www.booking.com/search.html?ss={urllib.parse.quote(dest)}"
+        links["🇮🇱 Gulliver"] = "https://www.gulliver.co.il/"
+
+    return links
 
 
 def _ai_daily_summary(items_list: list) -> str:
@@ -748,6 +902,24 @@ if page == "🏠 לוח בקרה":
                                 )
                         except Exception:
                             pass
+
+                    # Book Now deep links
+                    _blinks = _booking_links(item)
+                    if _blinks:
+                        st.markdown(f"**{_t('🔗 הזמן עכשיו', '🔗 Book Now')}**")
+                        _bl_cols = st.columns(min(len(_blinks), 3))
+                        for _bli, (_bln, _blu) in enumerate(_blinks.items()):
+                            with _bl_cols[_bli % 3]:
+                                st.markdown(
+                                    f"<a href='{_blu}' target='_blank' style='"
+                                    f"display:block;text-align:center;padding:6px 4px;"
+                                    f"background:rgba(102,126,234,0.15);border:1px solid rgba(102,126,234,0.35);"
+                                    f"border-radius:8px;color:#a78bfa;text-decoration:none;"
+                                    f"font-size:11px;font-weight:600;margin:2px;"
+                                    f"transition:background 0.2s'>{_bln}</a>",
+                                    unsafe_allow_html=True
+                                )
+                        st.write("")
 
                     # AI analysis
                     if len(history) >= 2:
