@@ -334,6 +334,45 @@ def sparkline(watch_id: int):
     return fig
 
 
+def _ai_daily_summary(items_list: list) -> str:
+    """Generate a one-line AI summary of current deals."""
+    import time as _time
+    cache = st.session_state.get("ai_summary_cache")
+    if cache and (_time.time() - cache["ts"]) < 1800:
+        return cache["text"]
+
+    client = agent.get_client()
+    if not client or not items_list:
+        return ""
+
+    # Build quick data snapshot
+    snippets = []
+    for it in items_list[:8]:
+        last = db.get_last_price(it["id"])
+        if last:
+            snippets.append(f"{it['name']}: {last['price']:.0f} {last['currency']}")
+    if not snippets:
+        return ""
+
+    lang_instruction = "Respond in English." if _lang == "en" else "השב בעברית."
+    prompt = (
+        f"Travel price tracker data:\n" + "\n".join(snippets) +
+        f"\n\nWrite ONE short sentence (max 15 words) summarizing the best deal or overall situation. "
+        f"Be specific with destination and price. {lang_instruction}"
+    )
+    try:
+        resp = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=80,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        st.session_state["ai_summary_cache"] = {"ts": _time.time(), "text": text}
+        return text
+    except Exception:
+        return ""
+
+
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     # Language selector (top of sidebar)
@@ -401,6 +440,30 @@ with st.sidebar:
         st.error(i18n.t("api_key_missing", _lang))
         st.caption(i18n.t("api_key_hint", _lang))
 
+    st.divider()
+    st.markdown(f"#### {_t('📉 ירידות אחרונות', '📉 Recent Drops')}")
+    _all_items = db.get_all_watch_items(enabled_only=False)
+    _feed_entries = []
+    for _fi in _all_items:
+        _fh = db.get_price_history(_fi["id"], limit=3)
+        for _fr in _fh:
+            _feed_entries.append({"name": _fi["name"], "price": _fr["price"],
+                                   "currency": _fr.get("currency", ""), "time": _fr["checked_at"]})
+    # sort by time descending, take top 5
+    _feed_entries.sort(key=lambda x: x["time"], reverse=True)
+    for _fe in _feed_entries[:5]:
+        _ftime = _fe["time"][11:16]
+        st.markdown(
+            f"<div style='font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07)'>"
+            f"✈️ <b>{_fe['name'][:18]}</b><br>"
+            f"<span style='color:#00ff88;font-size:14px'>{fmt_price(_fe['price'], _fe['currency'])}</span> "
+            f"<span style='color:#888;font-size:10px'>{_ftime}</span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+    if not _feed_entries:
+        st.caption(_t("אין נתונים עדיין", "No data yet"))
+
 # ── Inject CSS (after lang is determined) ──────────────────────────────────────
 _inject_css(_rtl)
 
@@ -416,6 +479,16 @@ if page == "🏠 לוח בקרה":
 
     st.title(_t("🌍 לוח בקרה", "🌍 Dashboard"))
 
+    # AI daily summary
+    if items := db.get_all_watch_items(enabled_only=False):
+        _summary = _ai_daily_summary(items)
+        if _summary:
+            st.markdown(
+                f"<div style='background:linear-gradient(90deg,rgba(102,126,234,0.15),rgba(118,75,162,0.15));"
+                f"border:1px solid rgba(102,126,234,0.3);border-radius:10px;padding:10px 16px;margin-bottom:12px'>"
+                f"🤖 <em>{_summary}</em></div>",
+                unsafe_allow_html=True
+            )
     items = db.get_all_watch_items(enabled_only=False)
 
     # ── Top metrics ────────────────────────────────────────────────────────────
@@ -489,12 +562,20 @@ if page == "🏠 לוח בקרה":
                         if lowest and lowest["price"] < last["price"]:
                             savings = last["price"] - lowest["price"]
                             st.caption(f"⬇ {_t('מינימום', 'Min')}: {fmt_price(lowest['price'], lowest['currency'])} ({_t('חסכון', 'saving')} {savings:.0f})")
-                        if item["max_price"]:
+                        if item["max_price"] and item["max_price"] > 0:
                             diff = last["price"] - item["max_price"]
                             if diff <= 0:
                                 st.success(f"🎯 {_t('מתחת ליעד!', 'Below target!')} ({fmt_price(item['max_price'])})")
+                                st.progress(1.0)
                             else:
-                                st.caption(f"🎯 {_t('יעד', 'Target')}: {fmt_price(item['max_price'])} ({_t('עוד', 'gap')} {diff:.0f})")
+                                # progress = how close we are (0=far, 1=reached)
+                                # Use highest seen price as baseline if available
+                                _highest = db.get_price_history(item["id"], limit=30)
+                                _max_seen = max((r["price"] for r in _highest), default=last["price"]) if _highest else last["price"]
+                                _range = max(_max_seen - item["max_price"], 1)
+                                _progress = max(0.0, min(1.0, 1.0 - (last["price"] - item["max_price"]) / _range))
+                                st.caption(f"🎯 {_t('יעד', 'Target')}: {fmt_price(item['max_price'])} · {_t('עוד', 'gap')} {diff:.0f}")
+                                st.progress(_progress)
                     else:
                         st.markdown(f"*{_t('אין מחיר עדיין', 'No price yet')}*")
 
