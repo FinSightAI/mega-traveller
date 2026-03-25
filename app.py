@@ -297,9 +297,8 @@ def _inject_css(rtl: bool):
     border: 1px solid rgba(255,255,255,0.07) !important;
   }}
 
-  /* ── Hide Streamlit chrome ── */
+  /* ── Hide Streamlit chrome (keep sidebar toggle) ── */
   #MainMenu {{ visibility: hidden !important; }}
-  [data-testid="stToolbar"] {{ display: none !important; }}
   [data-testid="stDecoration"] {{ display: none !important; }}
   [data-testid="stStatusWidget"] {{ display: none !important; }}
   footer {{ visibility: hidden !important; }}
