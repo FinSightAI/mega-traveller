@@ -92,19 +92,10 @@ def _inject_css(rtl: bool):
         left: unset !important;
       }
       section[data-testid="stSidebar"] > div:first-child {
-        border-left: 1px solid rgba(255,255,255,0.08) !important;
+        border-left: 1px solid rgba(102,126,234,0.2) !important;
         border-right: none !important;
       }
-      .main .block-container {
-        padding-right: calc(22rem + 2rem) !important;
-        padding-left: 2rem !important;
-      }
-    """ if rtl else """
-      .main .block-container {
-        padding-left: calc(22rem + 2rem) !important;
-        padding-right: 2rem !important;
-      }
-    """
+    """ if rtl else ""
 
     st.markdown(f"""
 <style>
