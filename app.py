@@ -204,6 +204,10 @@ if "checking" not in st.session_state:
     st.session_state.checking = False
 if "lang" not in st.session_state:
     st.session_state.lang = "he"
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = []
+if "chat_open" not in st.session_state:
+    st.session_state.chat_open = False
 
 # Convenience shortcut
 _lang = st.session_state.lang
@@ -509,6 +513,53 @@ if page == "🏠 לוח בקרה":
 
     st.divider()
 
+    # ── Deal Score Leaderboard ────────────────────────────────────────────────
+    if items:
+        with st.expander(_t("🏆 לידרבורד — הדילים הכי שווים עכשיו", "🏆 Leaderboard — Best Deals Right Now"), expanded=False):
+            _scores = []
+            for _li in items:
+                _ll = db.get_last_price(_li["id"])
+                if not _ll:
+                    continue
+                _lhist = db.get_price_history(_li["id"], limit=20)
+                _prices = [r["price"] for r in _lhist]
+                _cur = _ll["price"]
+                # Score components (0-100)
+                _price_score = 50  # default
+                if len(_prices) >= 2:
+                    _avg = sum(_prices) / len(_prices)
+                    _min_p = min(_prices)
+                    _rng = max(_avg - _min_p, 1)
+                    _price_score = max(0, min(100, int(100 * (_avg - _cur) / _rng)))
+                _target_score = 0
+                if _li.get("max_price") and _li["max_price"] > 0:
+                    _gap_pct = (_cur - _li["max_price"]) / _li["max_price"]
+                    _target_score = max(0, min(100, int(100 * (1 - _gap_pct))))
+                _final_score = int(_price_score * 0.6 + _target_score * 0.4)
+                _scores.append({
+                    "item": _li, "score": _final_score,
+                    "price": _cur, "currency": _ll["currency"]
+                })
+
+            _scores.sort(key=lambda x: x["score"], reverse=True)
+
+            for _rank, _s in enumerate(_scores[:10], 1):
+                _bar_color = "#00ff88" if _s["score"] >= 70 else "#ffcc00" if _s["score"] >= 40 else "#ff4444"
+                _medal = "🥇" if _rank == 1 else "🥈" if _rank == 2 else "🥉" if _rank == 3 else f"{_rank}."
+                _sc1, _sc2, _sc3 = st.columns([0.5, 3, 1])
+                with _sc1:
+                    st.markdown(f"**{_medal}**")
+                with _sc2:
+                    st.markdown(f"{CAT_EMOJI.get(_s['item']['category'],'✈️')} **{_s['item']['name']}** — {_s['item']['destination']}")
+                    st.progress(_s["score"] / 100)
+                with _sc3:
+                    st.markdown(
+                        f"<div style='text-align:center'>"
+                        f"<span style='color:{_bar_color};font-size:22px;font-weight:bold'>{_s['score']}</span>"
+                        f"<br><small style='color:#aaa'>{fmt_price(_s['price'], _s['currency'])}</small></div>",
+                        unsafe_allow_html=True
+                    )
+
     if not items:
         st.markdown(f"## {_t('ברוכים הבאים ל-Noded! 🎉', 'Welcome to Noded! 🎉')}")
         st.markdown(_t("כמה צעדים פשוטים כדי להתחיל:", "Just a few steps to get started:"))
@@ -524,8 +575,60 @@ if page == "🏠 לוח בקרה":
             st.session_state["nav_page"] = _t("➕ הוסף מעקב", "➕ Add Watch")
             st.rerun()
     else:
+        # ── Search & filter ────────────────────────────────────────────────
+        _fcol1, _fcol2, _fcol3 = st.columns([3, 1, 1])
+        with _fcol1:
+            _search = st.text_input(
+                _t("🔍 חפש מעקב...", "🔍 Search watches..."),
+                key="dash_search", label_visibility="collapsed",
+                placeholder=_t("חפש לפי שם, יעד...", "Search by name, destination...")
+            )
+        with _fcol2:
+            _cat_filter = st.selectbox(
+                _t("קטגוריה", "Category"),
+                ["all", "flight", "hotel", "apartment", "package"],
+                format_func=lambda x: _t("הכל", "All") if x == "all" else f"{CAT_EMOJI.get(x,'')} {x}",
+                key="dash_cat", label_visibility="collapsed"
+            )
+        with _fcol3:
+            _sort_by = st.selectbox(
+                _t("מיין", "Sort"),
+                ["name", "price", "target"],
+                format_func=lambda x: {
+                    "name": _t("שם", "Name"),
+                    "price": _t("מחיר", "Price"),
+                    "target": _t("יעד %", "Target %")
+                }[x],
+                key="dash_sort", label_visibility="collapsed"
+            )
+
+        # Apply search & filter
+        _filtered = items
+        if _search:
+            _s = _search.lower()
+            _filtered = [i for i in _filtered if _s in i["name"].lower() or _s in i["destination"].lower()]
+        if _cat_filter != "all":
+            _filtered = [i for i in _filtered if i["category"] == _cat_filter]
+
+        # Apply sort
+        if _sort_by == "price":
+            def _price_key(i):
+                l = db.get_last_price(i["id"])
+                return l["price"] if l else 9999999
+            _filtered = sorted(_filtered, key=_price_key)
+        elif _sort_by == "target":
+            def _target_key(i):
+                l = db.get_last_price(i["id"])
+                if l and i.get("max_price") and i["max_price"] > 0:
+                    return (l["price"] - i["max_price"]) / i["max_price"]
+                return 0
+            _filtered = sorted(_filtered, key=_target_key)
+
+        if _search or _cat_filter != "all":
+            st.caption(_t(f"מציג {len(_filtered)} מתוך {len(items)}", f"Showing {len(_filtered)} of {len(items)}"))
+
         # ── Items grid ─────────────────────────────────────────────────────────
-        for item in items:
+        for item in _filtered:
             last = db.get_last_price(item["id"])
             lowest = db.get_lowest_price(item["id"])
             history = db.get_price_history(item["id"], limit=30)
@@ -4156,3 +4259,79 @@ elif page == "💬 WhatsApp Bot":
         m2.metric(_t("משתמשים", "Users"), stats.get("unique_users", 0))
         m3.metric(_t("היום", "Today"), stats.get("messages_today", 0))
         m4.metric(_t("חיפושי טיסות", "Flight searches"), stats.get("flight_searches", 0))
+
+# ══════════════════════════════════════════════════════════════════════════════
+# GLOBAL: AI Chat Assistant (floating, all pages)
+# ══════════════════════════════════════════════════════════════════════════════
+st.divider()
+_chat_label = _t("💬 שאל את ה-AI", "💬 Ask AI")
+with st.expander(_chat_label, expanded=st.session_state.chat_open):
+    st.caption(_t(
+        "שאל כל שאלה על טיסות, מלונות, מחירים או תכנון טיול",
+        "Ask anything about flights, hotels, prices or trip planning"
+    ))
+
+    # Show chat history
+    for _cm in st.session_state.chat_messages[-6:]:  # last 6 messages
+        with st.chat_message(_cm["role"]):
+            st.markdown(_cm["content"])
+
+    # Input
+    _chat_input = st.chat_input(_t("כתוב שאלה...", "Type a question..."), key="global_chat")
+    if _chat_input:
+        st.session_state.chat_messages.append({"role": "user", "content": _chat_input})
+        st.session_state.chat_open = True
+
+        _chat_client = agent.get_client()
+        if _chat_client:
+            # Build context from current watches
+            _watch_ctx = ""
+            _ctx_items = db.get_all_watch_items(enabled_only=False)
+            if _ctx_items:
+                _ctx_lines = []
+                for _ci in _ctx_items[:5]:
+                    _cl = db.get_last_price(_ci["id"])
+                    _cp = f"{_cl['price']:.0f} {_cl['currency']}" if _cl else _t("אין מחיר", "no price")
+                    _ctx_lines.append(f"- {_ci['name']} → {_ci['destination']}: {_cp}")
+                _watch_ctx = _t("המעקבים הפעילים שלי:\n", "My active watches:\n") + "\n".join(_ctx_lines) + "\n\n"
+
+            _lang_instr = "Respond in English." if _lang == "en" else "השב בעברית."
+            _sys = (
+                f"You are a smart travel assistant for an Israeli travel price tracker app. "
+                f"Help with flights, hotels, prices, visa info, trip planning. Be concise (2-4 sentences). "
+                f"{_lang_instr}\n\n{_watch_ctx}"
+            )
+
+            # Build messages for API (last 6 turns)
+            _api_msgs = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.chat_messages[-6:]
+            ]
+
+            with st.spinner(_t("חושב...", "Thinking...")):
+                try:
+                    _chat_resp = _chat_client.messages.create(
+                        model="claude-opus-4-6",
+                        max_tokens=300,
+                        system=_sys,
+                        messages=_api_msgs,
+                    )
+                    _reply = next((b.text for b in _chat_resp.content if b.type == "text"), "")
+                    st.session_state.chat_messages.append({"role": "assistant", "content": _reply})
+                except Exception as _ce:
+                    st.session_state.chat_messages.append({
+                        "role": "assistant",
+                        "content": _t(f"שגיאה: {str(_ce)[:80]}", f"Error: {str(_ce)[:80]}")
+                    })
+            st.rerun()
+        else:
+            st.session_state.chat_messages.append({
+                "role": "assistant",
+                "content": _t("חסר ANTHROPIC_API_KEY", "Missing ANTHROPIC_API_KEY")
+            })
+            st.rerun()
+
+    if st.session_state.chat_messages:
+        if st.button(_t("🗑 נקה שיחה", "🗑 Clear chat"), key="clear_chat"):
+            st.session_state.chat_messages = []
+            st.rerun()
