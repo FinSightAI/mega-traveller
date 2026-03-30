@@ -28,6 +28,7 @@ import translations as i18n
 
 import database as db
 import agent
+import ai_client
 import monitor
 import notifiers
 import exchange_rates as fx
