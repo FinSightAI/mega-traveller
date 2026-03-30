@@ -559,8 +559,7 @@ def _ai_daily_summary(items_list: list) -> str:
     if cache and (_time.time() - cache["ts"]) < 1800:
         return cache["text"]
 
-    client = agent.get_client()
-    if not client or not items_list:
+    if not ai_client.is_configured() or not items_list:
         return ""
 
     # Build quick data snapshot
@@ -579,12 +578,7 @@ def _ai_daily_summary(items_list: list) -> str:
         f"Be specific with destination and price. {lang_instruction}"
     )
     try:
-        resp = client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=80,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        text = next((b.text for b in resp.content if b.type == "text"), "")
+        text = ai_client.ask(prompt=prompt, max_tokens=80) or ""
         st.session_state["ai_summary_cache"] = {"ts": _time.time(), "text": text}
         return text
     except Exception:
@@ -4514,8 +4508,7 @@ with st.expander(_chat_label, expanded=st.session_state.chat_open):
         st.session_state.chat_messages.append({"role": "user", "content": _chat_input})
         st.session_state.chat_open = True
 
-        _chat_client = agent.get_client()
-        if _chat_client:
+        if ai_client.is_configured():
             # Build context from current watches
             _watch_ctx = ""
             _ctx_items = db.get_all_watch_items(enabled_only=False)
@@ -4534,21 +4527,16 @@ with st.expander(_chat_label, expanded=st.session_state.chat_open):
                 f"{_lang_instr}\n\n{_watch_ctx}"
             )
 
-            # Build messages for API (last 6 turns)
-            _api_msgs = [
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.chat_messages[-6:]
-            ]
+            # Build prompt from last 6 turns
+            _history = st.session_state.chat_messages[-6:]
+            _prompt = "\n".join(
+                f"{'User' if m['role'] == 'user' else 'Assistant'}: {m['content']}"
+                for m in _history
+            )
 
             with st.spinner(_t("חושב...", "Thinking...")):
                 try:
-                    _chat_resp = _chat_client.messages.create(
-                        model="claude-opus-4-6",
-                        max_tokens=300,
-                        system=_sys,
-                        messages=_api_msgs,
-                    )
-                    _reply = next((b.text for b in _chat_resp.content if b.type == "text"), "")
+                    _reply = ai_client.ask(prompt=_prompt, system=_sys, max_tokens=300) or ""
                     st.session_state.chat_messages.append({"role": "assistant", "content": _reply})
                 except Exception as _ce:
                     st.session_state.chat_messages.append({
