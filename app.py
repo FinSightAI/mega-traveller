@@ -82,6 +82,67 @@ def _save_env(key: str, value: str):
     env_path.write_text("\n".join(lines) + "\n")
     os.environ[key] = value
 
+# ── PWA (installable on Android / iPhone / Desktop) ───────────────────────────
+
+def _inject_pwa():
+    components.html("""
+<script>
+(function() {
+  var doc = window.parent.document;
+  if (doc.querySelector('link[rel="manifest"]')) return;
+
+  // Manifest — makes app installable
+  var manifest = {
+    "name": "Noded — מעקב מחירי טיול",
+    "short_name": "Noded",
+    "description": "מעקב חכם אחר מחירי טיסות ומלונות",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0e1117",
+    "theme_color": "#667eea",
+    "orientation": "any",
+    "icons": [
+      {
+        "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23667eea'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E%F0%9F%A7%B3%3C/text%3E%3C/svg%3E",
+        "sizes": "192x192",
+        "type": "image/svg+xml",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23667eea'/%3E%3Ctext x='256' y='360' font-size='300' text-anchor='middle'%3E%F0%9F%A7%B3%3C/text%3E%3C/svg%3E",
+        "sizes": "512x512",
+        "type": "image/svg+xml",
+        "purpose": "any maskable"
+      }
+    ]
+  };
+
+  var blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+  var url  = URL.createObjectURL(blob);
+  var link = doc.createElement('link');
+  link.rel  = 'manifest';
+  link.href = url;
+  doc.head.appendChild(link);
+
+  // iOS / Android meta tags
+  [
+    ['mobile-web-app-capable',          'yes'],
+    ['apple-mobile-web-app-capable',    'yes'],
+    ['apple-mobile-web-app-title',      'Noded'],
+    ['apple-mobile-web-app-status-bar-style', 'black-translucent'],
+    ['theme-color',                     '#667eea'],
+    ['application-name',                'Noded'],
+  ].forEach(function(pair) {
+    if (!doc.querySelector('meta[name="' + pair[0] + '"]')) {
+      var m = doc.createElement('meta');
+      m.name = pair[0]; m.content = pair[1];
+      doc.head.appendChild(m);
+    }
+  });
+})();
+</script>
+""", height=0)
+
 # ── Custom CSS (injected after lang is known) ──────────────────────────────────
 def _inject_css(rtl: bool):
     d = "rtl" if rtl else "ltr"
@@ -679,6 +740,7 @@ with st.sidebar:
 
 # ── Inject CSS (after lang is determined) ──────────────────────────────────────
 _inject_css(_rtl)
+_inject_pwa()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
