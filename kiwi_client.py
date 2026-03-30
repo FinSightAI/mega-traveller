@@ -9,7 +9,7 @@ import re
 import urllib.request
 import urllib.parse
 from datetime import datetime
-import anthropic
+import ai_client
 
 TEQUILA_BASE = "https://api.tequila.kiwi.com/v2"
 
@@ -99,7 +99,6 @@ def _search_tequila(api_key, origin, destination, date_from, date_to,
 
 
 def _search_claude(origin, destination, date_from, date_to, return_from, return_to, adults, currency):
-    client = anthropic.Anthropic()
     ret_info = f"\nתאריך חזרה: {return_from}" if return_from else ""
     prompt = f"""חפש טיסות ב-Kiwi.com ו-Google Flights:
 
@@ -123,16 +122,9 @@ def _search_claude(origin, destination, date_from, date_to, return_from, return_
 החזר JSON array."""
 
     try:
-        response = client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=2000,
-            tools=[{"type": "web_search_20260209", "name": "web_search"}],
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = "".join(b.text for b in response.content if b.type == "text")
-        arr = re.search(r"\[.*\]", text, re.DOTALL)
-        if arr:
-            return json.loads(arr.group(0))
+        text = ai_client.ask_with_search(prompt=prompt, max_tokens=2000)
+        if text:
+            return ai_client.extract_json_array(text)
     except Exception as e:
         return [{"error": str(e)}]
     return []
