@@ -47,6 +47,7 @@ import cost_calculator
 import deal_insights
 import telegram_bot
 import kiwi_client
+import validators
 import hidden_city
 import rss_scanner
 import auto_book
@@ -1062,8 +1063,16 @@ elif page == "➕ הוסף מעקב":
                 ["flight", "hotel", "apartment", "package"],
                 format_func=lambda x: f"{CAT_EMOJI[x]} {x}",
             )
-            destination = st.text_input(_t("יעד *", "Destination *"), placeholder=_t("ברצלונה", "Barcelona"))
-            origin = st.text_input(_t("עיר מוצא", "Origin city"), placeholder=_t("TLV (לטיסות)", "TLV (for flights)"))
+            destination = st.text_input(
+                _t("יעד *", "Destination *"),
+                placeholder=_t("ברצלונה / BCN / Spain", "Barcelona / BCN / Spain"),
+                help=_t("שם עיר, מדינה, או קוד IATA של שדה תעופה (3 אותיות)", "City name, country, or 3-letter IATA airport code"),
+            )
+            origin = st.text_input(
+                _t("עיר מוצא / קוד IATA", "Origin city / IATA code"),
+                placeholder=_t("TLV", "TLV"),
+                help=_t("קוד IATA של שדה תעופה (TLV, SDV, ETH) או שם עיר", "IATA airport code (TLV, SDV, ETH) or city name"),
+            )
 
         with col2:
             date_from = st.date_input(_t("תאריך התחלה", "Start date"), value=None)
@@ -1083,9 +1092,35 @@ elif page == "➕ הוסף מעקב":
         submitted = st.form_submit_button(_t("➕ הוסף", "➕ Add"), use_container_width=True)
 
     if submitted:
-        if not name or not destination:
-            st.error(_t("שם ויעד הם שדות חובה", "Name and destination are required"))
+        # Validate fields
+        _errors = []
+        if not name:
+            _errors.append(_t("שם הפריט הוא שדה חובה", "Item name is required"))
+        dest_ok, dest_msg = validators.validate_destination(destination)
+        if not dest_ok:
+            _errors.append(dest_msg)
+        origin_ok, origin_msg = validators.validate_origin(origin, category)
+        if not origin_ok:
+            _errors.append(origin_msg)
+
+        if _errors:
+            for _e in _errors:
+                st.error(_e)
+            # Show IATA suggestions on error
+            if destination and not dest_ok:
+                _suggs = validators.suggest_iata(destination)
+                if _suggs:
+                    st.info(_t("💡 אולי התכוונת ל: ", "💡 Did you mean: ") + " · ".join(_suggs[:5]))
+            if origin and not origin_ok:
+                _suggs_o = validators.suggest_iata(origin)
+                if _suggs_o:
+                    st.info(_t("💡 קודי IATA: ", "💡 IATA codes: ") + " · ".join(_suggs_o[:5]))
         else:
+            # Show info hints (non-blocking)
+            if dest_ok and dest_msg:
+                st.info(dest_msg)
+            if origin_ok and origin_msg and "טיפ" in origin_msg:
+                st.info(origin_msg)
             item = db.WatchItem(
                 id=None,
                 name=name,
