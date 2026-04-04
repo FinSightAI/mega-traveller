@@ -8,13 +8,26 @@ import ai_client
 
 _lang = "he"
 
-BOOKING_SITES = [
+FLIGHT_SITES = [
     "Kayak (kayak.com)",
     "Expedia (expedia.com)",
     "Google Flights (flights.google.com)",
-    "Booking.com",
     "Skyscanner (skyscanner.net)",
+    "Kiwi.com",
+    "Momondo (momondo.com)",
 ]
+
+HOTEL_SITES = [
+    "Booking.com",
+    "Airbnb (airbnb.com)",
+    "Hotels.com",
+    "Expedia (expedia.com)",
+    "Agoda (agoda.com)",
+    "Hostelworld (hostelworld.com)",
+]
+
+# Keep backward compat
+BOOKING_SITES = FLIGHT_SITES
 
 
 def compare_prices(
@@ -30,7 +43,7 @@ def compare_prices(
     Returns list of results sorted by price (cheapest first).
     """
     if not ai_client.is_configured():
-        return {"error": "missing_api_key", "reason": "GEMINI_API_KEY not configured"}
+        return [{"error": "missing_api_key", "reason": "GEMINI_API_KEY not configured"}]
 
     trip_type = ("Round-trip flight" if _lang == "en" else "טיסה הלוך-חזור") if date_return else ("One-way flight" if _lang == "en" else "טיסה חד-כיוונית")
     if category == "hotel":
@@ -44,7 +57,7 @@ def compare_prices(
 נוסעים: {travelers}
 
 חפש בכל אחד מהאתרים הבאים ומצא את המחיר הנוכחי הזול ביותר:
-{chr(10).join(f"- {site}" for site in BOOKING_SITES)}
+{chr(10).join(f"- {site}" for site in (HOTEL_SITES if category == "hotel" else FLIGHT_SITES))}
 
 לכל אתר:
 {{

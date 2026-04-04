@@ -140,6 +140,31 @@ def _inject_pwa():
       doc.head.appendChild(m);
     }
   });
+
+  // Request browser notification permission
+  if ('Notification' in window.parent) {
+    if (window.parent.Notification.permission === 'default') {
+      // Show subtle permission banner after 3 seconds
+      setTimeout(function() {
+        if (window.parent.Notification.permission === 'default') {
+          window.parent.Notification.requestPermission();
+        }
+      }, 3000);
+    }
+  }
+
+  // Expose global helper so Streamlit custom components can trigger notifications
+  window.parent.nodedNotify = function(title, body, icon) {
+    if (window.parent.Notification && window.parent.Notification.permission === 'granted') {
+      new window.parent.Notification(title, {
+        body: body || '',
+        icon: icon || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">✈️</text></svg>',
+        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+        tag: 'noded-alert',
+        requireInteraction: false,
+      });
+    }
+  };
 })();
 </script>
 """, height=0)
@@ -2301,6 +2326,73 @@ You can configure multiple channels simultaneously.
         if ntfy_topic:
             st.success(f"{_t('מוגדר', 'Configured')}: ntfy.sh/{ntfy_topic}")
 
+    # Browser Push ─────────────────────────────────────────────────────────────
+    with st.expander(_t("🌐 **התראות בדפדפן**", "🌐 **Browser Notifications**"), expanded=False):
+        st.markdown(_t("""
+**התראות ישירות בדפדפן — כשהאפליקציה פתוחה:**
+
+לחץ על הכפתור ואפשר התראות. הדפדפן ישאל אותך לאשר.
+""", """
+**Direct browser notifications — while the app is open:**
+
+Click the button and allow notifications. The browser will ask you to confirm.
+"""))
+        components.html("""
+<div style="font-family:sans-serif;padding:4px 0">
+<button id="enable-push-btn" onclick="requestPushPermission()" style="
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;border:none;padding:10px 20px;
+  border-radius:8px;cursor:pointer;font-size:14px">
+  🔔 אפשר התראות בדפדפן
+</button>
+<span id="push-status" style="margin-left:12px;font-size:13px;color:#aaa"></span>
+<script>
+function requestPushPermission() {
+  var btn = document.getElementById('enable-push-btn');
+  var status = document.getElementById('push-status');
+  var doc = window.parent.document;
+  if (!('Notification' in window.parent)) {
+    status.textContent = '❌ הדפדפן לא תומך בהתראות';
+    status.style.color = '#ff6b6b';
+    return;
+  }
+  if (window.parent.Notification.permission === 'granted') {
+    status.textContent = '✅ התראות מופעלות!';
+    status.style.color = '#00ff88';
+    new window.parent.Notification('Noded ✈️', {body: 'התראות מופעלות!', tag: 'noded-test'});
+    return;
+  }
+  window.parent.Notification.requestPermission().then(function(perm) {
+    if (perm === 'granted') {
+      status.textContent = '✅ התראות מופעלות!';
+      status.style.color = '#00ff88';
+      new window.parent.Notification('Noded ✈️', {body: 'ירידת מחירים תופיע כאן!', tag: 'noded-test'});
+    } else {
+      status.textContent = '❌ ההרשאה נדחתה';
+      status.style.color = '#ff6b6b';
+    }
+  });
+}
+// Auto-check current status
+(function() {
+  var status = document.getElementById('push-status');
+  if (!('Notification' in window.parent)) {
+    status.textContent = '❌ לא נתמך';
+    return;
+  }
+  var p = window.parent.Notification.permission;
+  if (p === 'granted') { status.textContent = '✅ מופעל'; status.style.color='#00ff88'; }
+  else if (p === 'denied') { status.textContent = '❌ חסום בהגדרות הדפדפן'; status.style.color='#ff6b6b'; }
+  else { status.textContent = '⏳ ממתין לאישור'; status.style.color='#f5a623'; }
+})();
+</script>
+</div>
+""", height=60)
+        st.caption(_t(
+            "💡 להתראות גם כשהאפליקציה סגורה — השתמש ב-ntfy.sh למעלה",
+            "💡 For alerts even when the app is closed — use ntfy.sh above",
+        ))
+
     # Telegram ─────────────────────────────────────────────────────────────────
     with st.expander(_t("✈️ **Telegram** — הודעות לטלגרם", "✈️ **Telegram** — Telegram messages")):
         st.markdown(_t("""
@@ -2850,79 +2942,150 @@ elif page == "🎯 כללי התראה":
 # PAGE: Flexible Dates
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "📅 תאריכים גמישים":
-    st.title(_t("📅 מצא את הפלייט הכי זול בחודש", "📅 Find the Cheapest Flight of the Month"))
-    st.caption(_t("חיפוש כל תאריכי החודש ומציאת הכי זול", "Search all dates of the month and find the cheapest"))
+    st.title(_t("📅 תאריכים גמישים", "📅 Flexible Dates"))
+    st.caption(_t("מצא את הפלייט הזול ביותר — סביב תאריך מסוים, או בכל החודש", "Find the cheapest flight — around a specific date or across a whole month"))
 
-    with st.form("flex_form"):
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            origin_flex = st.text_input(_t("מוצא", "Origin"), value="TLV")
-        with c2:
-            dest_flex = st.text_input(_t("יעד", "Destination"), placeholder=_t("לונדון", "London"))
-        with c3:
-            month_flex = st.text_input(_t("חודש (YYYY-MM)", "Month (YYYY-MM)"), value=datetime.now().strftime("%Y-%m"))
+    flex_tab1, flex_tab2 = st.tabs([
+        _t("📅 ±ימים סביב תאריך", "📅 ±Days around a date"),
+        _t("🗓️ כל החודש", "🗓️ Whole month"),
+    ])
 
-        duration_flex = st.slider(_t("משך הטיול (ימים)", "Trip duration (days)"), 3, 21, 7)
-        submitted_flex = st.form_submit_button(_t("🔍 חפש", "🔍 Search"), use_container_width=True)
+    with flex_tab1:
+        st.subheader(_t("מצא את היום הזול בסביבה", "Find the cheapest day nearby"))
+        with st.form("flex_around_form"):
+            fa1, fa2, fa3 = st.columns(3)
+            with fa1:
+                fa_origin = st.text_input(_t("מוצא", "Origin"), value="TLV", key="fa_origin")
+            with fa2:
+                fa_dest = st.text_input(_t("יעד", "Destination"), placeholder=_t("לונדון / LHR", "London / LHR"), key="fa_dest")
+            with fa3:
+                fa_window = st.slider(_t("חלון ±ימים", "Window ±days"), 1, 7, 3, key="fa_window")
+            fa_date = st.date_input(_t("תאריך מבוקש", "Requested date"), key="fa_date")
+            fa_submit = st.form_submit_button(_t("🔍 חפש ±ימים", "🔍 Search ±days"), use_container_width=True)
 
-    if submitted_flex and dest_flex:
-        with st.spinner(f"{_t('בודק כל תאריכי', 'Checking all dates of')} {month_flex}... ({_t('עשוי לקחת כמה דקות', 'may take a few minutes')})..."):
-            results = flexible_search.search_cheapest_days(
-                origin=origin_flex,
-                destination=dest_flex,
-                month=month_flex,
-                trip_duration=duration_flex,
-            )
+        if fa_submit and fa_dest:
+            with st.spinner(_t(f"בודק {2*fa_window+1} תאריכים...", f"Checking {2*fa_window+1} dates...")):
+                fa_results = flexible_search.search_around_date(
+                    origin=fa_origin,
+                    destination=fa_dest,
+                    date=str(fa_date),
+                    window=fa_window,
+                )
 
-        if not results:
-            st.warning(_t("לא נמצאו תוצאות. ודא שה-Amadeus API מוגדר.", "No results found. Make sure the Amadeus API is configured."))
-        else:
-            st.success(f"{_t('נמצאו', 'Found')} {len(results)} {_t('אפשרויות!', 'options!')}")
+            if not fa_results:
+                st.warning(_t("לא נמצאו תוצאות.", "No results found."))
+            else:
+                cheapest = fa_results[0]
+                original = next((r for r in fa_results if r.get("delta_days") == 0), None)
+                st.markdown(f"### 🏆 {_t('הכי זול', 'Cheapest')}: **{cheapest['date']}**  —  {cheapest['price']:.0f} {cheapest['currency']}")
+                if original and original["date"] != cheapest["date"]:
+                    savings = original["price"] - cheapest["price"]
+                    st.success(f"💰 {_t('חיסכון לעומת התאריך המקורי', 'Savings vs original date')}: **{savings:.0f} {cheapest['currency']}**")
 
-            # Winner
-            best = results[0]
-            st.markdown(
-                f"### 🏆 {_t('הכי זול', 'Cheapest')}: "
-                f"**{best['price']:.0f} {best['currency']}**"
-                f" — {best['date']}"
-            )
-            if best.get("return_date"):
-                st.caption(f"{_t('חזרה', 'Return')}: {best['return_date']} | {best.get('details','')}")
+                # Bar chart
+                bar_colors = ["#00ff88" if r["date"] == cheapest["date"] else ("#f5a623" if r.get("delta_days") == 0 else "#667eea") for r in fa_results]
+                fig = go.Figure(go.Bar(
+                    x=[f"{r['label']}<br>{r['date']}" for r in fa_results],
+                    y=[r["price"] for r in fa_results],
+                    marker_color=bar_colors,
+                    text=[f"{r['price']:.0f}" for r in fa_results],
+                    textposition="outside",
+                ))
+                fig.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(255,255,255,0.03)",
+                    font=dict(color="#ccc"),
+                    height=320,
+                    margin=dict(l=10, r=10, t=10, b=30),
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                st.caption(_t("🟢 הכי זול  🟠 תאריך מבוקש  🔵 שאר התאריכים", "🟢 Cheapest  🟠 Requested date  🔵 Other dates"))
 
-            # Table
-            import pandas as pd
-            df = pd.DataFrame(results)
-            price_col = _t("מחיר", "Price")
-            dep_col = _t("תאריך יציאה", "Departure")
-            ret_col = _t("תאריך חזרה", "Return")
-            qual_col = _t("איכות", "Quality")
-            df[price_col] = df["price"].apply(lambda p: f"{p:.0f}")
-            df[dep_col] = df["date"]
-            df[ret_col] = df.get("return_date", "")
-            df[qual_col] = df.get("deal_quality", "")
-            st.dataframe(
-                df[[dep_col, ret_col, price_col, qual_col]],
-                use_container_width=True, hide_index=True
-            )
+                import pandas as pd
+                df = pd.DataFrame(fa_results)
+                st.dataframe(
+                    df[["date", "label", "price", "currency", "deal_quality"]].rename(columns={
+                        "date": _t("תאריך", "Date"),
+                        "label": _t("הפרש", "Offset"),
+                        "price": _t("מחיר", "Price"),
+                        "currency": _t("מטבע", "Currency"),
+                        "deal_quality": _t("איכות", "Quality"),
+                    }),
+                    use_container_width=True,
+                    hide_index=True,
+                )
 
-            # Bar chart
-            fig = go.Figure(go.Bar(
-                x=[r["date"] for r in results],
-                y=[r["price"] for r in results],
-                marker_color=["#00ff88" if i == 0 else "#667eea" for i in range(len(results))],
-                text=[f"{r['price']:.0f}" for r in results],
-                textposition="outside",
-            ))
-            fig.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(255,255,255,0.03)",
-                font=dict(color="#ccc"),
-                height=300,
-                margin=dict(l=10, r=10, t=10, b=10),
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
-            )
-            st.plotly_chart(fig, use_container_width=True)
+    with flex_tab2:
+        st.subheader(_t("כל תאריכי החודש", "All dates in the month"))
+        with st.form("flex_form"):
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                origin_flex = st.text_input(_t("מוצא", "Origin"), value="TLV")
+            with c2:
+                dest_flex = st.text_input(_t("יעד", "Destination"), placeholder=_t("לונדון", "London"))
+            with c3:
+                month_flex = st.text_input(_t("חודש (YYYY-MM)", "Month (YYYY-MM)"), value=datetime.now().strftime("%Y-%m"))
+
+            duration_flex = st.slider(_t("משך הטיול (ימים)", "Trip duration (days)"), 3, 21, 7)
+            submitted_flex = st.form_submit_button(_t("🔍 חפש", "🔍 Search"), use_container_width=True)
+
+        if submitted_flex and dest_flex:
+            with st.spinner(f"{_t('בודק כל תאריכי', 'Checking all dates of')} {month_flex}..."):
+                results = flexible_search.search_cheapest_days(
+                    origin=origin_flex,
+                    destination=dest_flex,
+                    month=month_flex,
+                    trip_duration=duration_flex,
+                )
+
+            if not results:
+                st.warning(_t("לא נמצאו תוצאות. ודא שה-Amadeus API מוגדר.", "No results found. Make sure the Amadeus API is configured."))
+            else:
+                st.success(f"{_t('נמצאו', 'Found')} {len(results)} {_t('אפשרויות!', 'options!')}")
+
+                best = results[0]
+                st.markdown(
+                    f"### 🏆 {_t('הכי זול', 'Cheapest')}: "
+                    f"**{best['price']:.0f} {best['currency']}**"
+                    f" — {best['date']}"
+                )
+                if best.get("return_date"):
+                    st.caption(f"{_t('חזרה', 'Return')}: {best['return_date']} | {best.get('details','')}")
+
+                import pandas as pd
+                df = pd.DataFrame(results)
+                price_col = _t("מחיר", "Price")
+                dep_col = _t("תאריך יציאה", "Departure")
+                ret_col = _t("תאריך חזרה", "Return")
+                qual_col = _t("איכות", "Quality")
+                df[price_col] = df["price"].apply(lambda p: f"{p:.0f}")
+                df[dep_col] = df["date"]
+                df[ret_col] = df.get("return_date", "")
+                df[qual_col] = df.get("deal_quality", "")
+                st.dataframe(
+                    df[[dep_col, ret_col, price_col, qual_col]],
+                    use_container_width=True, hide_index=True
+                )
+
+                fig = go.Figure(go.Bar(
+                    x=[r["date"] for r in results],
+                    y=[r["price"] for r in results],
+                    marker_color=["#00ff88" if i == 0 else "#667eea" for i in range(len(results))],
+                    text=[f"{r['price']:.0f}" for r in results],
+                    textposition="outside",
+                ))
+                fig.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(255,255,255,0.03)",
+                    font=dict(color="#ccc"),
+                    height=300,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
+                )
+                st.plotly_chart(fig, use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

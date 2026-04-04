@@ -119,3 +119,76 @@ def _ai_estimate_month(
     except Exception:
         pass
     return []
+
+
+def search_around_date(
+    origin: str,
+    destination: str,
+    date: str,          # "YYYY-MM-DD" — the center date
+    window: int = 3,    # ±N days
+    adults: int = 1,
+    currency: str = "USD",
+) -> list[dict]:
+    """
+    Search ±window days around a specific date and return sorted by price.
+    E.g. date="2026-05-15", window=3 → checks May 12–18 (7 dates).
+    """
+    from datetime import datetime, timedelta
+    base = datetime.strptime(date[:10], "%Y-%m-%d")
+    dates = [
+        (base + timedelta(days=delta)).strftime("%Y-%m-%d")
+        for delta in range(-window, window + 1)
+    ]
+
+    results = []
+
+    if amadeus_client.is_configured():
+        for dep_date in dates:
+            flights = amadeus_client.search_flights(
+                origin=origin,
+                destination=destination,
+                departure_date=dep_date,
+                max_results=1,
+            )
+            if flights:
+                best = flights[0]
+                delta_days = (datetime.strptime(dep_date, "%Y-%m-%d") - base).days
+                results.append({
+                    "date": dep_date,
+                    "price": best["price"],
+                    "currency": best.get("currency", currency),
+                    "details": best.get("details", ""),
+                    "deal_quality": best.get("deal_quality", ""),
+                    "delta_days": delta_days,
+                    "label": ("📌 בקשתך" if delta_days == 0 else
+                              f"{'➕' if delta_days > 0 else '➖'}{abs(delta_days)}d"),
+                })
+    else:
+        # AI fallback
+        dates_str = ", ".join(dates)
+        prompt = (
+            f"חפש מחירי טיסות מ-{origin} ל-{destination} בתאריכים: {dates_str}.\n"
+            f"לכל תאריך תן את המחיר הזול ביותר.\n"
+            "החזר JSON array:\n"
+            '[{"date": "YYYY-MM-DD", "price": 0, "currency": "USD", "details": "", "deal_quality": "good"}]'
+        )
+        try:
+            text = ai_client.ask_with_search(prompt=prompt, max_tokens=800)
+            if text:
+                raw = ai_client.extract_json_array(text)
+                for i, r in enumerate(raw):
+                    if r.get("date") and r.get("price"):
+                        dep_date = r["date"]
+                        try:
+                            delta_days = (datetime.strptime(dep_date, "%Y-%m-%d") - base).days
+                        except Exception:
+                            delta_days = i - window
+                        r["delta_days"] = delta_days
+                        r["label"] = ("📌 בקשתך" if delta_days == 0 else
+                                      f"{'➕' if delta_days > 0 else '➖'}{abs(delta_days)}d")
+                        results.append(r)
+        except Exception:
+            pass
+
+    results.sort(key=lambda x: x.get("price", 999_999))
+    return results
