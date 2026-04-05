@@ -80,6 +80,89 @@ def predict_price(item: dict, history: list) -> Optional[dict]:
     return result
 
 
+def wait_probability(item: dict, history: list) -> dict:
+    """
+    Calculate the probability the price will drop in the next 7 days.
+    Uses statistical analysis of historical data + AI reasoning.
+    Returns dict with drop_prob (0-1), trend, verdict, badge.
+    """
+    if len(history) < 2:
+        return {"drop_prob": None, "verdict": "insufficient_data", "badge": "❓"}
+
+    prices = [r["price"] for r in history]
+    current = prices[0]
+    avg = sum(prices) / len(prices)
+    min_p = min(prices)
+    max_p = max(prices)
+    price_range = max_p - min_p if max_p != min_p else 1
+
+    # Linear trend over last N points
+    n = min(len(prices), 10)
+    recent = prices[:n]
+    if n >= 2:
+        slope = (recent[-1] - recent[0]) / (n - 1)
+    else:
+        slope = 0
+
+    # Statistical drop probability
+    # How often did price go down in consecutive pairs?
+    drops = sum(1 for a, b in zip(prices, prices[1:]) if a < b)
+    total_pairs = len(prices) - 1
+    historical_drop_rate = drops / total_pairs if total_pairs > 0 else 0.5
+
+    # Adjust by current position in range (if near top → more likely to drop)
+    position_in_range = (current - min_p) / price_range  # 0=at min, 1=at max
+    position_boost = position_in_range * 0.3  # 0 to +0.3
+
+    # Slope adjustment (falling trend → more likely to keep falling)
+    slope_factor = -slope / (avg * 0.1) if avg > 0 else 0
+    slope_factor = max(-0.2, min(0.2, slope_factor))
+
+    drop_prob = min(0.95, max(0.05, historical_drop_rate + position_boost + slope_factor))
+
+    # Verdict
+    days_to_travel = None
+    if item.get("date_from"):
+        try:
+            from datetime import date
+            days_to_travel = (date.fromisoformat(item["date_from"]) - date.today()).days
+        except Exception:
+            pass
+
+    # Override: if travel is very soon, buying urgency overrides stats
+    if days_to_travel is not None and days_to_travel < 14:
+        verdict = "buy_now"
+        badge = "🔥 קנה עכשיו" if _lang == "he" else "🔥 Buy Now"
+        drop_prob = max(0.05, drop_prob - 0.3)  # less likely to wait when close
+    elif drop_prob >= 0.65:
+        verdict = "wait"
+        badge = "⏳ כדאי לחכות" if _lang == "he" else "⏳ Worth waiting"
+    elif drop_prob <= 0.35:
+        verdict = "buy_now"
+        badge = "✅ קנה עכשיו" if _lang == "he" else "✅ Buy now"
+    else:
+        verdict = "uncertain"
+        badge = "🤔 לא ברור" if _lang == "he" else "🤔 Uncertain"
+
+    # Current vs average
+    vs_avg_pct = ((current - avg) / avg * 100) if avg > 0 else 0
+
+    return {
+        "drop_prob": round(drop_prob, 2),
+        "verdict": verdict,
+        "badge": badge,
+        "slope": round(slope, 1),
+        "trend": "falling" if slope < -1 else "rising" if slope > 1 else "stable",
+        "vs_avg_pct": round(vs_avg_pct, 1),
+        "current": current,
+        "avg": round(avg, 0),
+        "min_p": min_p,
+        "max_p": max_p,
+        "days_to_travel": days_to_travel,
+        "data_points": len(prices),
+    }
+
+
 def format_prediction(pred: dict) -> dict:
     """Format prediction for display."""
     if not pred or "error" in pred:

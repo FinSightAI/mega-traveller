@@ -1066,6 +1066,31 @@ if page == "🏠 לוח בקרה":
                                 )
                         st.write("")
 
+                    # Buy Now? quick verdict
+                    if len(history) >= 2:
+                        _wp_key = f"wp_{item['id']}"
+                        _wp_cached = st.session_state.get(_wp_key)
+                        if _wp_cached:
+                            _wp = _wp_cached
+                            _vcolor = {"buy_now": "#00cc66", "wait": "#f59e0b", "uncertain": "#6b7280"}.get(_wp["verdict"], "#6b7280")
+                            st.markdown(
+                                f"<div style='background:rgba(0,0,0,0.25);border-left:4px solid {_vcolor};"
+                                f"padding:8px 12px;border-radius:6px;margin:6px 0'>"
+                                f"<b style='color:{_vcolor}'>{_wp['badge']}</b><br>"
+                                f"<small style='color:#aaa'>"
+                                f"{_t('סיכוי לירידה','Drop chance')}: {int(_wp['drop_prob']*100)}% · "
+                                f"{_t('מגמה','Trend')}: {_wp['trend']} · "
+                                f"vs avg: {_wp['vs_avg_pct']:+.0f}%"
+                                f"</small></div>",
+                                unsafe_allow_html=True,
+                            )
+                        btn_label = _t("🛒 לקנות עכשיו?", "🛒 Buy now?")
+                        if st.button(btn_label, key=f"buynow_{item['id']}"):
+                            with st.spinner(_t("מנתח...", "Analyzing...")):
+                                _wp_result = price_predictor.wait_probability(item, history)
+                            st.session_state[_wp_key] = _wp_result
+                            st.rerun()
+
                     # AI analysis
                     if len(history) >= 2:
                         if st.button(_t("🤖 ניתוח AI", "🤖 AI Analysis"), key=f"anal_{item['id']}"):
@@ -1450,6 +1475,161 @@ elif page in ("💬 סוכן נסיעות AI", "💬 AI Travel Agent"):
         # Keep history manageable (last 20 turns = 10 exchanges)
         if len(st.session_state["agent_history"]) > 20:
             st.session_state["agent_history"] = st.session_state["agent_history"][-20:]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE: Worth Waiting?
+# ══════════════════════════════════════════════════════════════════════════════
+elif page in ("🔮 כדאי לחכות?", "🔮 Worth Waiting?"):
+    st.title(_t("🔮 כדאי לחכות?", "🔮 Worth Waiting?"))
+    st.caption(_t(
+        "AI מנתח את היסטוריית המחירים שלך ומחליט: לקנות עכשיו או לחכות?",
+        "AI analyzes your price history and decides: buy now or wait?",
+    ))
+
+    _all_watches = db.get_all_watches()
+    _active = [w for w in _all_watches if w.get("enabled")]
+
+    if not _active:
+        st.info(_t("אין מעקבים פעילים. הוסף מעקב ראשון!", "No active watches. Add your first watch!"))
+    else:
+        # Analyze all button
+        ww_col1, ww_col2 = st.columns([2, 1])
+        with ww_col1:
+            _analyze_all = st.button(
+                _t("🔮 נתח את כל המעקבים", "🔮 Analyze all watches"),
+                type="primary", use_container_width=True, key="ww_all",
+            )
+        with ww_col2:
+            _min_data = st.number_input(
+                _t("מינ' נקודות נתונים", "Min data points"),
+                min_value=2, max_value=20, value=2, key="ww_min_data",
+            )
+
+        if _analyze_all:
+            _ww_results = {}
+            _prog = st.progress(0)
+            for _wi, _w in enumerate(_active):
+                _hist = db.get_price_history(_w["id"], limit=30)
+                if len(_hist) >= _min_data:
+                    _ww_results[_w["id"]] = price_predictor.wait_probability(_w, _hist)
+                _prog.progress((_wi + 1) / len(_active))
+            st.session_state["ww_results"] = _ww_results
+            _prog.empty()
+            st.rerun()
+
+        _ww_results = st.session_state.get("ww_results", {})
+
+        # Summary row
+        if _ww_results:
+            _buy_now_count = sum(1 for r in _ww_results.values() if r["verdict"] == "buy_now")
+            _wait_count = sum(1 for r in _ww_results.values() if r["verdict"] == "wait")
+            _unsure_count = sum(1 for r in _ww_results.values() if r["verdict"] == "uncertain")
+            sm1, sm2, sm3 = st.columns(3)
+            sm1.metric("✅ " + _t("קנה עכשיו", "Buy now"), _buy_now_count)
+            sm2.metric("⏳ " + _t("כדאי לחכות", "Worth waiting"), _wait_count)
+            sm3.metric("🤔 " + _t("לא ברור", "Uncertain"), _unsure_count)
+            st.divider()
+
+        # Per-watch cards
+        for _w in _active:
+            _hist = db.get_price_history(_w["id"], limit=30)
+            _wp = _ww_results.get(_w["id"])
+
+            with st.expander(
+                f"{'🔮' if _wp else '⬜'} **{_w['name']}** — "
+                f"{_w.get('origin','TLV')}→{_w['destination']} "
+                + (f"| {_wp['badge']}" if _wp else _t("(לא נותח)", "(not analyzed)")),
+                expanded=bool(_wp),
+            ):
+                wc1, wc2 = st.columns([3, 2])
+                with wc1:
+                    if len(_hist) < _min_data:
+                        st.warning(_t(
+                            f"צריך לפחות {_min_data} בדיקות מחיר לניתוח (יש {len(_hist)})",
+                            f"Need at least {_min_data} price checks to analyze (have {len(_hist)})",
+                        ))
+                    else:
+                        if not _wp:
+                            if st.button(
+                                _t("🔮 נתח", "🔮 Analyze"),
+                                key=f"ww_single_{_w['id']}",
+                            ):
+                                _wp = price_predictor.wait_probability(_w, _hist)
+                                _cur = st.session_state.get("ww_results", {})
+                                _cur[_w["id"]] = _wp
+                                st.session_state["ww_results"] = _cur
+                                st.rerun()
+                        else:
+                            _vcolor = {
+                                "buy_now": "#00cc66",
+                                "wait": "#f59e0b",
+                                "uncertain": "#888",
+                            }.get(_wp["verdict"], "#888")
+                            _drop_pct = int(_wp["drop_prob"] * 100)
+
+                            # Big verdict badge
+                            st.markdown(
+                                f"<div style='background:rgba(0,0,0,0.3);border:2px solid {_vcolor};"
+                                f"border-radius:12px;padding:16px;text-align:center;margin-bottom:12px'>"
+                                f"<div style='font-size:2rem'>{_wp['badge']}</div>"
+                                f"<div style='color:{_vcolor};font-size:1.2rem;font-weight:bold;margin:4px 0'>"
+                                f"{_t('סיכוי לירידת מחיר','Chance of price drop')}: {_drop_pct}%</div>"
+                                f"<div style='background:rgba(255,255,255,0.1);border-radius:8px;height:8px;margin:8px 0'>"
+                                f"<div style='background:{_vcolor};width:{_drop_pct}%;height:100%;border-radius:8px'></div>"
+                                f"</div></div>",
+                                unsafe_allow_html=True,
+                            )
+
+                            # Stats grid
+                            s1, s2, s3 = st.columns(3)
+                            s1.metric(
+                                _t("מחיר נוכחי", "Current"), f"${_wp['current']:.0f}",
+                                delta=f"{_wp['vs_avg_pct']:+.0f}% vs avg",
+                                delta_color="inverse",
+                            )
+                            s2.metric(_t("ממוצע", "Average"), f"${_wp['avg']:.0f}")
+                            s3.metric(
+                                _t("מגמה", "Trend"),
+                                {"falling": "📉 " + _t("יורד","Falling"),
+                                 "rising": "📈 " + _t("עולה","Rising"),
+                                 "stable": "➡️ " + _t("יציב","Stable")}.get(_wp["trend"], _wp["trend"])
+                            )
+
+                            if _wp.get("days_to_travel") is not None:
+                                _dtc = _wp["days_to_travel"]
+                                if _dtc < 0:
+                                    st.caption(_t("⚠️ תאריך הנסיעה עבר", "⚠️ Travel date has passed"))
+                                else:
+                                    st.caption(f"✈️ {_t('עד הנסיעה','Days to travel')}: **{_dtc}** {_t('ימים','days')}")
+
+                with wc2:
+                    # Mini price chart
+                    if len(_hist) >= 2:
+                        _fig_ww = price_chart(_w["id"], _w["name"])
+                        if _fig_ww:
+                            _fig_ww.update_layout(height=180, margin=dict(t=20, b=10, l=10, r=10))
+                            st.plotly_chart(_fig_ww, use_container_width=True, key=f"ww_chart_{_w['id']}")
+
+                    # Deep AI prediction button
+                    if _hist and len(_hist) >= 3:
+                        if st.button(
+                            _t("🤖 ניתוח עמוק (AI+web)", "🤖 Deep analysis (AI+web)"),
+                            key=f"ww_deep_{_w['id']}",
+                        ):
+                            with st.spinner(_t("AI מנתח...", "AI analyzing...")):
+                                _deep = price_predictor.predict_price(_w, _hist)
+                            if _deep:
+                                _fmt = price_predictor.format_prediction(_deep)
+                                st.info(
+                                    f"{_fmt['icon']} **{_fmt['recommendation']}** "
+                                    f"({_fmt['confidence']})\n\n{_fmt['reasoning']}"
+                                )
+                                if _fmt.get("predicted_7d"):
+                                    st.caption(
+                                        f"📅 7d: ${_fmt['predicted_7d']:.0f} · "
+                                        f"30d: ${_fmt.get('predicted_30d', 0):.0f}"
+                                    )
 
 
 # PAGE: Smart Opportunities
