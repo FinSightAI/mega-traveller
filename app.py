@@ -50,6 +50,7 @@ import kiwi_client
 import validators
 import nl_parser
 import weekly_digest
+import events_finder
 import hidden_city
 import rss_scanner
 import auto_book
@@ -776,8 +777,33 @@ _inject_pwa()
 # ══════════════════════════════════════════════════════════════════════════════
 if page == "🏠 לוח בקרה":
 
-    # Auto-refresh every 60s when monitor is running
-    if st.session_state.monitor_running:
+    # Live price ticker — auto-refresh every 30s
+    _ticker_watches = db.get_all_watch_items(enabled_only=True)
+    _ticker_items = []
+    for _tw in _ticker_watches[:12]:
+        _tlast = db.get_last_price(_tw["id"])
+        _thist = db.get_price_history(_tw["id"], limit=10)
+        if _tlast:
+            _tavg = sum(r["price"] for r in _thist) / len(_thist) if _thist else _tlast["price"]
+            _tdelta = _tlast["price"] - _tavg
+            _tarrow = "🔴▲" if _tdelta > _tavg * 0.05 else ("🟢▼" if _tdelta < -_tavg * 0.05 else "⚪")
+            _thot = " 🔥" if _tlast["price"] < _tavg * 0.80 else ""
+            _ticker_items.append(
+                f"{_tarrow} <b>{_tw['destination']}</b> ${_tlast['price']:.0f}{_thot}"
+            )
+    if _ticker_items:
+        _ticker_html = "&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;".join(_ticker_items)
+        st.markdown(
+            f"<div style='background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);"
+            f"border-radius:8px;padding:8px 16px;overflow:hidden;white-space:nowrap;"
+            f"font-size:13px;margin-bottom:8px'>"
+            f"<marquee behavior='scroll' direction='left' scrollamount='3'>"
+            f"{_ticker_html}"
+            f"</marquee></div>",
+            unsafe_allow_html=True,
+        )
+        st_autorefresh(interval=30_000, key="ticker_refresh")
+    elif st.session_state.monitor_running:
         st_autorefresh(interval=60_000, key="dashboard_refresh")
 
     st.title(_t("🌍 לוח בקרה", "🌍 Dashboard"))
@@ -932,8 +958,21 @@ if page == "🏠 לוח בקרה":
             lowest = db.get_lowest_price(item["id"])
             history = db.get_price_history(item["id"], limit=30)
 
+            # Hot Deal badge — price < 80% of historical average
+            _hot_badge = ""
+            _is_hot = False
+            if last and len(history) >= 3:
+                _hist_avg = sum(r["price"] for r in history) / len(history)
+                if last["price"] < _hist_avg * 0.80:
+                    _pct_below = int((1 - last["price"] / _hist_avg) * 100)
+                    _hot_badge = f" 🔥 HOT -{_pct_below}%"
+                    _is_hot = True
+                elif last["price"] < _hist_avg * 0.90:
+                    _hot_badge = " 🟡 GOOD"
+            _price_badge = f" | ${last['price']:.0f}" if last else ""
+
             with st.expander(
-                f"{CAT_EMOJI.get(item['category'], '🔍')} **{item['name']}** "
+                f"{CAT_EMOJI.get(item['category'], '🔍')} **{item['name']}**{_price_badge}{_hot_badge} "
                 f"{'🟢' if item['enabled'] else '🔴'}",
                 expanded=(len(items) == 1),
             ):
@@ -1097,6 +1136,40 @@ if page == "🏠 לוח בקרה":
                             with st.spinner(_t("מנתח...", "Analyzing...")):
                                 analysis = agent.analyze_deal(item, history)
                             st.info(f"💡 {analysis}")
+
+                    # Events at destination
+                    _ev_key = f"events_{item['id']}"
+                    _ev_cached = st.session_state.get(_ev_key)
+                    if _ev_cached is not None:
+                        if _ev_cached:
+                            st.markdown(f"**🎫 {_t('אירועים ביעד', 'Events at destination')}:**")
+                            for _ev in _ev_cached:
+                                _imp_color = {"high": "#ef4444", "medium": "#f59e0b", "low": "#22c55e"}.get(
+                                    _ev.get("price_impact", "low"), "#888"
+                                )
+                                st.markdown(
+                                    f"<div style='border-left:3px solid {_imp_color};"
+                                    f"padding:6px 10px;margin:4px 0;background:rgba(0,0,0,0.2);border-radius:4px'>"
+                                    f"{_ev.get('emoji','🎫')} <b>{_ev.get('name','')}</b> "
+                                    f"<span style='color:#aaa;font-size:12px'>{_ev.get('date','')}</span><br>"
+                                    f"<span style='color:{_imp_color};font-size:11px'>"
+                                    f"{events_finder.format_impact_label(_ev.get('price_impact','low'), _lang)}</span>"
+                                    f" <span style='color:#ccc;font-size:11px'>— {_ev.get('note','')}</span>"
+                                    f"</div>",
+                                    unsafe_allow_html=True,
+                                )
+                        else:
+                            st.caption(_t("✅ לא נמצאו אירועים גדולים בתקופה זו", "✅ No major events found for this period"))
+                    if item.get("date_from"):
+                        if st.button(_t("🎫 אירועים ביעד", "🎫 Events at destination"), key=f"ev_btn_{item['id']}"):
+                            with st.spinner(_t("מחפש אירועים...", "Finding events...")):
+                                _ev_result = events_finder.get_events(
+                                    item["destination"],
+                                    item.get("date_from", ""),
+                                    item.get("date_to", ""),
+                                )
+                            st.session_state[_ev_key] = _ev_result
+                            st.rerun()
 
                     # Auto-renew: suggest new dates if watch has expired
                     _date_to_str = item.get("date_to", "")
