@@ -54,6 +54,15 @@ jobs:
           fi
           python run_monitor.py
 
+      - name: Keep Streamlit app awake
+        run: |
+          curl -s -L \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36" \
+            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+            -H "Accept-Language: he,en;q=0.9" \
+            --max-time 30 \
+            "https://nodedai.streamlit.app/" > /dev/null && echo "✅ Streamlit pinged" || echo "⚠️ Ping failed"
+
       - name: Save price DB
         uses: actions/cache/save@v4
         if: always()
