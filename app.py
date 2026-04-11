@@ -1414,7 +1414,7 @@ elif page in ("💬 סוכן נסיעות AI", "💬 AI Travel Agent"):
 
     # ── Build context snapshot from DB ──────────────────────────────────────
     def _agent_context() -> str:
-        watches = db.get_all_watches()
+        watches = db.get_all_watch_items(enabled_only=False)
         deals = deal_hunter.get_recent_deals(limit=10, min_score=6)
         lines = ["=== USER'S ACTIVE WATCHES ==="]
         for w in watches[:15]:
@@ -1567,7 +1567,7 @@ elif page in ("🔮 כדאי לחכות?", "🔮 Worth Waiting?"):
         "AI analyzes your price history and decides: buy now or wait?",
     ))
 
-    _all_watches = db.get_all_watches()
+    _all_watches = db.get_all_watch_items(enabled_only=False)
     _active = [w for w in _all_watches if w.get("enabled")]
 
     if not _active:
