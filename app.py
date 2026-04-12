@@ -427,25 +427,6 @@ def _inject_css(rtl: bool):
   [data-testid="stAppToolbar"],
   [data-testid="stToolbarActions"]      {{ display: none !important; }}
 
-  /* Sidebar toggle — always visible orange pill */
-  [data-testid="stSidebarCollapseButton"] {{
-    position: fixed !important;
-    top: 10px !important;
-    {("right" if rtl else "left")}: 10px !important;
-    z-index: 99999 !important;
-    background: #ff6b35 !important;
-    border-radius: 20px !important;
-    padding: 4px 10px !important;
-    box-shadow: 0 3px 14px rgba(255,107,53,0.6) !important;
-  }}
-  [data-testid="stSidebarCollapseButton"] button {{
-    color: white !important;
-  }}
-  [data-testid="stSidebarCollapseButton"] svg {{
-    fill: white !important;
-    width: 20px !important;
-    height: 20px !important;
-  }}
 
   /* Footer / bottom bar (Hosted by Streamlit, Built by ...) */
   footer,
@@ -515,6 +496,33 @@ def _inject_css(rtl: bool):
     setTimeout(fixSidebarScroll, 1000);
   }
 
+  // ── Custom sidebar toggle button (bypasses transform/fixed bug) ───────────
+  function createToggleBtn() {
+    var doc = window.parent.document;
+    if (doc.getElementById('noded-sidebar-toggle')) return;
+    var btn = doc.createElement('button');
+    btn.id = 'noded-sidebar-toggle';
+    btn.innerHTML = '☰';
+    btn.title = 'פתח / סגור תפריט';
+    btn.style.cssText = [
+      'position:fixed', 'top:10px', 'right:10px', 'z-index:99999',
+      'background:#ff6b35', 'border:none', 'border-radius:50px',
+      'padding:8px 16px', 'color:white', 'font-size:1.3rem',
+      'cursor:pointer', 'box-shadow:0 3px 16px rgba(255,107,53,0.6)',
+      'line-height:1'
+    ].join('!important;') + '!important';
+    btn.addEventListener('click', function() {
+      var orig = doc.querySelector('[data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"]');
+      if (orig) { orig.click(); return; }
+      // fallback: toggle sidebar transform directly
+      var sb = doc.querySelector('[data-testid="stSidebar"]');
+      if (!sb) return;
+      var t = sb.style.transform || '';
+      sb.style.transform = t.includes('translateX') ? 'none' : 'translateX(110%)';
+    });
+    doc.body.appendChild(btn);
+  }
+
   // ── Hide Streamlit chrome ─────────────────────────────────────────────────
   function hideInDoc(doc) {
     if (!doc || !doc.body) return;
@@ -551,10 +559,12 @@ def _inject_css(rtl: bool):
   function init() {
     hideChrome();
     attachObserver();
+    createToggleBtn();
   }
   if (document.readyState === 'complete') { init(); }
   else { window.addEventListener('load', init); }
   [500, 1500, 3000, 6000].forEach(function(t) { setTimeout(hideChrome, t); });
+  [800, 2000].forEach(function(t) { setTimeout(createToggleBtn, t); });
 })();
 </script>
 """, height=0)
