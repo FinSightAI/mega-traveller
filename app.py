@@ -410,11 +410,31 @@ def _inject_css(rtl: bool):
   #MainMenu,
   .stMainMenu,
   [data-testid="stMainMenu"],
-  [data-testid="stHeader"],
   [data-testid="stDeployButton"],
   .stDeployButton,
   [data-testid="stDecoration"],
   [data-testid="stStatusWidget"]        {{ display: none !important; }}
+
+  /* Header: transparent + no height, but keep sidebar toggle visible */
+  [data-testid="stHeader"] {{
+    background: transparent !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }}
+  [data-testid="stToolbar"],
+  [data-testid="stAppToolbar"],
+  [data-testid="stToolbarActions"]      {{ display: none !important; }}
+
+  /* Sidebar toggle — always visible, fixed top corner */
+  [data-testid="stSidebarCollapsedControl"] {{
+    display: flex !important;
+    position: fixed !important;
+    top: 8px !important;
+    {("right" if rtl else "left")}: 8px !important;
+    z-index: 9999 !important;
+  }}
 
   /* Footer */
   footer                                 {{ visibility: hidden !important; height: 0 !important; }}
@@ -486,10 +506,12 @@ def _inject_css(rtl: bool):
   function hideInDoc(doc) {
     if (!doc || !doc.body) return;
     [
-      '[data-testid="stHeader"]',
       '[data-testid="stDecoration"]',
       '[data-testid="stStatusWidget"]',
       '[data-testid="stDeployButton"]',
+      '[data-testid="stToolbar"]',
+      '[data-testid="stAppToolbar"]',
+      '[data-testid="stToolbarActions"]',
       '[data-testid="manage-app-button"]',
       '#MainMenu',
       'footer',
