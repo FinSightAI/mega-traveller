@@ -247,9 +247,44 @@ def _inject_css(rtl: bool):
     text-align: {ta} !important;
   }}
 
-  /* ── Background (FinSight navy) ── */
+  /* ── Background ── */
   [data-testid="stAppViewContainer"] {{
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  }}
+
+  /* ── Light mode ── */
+  body.wl-light [data-testid="stAppViewContainer"] {{
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  }}
+  body.wl-light [data-testid="stSidebar"] {{
+    background: rgba(255,255,255,0.9) !important;
+    border-right: 1px solid rgba(0,0,0,0.1) !important;
+  }}
+  body.wl-light [data-testid="stExpander"] {{
+    background: rgba(255,255,255,0.95) !important;
+    border-color: rgba(0,0,0,0.08) !important;
+  }}
+  body.wl-light [data-testid="stMetric"] {{
+    background: rgba(255,255,255,0.95) !important;
+    border-color: rgba(0,0,0,0.08) !important;
+  }}
+  body.wl-light p, body.wl-light span, body.wl-light label,
+  body.wl-light [data-testid="stMarkdownContainer"] {{
+    color: #1e293b !important;
+  }}
+  body.wl-light h1 {{ color: #0f172a !important; }}
+  body.wl-light h2 {{ color: #1e293b !important; }}
+  body.wl-light h3 {{ color: #334155 !important; }}
+  body.wl-light [data-testid="stTextInput"] input,
+  body.wl-light [data-testid="stNumberInput"] input,
+  body.wl-light [data-testid="stTextArea"] textarea {{
+    background: #ffffff !important;
+    border-color: rgba(0,0,0,0.15) !important;
+    color: #1e293b !important;
+  }}
+  body.wl-light [data-testid="stAlert"] {{
+    background: rgba(255,255,255,0.9) !important;
+    border-color: rgba(0,0,0,0.08) !important;
   }}
 
   /* ── Sidebar ── */
@@ -543,10 +578,36 @@ def _inject_css(rtl: bool):
     attachObserver();
     createToggleBtn();
   }
+  // ── Theme toggle ────────────────────────────────────────────────────────────
+  function createThemeToggle() {
+    var doc = window.parent.document;
+    if (doc.getElementById('wl-theme-toggle')) return;
+    var saved = localStorage.getItem('wl_theme');
+    if (saved === 'light') doc.body.classList.add('wl-light');
+    var btn = doc.createElement('button');
+    btn.id = 'wl-theme-toggle';
+    btn.title = 'Toggle theme';
+    btn.textContent = saved === 'light' ? '🌙' : '☀️';
+    btn.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:99999;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+    btn.onclick = function() {
+      var isLight = doc.body.classList.toggle('wl-light');
+      localStorage.setItem('wl_theme', isLight ? 'light' : 'dark');
+      btn.textContent = isLight ? '🌙' : '☀️';
+    };
+    doc.body.appendChild(btn);
+  }
+
+  function init() {
+    hideChrome();
+    attachObserver();
+    createToggleBtn();
+    createThemeToggle();
+  }
   if (document.readyState === 'complete') { init(); }
   else { window.addEventListener('load', init); }
   [500, 1500, 3000, 6000].forEach(function(t) { setTimeout(hideChrome, t); });
   [800, 2000].forEach(function(t) { setTimeout(createToggleBtn, t); });
+  [900, 2500].forEach(function(t) { setTimeout(createThemeToggle, t); });
 })();
 </script>
 """, height=0)
@@ -564,6 +625,8 @@ if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
 if "chat_open" not in st.session_state:
     st.session_state.chat_open = False
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
 
 # Convenience shortcut
 _lang = st.session_state.lang
