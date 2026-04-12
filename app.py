@@ -496,85 +496,42 @@ def _inject_css(rtl: bool):
     setTimeout(fixSidebarScroll, 1000);
   }
 
-  // ── Hide Streamlit chrome — searches parent + top frames ──────────────────
-  var HIDE_SELECTORS = [
-    '[data-testid="stHeader"]',
-    '[data-testid="stToolbar"]',
-    '[data-testid="stAppToolbar"]',
-    '[data-testid="stToolbarActions"]',
-    '[data-testid="stDeployButton"]',
-    '[data-testid="stDecoration"]',
-    '[data-testid="stStatusWidget"]',
-    '[data-testid="stBottom"]',
-    '[data-testid="stBottomBlockContainer"]',
-    '[data-testid="manage-app-button"]',
-    '[data-testid="stToolbarActionButtonTooltip"]',
-    '#MainMenu',
-    '.stDeployButton',
-    '.stBottom',
-    'footer',
-  ];
-  var HIDE_KEYWORDS = ['Manage app', 'Share', 'Edit app'];
-
+  // ── Hide Streamlit chrome ─────────────────────────────────────────────────
   function hideInDoc(doc) {
     if (!doc || !doc.body) return;
-    HIDE_SELECTORS.forEach(function(sel) {
+    [
+      '[data-testid="stHeader"]',
+      '[data-testid="stDecoration"]',
+      '[data-testid="stStatusWidget"]',
+      '[data-testid="stDeployButton"]',
+      '[data-testid="manage-app-button"]',
+      '#MainMenu',
+      'footer',
+    ].forEach(function(sel) {
       doc.querySelectorAll(sel).forEach(function(el) {
         el.style.setProperty('display', 'none', 'important');
       });
     });
-    // Hide fixed bottom-right SMALL elements only (Manage app button)
-    doc.querySelectorAll('*').forEach(function(el) {
-      try {
-        var cs = doc.defaultView.getComputedStyle(el);
-        if (cs.position === 'fixed') {
-          var r = el.getBoundingClientRect();
-          var w = r.width, h = r.height;
-          // Only small elements (button-sized), not the sidebar
-          if (w > 20 && w < 220 && h > 10 && h < 80 &&
-              r.bottom > doc.defaultView.innerHeight - 120 &&
-              r.right > doc.defaultView.innerWidth - 280) {
-            el.style.setProperty('display', 'none', 'important');
-          }
-        }
-      } catch(e) {}
-    });
-    // Hide by keyword text
-    HIDE_KEYWORDS.forEach(function(kw) {
-      doc.querySelectorAll('button, a, [role="button"]').forEach(function(el) {
-        if (el.innerText && el.innerText.trim() === kw) {
-          (el.closest('[class*="toolbar"],[class*="Toolbar"],[class*="bottom"],[class*="Bottom"],[class*="manage"],[class*="Manage"]') || el)
-            .style.setProperty('display', 'none', 'important');
-        }
-      });
+    // "Manage app" button by text
+    doc.querySelectorAll('button, a').forEach(function(el) {
+      if (el.innerText && el.innerText.trim() === 'Manage app') {
+        el.style.setProperty('display', 'none', 'important');
+      }
     });
   }
 
   function hideChrome() {
     try { hideInDoc(window.parent.document); } catch(e) {}
-    try {
-      if (window.top !== window.parent) hideInDoc(window.top.document);
-    } catch(e) {}
-  }
-
-  // MutationObserver on both frames
-  function watchDoc(doc) {
-    if (!doc || !doc.body) return;
-    new MutationObserver(function() { hideChrome(); }).observe(doc.body, { childList: true, subtree: true });
+    try { if (window.top !== window.parent) hideInDoc(window.top.document); } catch(e) {}
   }
 
   function init() {
     hideChrome();
     attachObserver();
-    try { watchDoc(window.parent.document); } catch(e) {}
-    try { if (window.top !== window.parent) watchDoc(window.top.document); } catch(e) {}
   }
   if (document.readyState === 'complete') { init(); }
   else { window.addEventListener('load', init); }
-  setTimeout(hideChrome, 500);
-  setTimeout(hideChrome, 1500);
-  setTimeout(hideChrome, 3000);
-  setTimeout(hideChrome, 6000);
+  [500, 1500, 3000, 6000].forEach(function(t) { setTimeout(hideChrome, t); });
 })();
 </script>
 """, height=0)
