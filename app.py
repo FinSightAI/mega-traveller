@@ -2033,8 +2033,8 @@ elif page == "🔥 ציד דילים":
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE: Surprise Me
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "🎲 הפתיעני":
-    st.title(_t("🎲 הפתיעני — מצא את הדסטינציה הכי שווה", "🎲 Surprise Me — Find the Best Destination"))
+elif page == "🎲 יעד מפתיע":
+    st.title(_t("🎲 יעד מפתיע — מצא את הדסטינציה הכי שווה", "🎲 Surprise Destination — Find the Best Destination"))
     st.caption(_t("הכנס תקציב ותאריכים — Claude ימצא את היעד הכי שווה שאולי לא חשבת עליו", "Enter budget and dates — Claude will find the best destination you might not have thought of"))
 
     with st.form("surprise_form"):
@@ -2050,7 +2050,7 @@ elif page == "🎲 הפתיעני":
             style = st.selectbox(_t("סגנון", "Style"), [_t("כל סגנון", "Any style"), _t("תקציבי", "Budget"), _t("רומנטי", "Romantic"), _t("הרפתקאות", "Adventure"), _t("תרבות", "Culture"), _t("טבע", "Nature"), _t("לוקסוס", "Luxury")])
 
         interests = st.text_input(_t("תחומי עניין", "Interests"), placeholder=_t("אוכל, היסטוריה, שפת ים, הייקינג...", "Food, history, beach, hiking..."))
-        surprise_btn = st.form_submit_button(_t("🎲 הפתיעני!", "🎲 Surprise Me!"), use_container_width=True, type="primary")
+        surprise_btn = st.form_submit_button(_t("🎲 יעד מפתיע!", "🎲 Surprise Destination!"), use_container_width=True, type="primary")
 
     if surprise_btn:
         from_str = str(from_date) if from_date else ""
