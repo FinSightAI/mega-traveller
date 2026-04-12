@@ -491,7 +491,7 @@ def _inject_css(rtl: bool):
     if (doc.getElementById('noded-sidebar-toggle')) return;
     var btn = doc.createElement('button');
     btn.id = 'noded-sidebar-toggle';
-    btn.innerHTML = '☰';
+    btn.innerHTML = '✈️';
     btn.title = 'פתח / סגור תפריט';
     btn.style.cssText = [
       'position:fixed', 'top:10px', 'right:10px', 'z-index:99999',
@@ -501,7 +501,13 @@ def _inject_css(rtl: bool):
       'line-height:1'
     ].join('!important;') + '!important';
     btn.addEventListener('click', function() {
-      var orig = doc.querySelector('[data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"]');
+      // Try collapse button (sidebar open) or expand control (sidebar closed)
+      var orig = doc.querySelector(
+        'button[data-testid="stSidebarCollapseButton"], ' +
+        '[data-testid="stSidebarCollapseButton"] button, ' +
+        'button[data-testid="stSidebarCollapsedControl"], ' +
+        '[data-testid="stSidebarCollapsedControl"] button'
+      );
       if (orig) { orig.click(); return; }
       // fallback: toggle sidebar transform directly
       var sb = doc.querySelector('[data-testid="stSidebar"]');
