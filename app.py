@@ -475,13 +475,60 @@ def _inject_css(rtl: bool):
     }
 
     fixTransform(); // run once immediately
+
+    // ── Fix sidebar scroll (parent frame) ──────────────────────────────────
+    function fixSidebarScroll() {
+      var sb = doc.querySelector('[data-testid="stSidebar"]');
+      if (!sb) return;
+      // Allow scroll on every possible inner container
+      [sb,
+       sb.querySelector('[data-testid="stSidebarContent"]'),
+       sb.querySelector('div'),
+       sb.firstElementChild,
+      ].forEach(function(el) {
+        if (!el) return;
+        el.style.setProperty('overflow-y', 'auto', 'important');
+        el.style.setProperty('overflow-x', 'hidden', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+      });
+    }
+    fixSidebarScroll();
+    setTimeout(fixSidebarScroll, 1000);
   }
 
-  function init() { attachObserver(); }
+  // ── Hide Streamlit chrome from parent frame ────────────────────────────────
+  function hideChrome() {
+    var doc = window.parent.document;
+    var selectors = [
+      '[data-testid="stHeader"]',
+      '[data-testid="stToolbar"]',
+      '[data-testid="stAppToolbar"]',
+      '[data-testid="stToolbarActions"]',
+      '[data-testid="stDeployButton"]',
+      '[data-testid="stDecoration"]',
+      '[data-testid="stStatusWidget"]',
+      '[data-testid="stBottom"]',
+      '#MainMenu',
+      '.stDeployButton',
+      'footer',
+    ];
+    selectors.forEach(function(sel) {
+      var els = doc.querySelectorAll(sel);
+      els.forEach(function(el) {
+        el.style.setProperty('display', 'none', 'important');
+      });
+    });
+  }
+
+  function init() {
+    hideChrome();
+    attachObserver();
+  }
   if (document.readyState === 'complete') { init(); }
   else { window.addEventListener('load', init); }
-  setTimeout(init, 500);
-  setTimeout(init, 1500);
+  setTimeout(hideChrome, 500);
+  setTimeout(hideChrome, 1500);
+  setTimeout(hideChrome, 3000);
 })();
 </script>
 """, height=0)
