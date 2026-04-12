@@ -499,6 +499,7 @@ def _inject_css(rtl: bool):
   // ── Hide Streamlit chrome from parent frame ────────────────────────────────
   function hideChrome() {
     var doc = window.parent.document;
+    // Hide by data-testid / id / class
     var selectors = [
       '[data-testid="stHeader"]',
       '[data-testid="stToolbar"]',
@@ -508,27 +509,48 @@ def _inject_css(rtl: bool):
       '[data-testid="stDecoration"]',
       '[data-testid="stStatusWidget"]',
       '[data-testid="stBottom"]',
+      '[data-testid="stBottomBlockContainer"]',
+      '[data-testid="manage-app-button"]',
+      '[data-testid="stToolbarActionButtonTooltip"]',
       '#MainMenu',
       '.stDeployButton',
+      '.stBottom',
       'footer',
     ];
     selectors.forEach(function(sel) {
-      var els = doc.querySelectorAll(sel);
-      els.forEach(function(el) {
+      doc.querySelectorAll(sel).forEach(function(el) {
         el.style.setProperty('display', 'none', 'important');
       });
     });
+    // Also hide any element whose text contains "Manage app" or "Share"
+    var keywords = ['Manage app', 'Share', 'Edit'];
+    doc.querySelectorAll('button, a, div[role="button"]').forEach(function(el) {
+      var txt = el.innerText && el.innerText.trim();
+      if (txt && keywords.some(function(k) { return txt === k; })) {
+        var parent = el.closest('[class*="toolbar"], [class*="Toolbar"], [class*="bottom"], [class*="Bottom"], [class*="manage"], [class*="Manage"]') || el;
+        parent.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
+  // MutationObserver to catch dynamically added chrome elements
+  function watchChrome() {
+    var doc = window.parent.document;
+    var obs = new MutationObserver(function() { hideChrome(); });
+    obs.observe(doc.body, { childList: true, subtree: true });
   }
 
   function init() {
     hideChrome();
     attachObserver();
+    try { watchChrome(); } catch(e) {}
   }
   if (document.readyState === 'complete') { init(); }
   else { window.addEventListener('load', init); }
   setTimeout(hideChrome, 500);
   setTimeout(hideChrome, 1500);
   setTimeout(hideChrome, 3000);
+  setTimeout(hideChrome, 6000);
 })();
 </script>
 """, height=0)
