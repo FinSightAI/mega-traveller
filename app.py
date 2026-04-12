@@ -182,12 +182,22 @@ def _inject_css(rtl: bool):
         right: 0 !important;
         left: unset !important;
         transition: transform 0.3s ease-in-out, width 0.3s ease-in-out !important;
-        overflow: hidden !important;
+        overflow: hidden !important;       /* outer: clip during collapse animation */
       }
       section[data-testid="stSidebar"] > div:first-child {
         border-left: 1px solid rgba(102,126,234,0.2) !important;
         border-right: none !important;
-        overflow: hidden !important;
+        overflow-y: auto !important;       /* inner: allow vertical scroll for long menus */
+        overflow-x: hidden !important;
+        height: 100vh !important;          /* fill full viewport so scrollbar appears */
+      }
+      /* Scrollbar styling inside sidebar */
+      section[data-testid="stSidebar"] > div:first-child::-webkit-scrollbar {
+        width: 4px !important;
+      }
+      section[data-testid="stSidebar"] > div:first-child::-webkit-scrollbar-thumb {
+        background: rgba(102,126,234,0.35) !important;
+        border-radius: 3px !important;
       }
       /* Collapsed state: ensure sidebar is fully off-screen to the right */
       [data-testid="stSidebarCollapsedControl"] ~ section[data-testid="stSidebar"],
@@ -2797,7 +2807,7 @@ elif page == "⚙️ הגדרות":
     st.title(_t("⚙️ הגדרות", "⚙️ Settings"))
 
     # ── API Key ────────────────────────────────────────────────────────────────
-    st.subheader("🔑 Gemini API Key")
+    st.subheader(_t("🔑 מפתח Gemini API", "🔑 Gemini API Key"))
     api_key_val = os.environ.get("GEMINI_API_KEY", "")
     if api_key_val:
         st.success(f"{_t('מוגדר', 'Configured')} ✅  (AIza...{api_key_val[-6:]})")
@@ -3105,9 +3115,9 @@ function requestPushPermission() {
 
     col1, col2 = st.columns(2)
     with col1:
-        new_am_id = st.text_input("Client ID", value=am_id, placeholder="abc123...")
+        new_am_id = st.text_input(_t("מזהה לקוח", "Client ID"), value=am_id, placeholder="abc123...")
     with col2:
-        new_am_secret = st.text_input("Client Secret", value=am_secret,
+        new_am_secret = st.text_input(_t("סיסמת לקוח", "Client Secret"), value=am_secret,
                                        type="password", placeholder="xyz789...")
 
     colA, colB = st.columns(2)
@@ -5259,7 +5269,7 @@ elif page == "🧬 Price DNA":
     ai_dna = st.session_state.get("ai_price_dna")
     if ai_dna and "error" not in ai_dna:
         st.divider()
-        st.subheader("🤖 AI Analysis")
+        st.subheader(_t("🤖 ניתוח AI", "🤖 AI Analysis"))
 
         verdict = ai_dna.get("verdict", "")
         emoji = ai_dna.get("verdict_emoji", "")
@@ -5467,9 +5477,9 @@ elif page == "💬 WhatsApp Bot":
             """))
 
         with st.form("wa_config_form"):
-            new_sid = st.text_input("Account SID", value=twilio_sid, type="password")
-            new_auth = st.text_input("Auth Token", value=twilio_token, type="password")
-            new_from = st.text_input("WhatsApp From Number", value=twilio_from)
+            new_sid = st.text_input(_t("מזהה חשבון", "Account SID"), value=twilio_sid, type="password")
+            new_auth = st.text_input(_t("אסימון אימות", "Auth Token"), value=twilio_token, type="password")
+            new_from = st.text_input(_t("מספר WhatsApp שולח", "WhatsApp From Number"), value=twilio_from)
             wa_save = st.form_submit_button(_t("💾 שמור", "💾 Save"), use_container_width=True)
 
         if wa_save and new_sid and new_auth:
