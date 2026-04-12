@@ -436,8 +436,10 @@ def _inject_css(rtl: bool):
     z-index: 9999 !important;
   }}
 
-  /* Footer */
-  footer                                 {{ visibility: hidden !important; height: 0 !important; }}
+  /* Footer / bottom bar (Hosted by Streamlit, Built by ...) */
+  footer,
+  [data-testid="stBottom"],
+  [data-testid="stBottomBlockContainer"]  {{ display: none !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -512,6 +514,8 @@ def _inject_css(rtl: bool):
       '[data-testid="stToolbar"]',
       '[data-testid="stAppToolbar"]',
       '[data-testid="stToolbarActions"]',
+      '[data-testid="stBottom"]',
+      '[data-testid="stBottomBlockContainer"]',
       '[data-testid="manage-app-button"]',
       '#MainMenu',
       'footer',
