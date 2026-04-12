@@ -1,0 +1,21 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping app
+        run: |
+          URL="${{ vars.RENDER_URL }}"
+          if [ -z "$URL" ]; then
+            echo "RENDER_URL not set — skipping"
+            exit 0
+          fi
+          curl -sf --max-time 30 "$URL/_stcore/health" \
+            && echo "✅ App is alive" \
+            || echo "⚠️ Ping failed (app may be starting up)"
