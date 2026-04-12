@@ -523,13 +523,17 @@ def _inject_css(rtl: bool):
         el.style.setProperty('display', 'none', 'important');
       });
     });
-    // Hide fixed bottom-right elements (Manage app floats here)
+    // Hide fixed bottom-right SMALL elements only (Manage app button)
     doc.querySelectorAll('*').forEach(function(el) {
       try {
         var cs = doc.defaultView.getComputedStyle(el);
         if (cs.position === 'fixed') {
           var r = el.getBoundingClientRect();
-          if (r.bottom > doc.defaultView.innerHeight - 120 && r.right > doc.defaultView.innerWidth - 250) {
+          var w = r.width, h = r.height;
+          // Only small elements (button-sized), not the sidebar
+          if (w > 20 && w < 220 && h > 10 && h < 80 &&
+              r.bottom > doc.defaultView.innerHeight - 120 &&
+              r.right > doc.defaultView.innerWidth - 280) {
             el.style.setProperty('display', 'none', 'important');
           }
         }
