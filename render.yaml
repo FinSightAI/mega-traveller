@@ -32,4 +32,4 @@ services:
         sync: false
       - key: DB_PATH
         value: /app/data/prices.db
-    healthCheckPath: /_stcore/health
+    healthCheckPath: /manifest.json
