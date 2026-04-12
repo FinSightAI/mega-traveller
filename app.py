@@ -184,21 +184,25 @@ def _inject_css(rtl: bool):
         transition: transform 0.3s ease-in-out, width 0.3s ease-in-out !important;
         overflow: hidden !important;       /* outer: clip during collapse animation */
       }
-      section[data-testid="stSidebar"] > div:first-child {
+      section[data-testid="stSidebar"] > div:first-child,
+      section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+      section[data-testid="stSidebar"] .stSidebarContent {{
         border-left: 1px solid rgba(102,126,234,0.2) !important;
         border-right: none !important;
-        overflow-y: auto !important;       /* inner: allow vertical scroll for long menus */
+        overflow-y: auto !important;
         overflow-x: hidden !important;
-        height: 100vh !important;          /* fill full viewport so scrollbar appears */
-      }
-      /* Scrollbar styling inside sidebar */
-      section[data-testid="stSidebar"] > div:first-child::-webkit-scrollbar {
+        max-height: 100vh !important;
+      }}
+      /* Scrollbar inside sidebar */
+      section[data-testid="stSidebar"] *::-webkit-scrollbar,
+      section[data-testid="stSidebar"] > div:first-child::-webkit-scrollbar {{
         width: 4px !important;
-      }
-      section[data-testid="stSidebar"] > div:first-child::-webkit-scrollbar-thumb {
+      }}
+      section[data-testid="stSidebar"] *::-webkit-scrollbar-thumb,
+      section[data-testid="stSidebar"] > div:first-child::-webkit-scrollbar-thumb {{
         background: rgba(102,126,234,0.35) !important;
         border-radius: 3px !important;
-      }
+      }}
       /* Collapsed state: ensure sidebar is fully off-screen to the right */
       [data-testid="stSidebarCollapsedControl"] ~ section[data-testid="stSidebar"],
       section[data-testid="stSidebar"][class*="collapsed"],
@@ -402,12 +406,30 @@ def _inject_css(rtl: bool):
     border: 1px solid rgba(255,255,255,0.07) !important;
   }}
 
-  /* ── Hide Streamlit chrome (keep sidebar toggle) ── */
-  #MainMenu {{ visibility: hidden !important; }}
-  [data-testid="stDecoration"] {{ display: none !important; }}
-  [data-testid="stStatusWidget"] {{ display: none !important; }}
-  footer {{ visibility: hidden !important; }}
-  .stDeployButton {{ display: none !important; }}
+  /* ── Hide Streamlit chrome ── */
+  #MainMenu,
+  .stMainMenu,
+  [data-testid="stMainMenu"]             {{ display: none !important; }}
+
+  /* Toolbar: Share / Manage app / Edit / star */
+  [data-testid="stToolbar"],
+  [data-testid="stAppToolbar"],
+  [data-testid="stToolbarActions"],
+  [data-testid="stHeader"] [data-testid="stToolbar"],
+  header [data-testid="stToolbar"]       {{ display: none !important; }}
+
+  /* Top header bar (contains the toolbar) */
+  [data-testid="stHeader"]               {{ display: none !important; }}
+
+  /* Footer / "Made with Streamlit" */
+  footer,
+  [data-testid="stBottom"]              {{ visibility: hidden !important; height: 0 !important; }}
+
+  /* Deploy / status */
+  [data-testid="stDeployButton"],
+  .stDeployButton,
+  [data-testid="stDecoration"],
+  [data-testid="stStatusWidget"]        {{ display: none !important; }}
 </style>
 """, unsafe_allow_html=True)
 
