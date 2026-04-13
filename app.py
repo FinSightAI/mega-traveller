@@ -5333,7 +5333,7 @@ elif page == "🧬 Price DNA":
     st.title(_t("🧬 Price DNA — פרופיל מחירים אישי", "🧬 Price DNA — Personal Price Profile"))
     st.caption(_t("מנתח את כל ההיסטוריה שלך ובונה פרופיל: מתי זול, מתי יקר, מה התבנית.", "Analyzes your entire history and builds a profile: when it's cheap, when it's expensive, what the pattern is."))
 
-    watch_items = db.get_watch_items()
+    watch_items = db.get_all_watch_items()
     _all_history_label = _t("כל ההיסטוריה", "All History")
     options = [_all_history_label] + [f"{w['name'] or w['origin']+'→'+w['destination']} (#{w['id']})" for w in watch_items]
 
