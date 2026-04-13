@@ -67,7 +67,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-db.init_db()
+@st.cache_resource
+def _init_db_once():
+    db.init_db()
+    return True
+_init_db_once()
 
 
 def _save_env(key: str, value: str):
@@ -967,7 +971,10 @@ with st.sidebar:
 
 # ── Inject CSS (after lang is determined) ──────────────────────────────────────
 _inject_css(_rtl)
-_inject_pwa()
+# Only inject PWA JS once per session, not on every rerun
+if not st.session_state.get("_pwa_injected"):
+    _inject_pwa()
+    st.session_state["_pwa_injected"] = True
 
 
 # ══════════════════════════════════════════════════════════════════════════════
