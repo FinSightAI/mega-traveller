@@ -19,7 +19,7 @@
   --amber:   #f59e0b;
   --sw: 230px;
 }
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px;}
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:inherit;}
 input,textarea,select{font-family:inherit;}
@@ -164,6 +164,49 @@ textarea{resize:vertical;min-height:70px;}
 /* Warn box */
 .warn-box{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px 14px;font-size:.8rem;color:#d1d5db;line-height:1.5;}
 .warn-title{color:#fcd34d;font-weight:700;margin-bottom:5px;}
+
+/* Hot deal badge */
+.hot-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:.69rem;font-weight:700;background:rgba(239,68,68,.18);color:#f87171;border:1px solid rgba(239,68,68,.35);}
+.cold-badge{background:rgba(99,102,241,.12);color:#a5b4fc;border-color:rgba(99,102,241,.3);}
+
+/* Price progress bar */
+.price-prog{height:5px;background:var(--surf2);border-radius:99px;margin-top:5px;overflow:hidden;}
+.price-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--amber),var(--red));transition:width .3s;}
+
+/* Chat starters */
+.chat-starters{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 0;flex-shrink:0;}
+.starter-btn{background:var(--surf2);border:1px solid var(--border);color:#94a3b8;padding:5px 11px;border-radius:99px;font-size:.78rem;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.starter-btn:hover{border-color:var(--accent);color:var(--text);}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab-btn{padding:7px 14px;border:none;background:none;color:var(--muted);font-size:.82rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+/* Price calendar */
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;}
+.cal-day-name{text-align:center;font-size:.68rem;color:var(--muted);font-weight:600;padding:3px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.72rem;cursor:pointer;border:1px solid transparent;transition:all .15s;padding:3px;}
+.cal-cell:hover{border-color:var(--accent);}
+.cal-cell .cal-num{font-weight:700;}
+.cal-cell .cal-p{font-size:.63rem;color:var(--muted);}
+.cal-low{background:rgba(34,197,94,.15);color:#4ade80;}
+.cal-mid{background:rgba(245,158,11,.1);color:#fcd34d;}
+.cal-high{background:rgba(239,68,68,.12);color:#f87171;}
+.cal-empty{background:transparent;cursor:default;}
+
+/* Deal score */
+.deal-score{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;font-size:.8rem;font-weight:800;}
+.ds-a{background:rgba(34,197,94,.2);color:#4ade80;}
+.ds-b{background:rgba(99,102,241,.2);color:#a5b4fc;}
+.ds-c{background:rgba(245,158,11,.15);color:#fcd34d;}
+.ds-d{background:rgba(239,68,68,.15);color:#f87171;}
+
+/* Book now btn */
+.book-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:.74rem;font-weight:600;background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;}
+.book-btn:hover{background:rgba(34,197,94,.25);}
 </style>
 </head>
 <body>
@@ -218,6 +261,21 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <div class="nav-sec">
+    <div class="nav-lbl">כלים חכמים</div>
+    <button class="nav-btn" data-page="smart-tools"><span class="ico">🛠️</span>כלים חכמים</button>
+    <button class="nav-btn" data-page="price-calendar"><span class="ico">📆</span>לוח מחירים</button>
+    <button class="nav-btn" data-page="expiring-deals"><span class="ico">⏰</span>דילים פגי תוקף</button>
+    <button class="nav-btn" data-page="positioning"><span class="ico">🗺️</span>Positioning</button>
+    <button class="nav-btn" data-page="auto-book"><span class="ico">⚡</span>Auto-Book</button>
+  </div>
+
+  <div class="nav-sec">
+    <div class="nav-lbl">בוטים</div>
+    <button class="nav-btn" data-page="telegram-bot"><span class="ico">🤖</span>בוט טלגרם</button>
+    <button class="nav-btn" data-page="whatsapp-bot"><span class="ico">💬</span>WhatsApp Bot</button>
+  </div>
+
+  <div class="nav-sec">
     <div class="nav-lbl">מערכת</div>
     <button class="nav-btn" data-page="alerts"><span class="ico">🎯</span>כללי התראה</button>
     <button class="nav-btn" data-page="settings"><span class="ico">⚙️</span>הגדרות</button>
@@ -268,10 +326,26 @@ textarea{resize:vertical;min-height:70px;}
     <!-- ══ רשימת מעקב ══ -->
     <div class="page" id="page-watches">
       <div class="sh"><h2>👁 רשימת מעקב</h2><button class="btn btn-p" onclick="openAddWatch()">+ הוסף מעקב</button></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <input type="text" id="watch-search" placeholder="🔍 חיפוש לפי שם, יעד…" style="max-width:260px;flex:1;" oninput="filterWatches()">
+        <select id="watch-cat-filter" onchange="filterWatches()" style="width:auto;">
+          <option value="">כל הקטגוריות</option>
+          <option value="flight">טיסות</option>
+          <option value="hotel">מלונות</option>
+          <option value="apartment">דירות</option>
+          <option value="package">חבילות</option>
+        </select>
+        <select id="watch-sort" onchange="filterWatches()" style="width:auto;">
+          <option value="name">מיין: שם</option>
+          <option value="price_asc">מיין: מחיר ↑</option>
+          <option value="price_desc">מיין: מחיר ↓</option>
+          <option value="deal">מיין: ציון דיל</option>
+        </select>
+      </div>
       <div class="card">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>שם</th><th>קטגוריה</th><th>יעד</th><th>מחיר אחרון</th><th>הנמוך</th><th>סטטוס</th><th>פעולות</th></tr></thead>
+            <thead><tr><th>שם</th><th>קטגוריה</th><th>מחיר אחרון</th><th>ציון</th><th>סטטוס</th><th>Book Now</th><th>פעולות</th></tr></thead>
             <tbody id="watches-tbody"></tbody>
           </table>
         </div>
@@ -307,6 +381,14 @@ textarea{resize:vertical;min-height:70px;}
     <div class="page" id="page-chat" style="height:calc(100vh - 52px);flex-direction:column;">
       <div class="chat-msgs" id="chat-msgs">
         <div class="bubble ai">✈️ שלום! אני סוכן הנסיעות החכם שלך. שאל אותי על טיסות, מלונות, ויזות, דילים ועוד.</div>
+      </div>
+      <div class="chat-starters" id="chat-starters">
+        <button class="starter-btn" onclick="startChat('מה הדילים הכי טובים לאירופה עכשיו?')">🔥 דילים לאירופה</button>
+        <button class="starter-btn" onclick="startChat('טיסה TLV → NYC — כדאי לקנות עכשיו או לחכות?')">🔮 כדאי לחכות?</button>
+        <button class="starter-btn" onclick="startChat('הצע לי יעד מפתיע לחופשת קיץ בתקציב 800 דולר')">🎲 הפתע אותי</button>
+        <button class="starter-btn" onclick="startChat('מה דרישות הויזה לדרכון ישראלי בתאילנד?')">🛂 בדיקת ויזה</button>
+        <button class="starter-btn" onclick="startChat('מצא לי עצירת חינם במסלול TLV → ניו יורק')">🔁 עצירה חינם</button>
+        <button class="starter-btn" onclick="clearChat()">🗑 נקה שיחה</button>
       </div>
       <div class="chat-bar">
         <textarea id="chat-in" placeholder="שאל על טיסות, דילים, ויזות…" onkeydown="chatKey(event)" dir="rtl"></textarea>
@@ -565,7 +647,7 @@ textarea{resize:vertical;min-height:70px;}
     <!-- ══ הגדרות ══ -->
     <div class="page" id="page-settings">
       <div class="sh"><h2>⚙️ הגדרות</h2></div>
-      <div class="g2">
+      <div class="g2" style="margin-bottom:14px;">
         <div class="card">
           <div class="card-title">🔑 מפתחות API</div>
           <div id="settings-form"></div>
@@ -576,6 +658,412 @@ textarea{resize:vertical;min-height:70px;}
           <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px;">ייצא את כל המעקבים והיסטוריית המחירים לקובץ CSV.</p>
           <a href="/api/export/csv" class="btn btn-g" download>📥 הורד CSV</a>
         </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">📲 התראות Telegram</div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">קבל התראות על ירידות מחיר ישירות לטלגרם. שלב:</p>
+          <ol style="font-size:.82rem;color:var(--muted);margin-bottom:12px;padding-right:16px;line-height:1.8;">
+            <li>פתח <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent);">@BotFather</a> בטלגרם</li>
+            <li>שלח <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">/newbot</code> וצור בוט חדש</li>
+            <li>העתק את ה-Token לשדה למטה</li>
+            <li>שלח הודעה לבוט ואז בדוק את ה-Chat ID</li>
+          </ol>
+          <div class="fg"><label>Telegram Bot Token</label><input type="text" id="tg-token-input" placeholder="1234567890:ABCdef..."></div>
+          <div class="fg"><label>Telegram Chat ID</label><input type="text" id="tg-chatid-input" placeholder="למשל: 123456789 או @channelname"></div>
+          <button class="btn btn-p" onclick="saveTelegramSettings()">💾 שמור</button>
+          <button class="btn btn-g btn-sm" style="margin-right:8px;" onclick="testTelegram()">🧪 שלח הודעת בדיקה</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📱 התראות NTFY (Push)</div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;"><a href="https://ntfy.sh" target="_blank" style="color:var(--accent);">ntfy.sh</a> — שירות push חינמי לכל מכשיר.</p>
+          <ol style="font-size:.82rem;color:var(--muted);margin-bottom:12px;padding-right:16px;line-height:1.8;">
+            <li>הורד אפליקציית ntfy.sh</li>
+            <li>בחר שם topic ייחודי (כמו סיסמה)</li>
+            <li>הכנס את שם ה-topic למטה</li>
+          </ol>
+          <div class="fg"><label>NTFY Topic</label><input type="text" id="ntfy-topic-input" placeholder="noded-alerts-myname123"></div>
+          <div class="fg"><label>NTFY Server (ברירת מחדל: ntfy.sh)</label><input type="text" id="ntfy-server-input" placeholder="https://ntfy.sh"></div>
+          <button class="btn btn-p" onclick="saveNtfySettings()">💾 שמור</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ כלים חכמים ══ -->
+    <div class="page" id="page-smart-tools">
+      <div class="sh"><h2>🛠️ כלים חכמים</h2></div>
+      <div class="tabs" id="smart-tabs">
+        <button class="tab-btn active" onclick="switchSmartTab('split')">✂️ Split Ticket</button>
+        <button class="tab-btn" onclick="switchSmartTab('nearby')">🗺️ שדות תעופה קרובים</button>
+        <button class="tab-btn" onclick="switchSmartTab('lastmin')">⚡ דקה ה-90</button>
+        <button class="tab-btn" onclick="switchSmartTab('cheapday')">📅 יום זול לטיסה</button>
+        <button class="tab-btn" onclick="switchSmartTab('pkg-vs-ind')">🏷️ חבילה vs עצמאי</button>
+        <button class="tab-btn" onclick="switchSmartTab('when-book')">🕐 מתי לקנות</button>
+      </div>
+      <!-- Split Ticket -->
+      <div class="tab-pane active" id="st-split">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">✂️ Split Ticket — פיצול כרטיס</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">לפעמים לקנות שתי טיסות נפרדות זול יותר מכרטיס ישיר. AI ימצא לך את הפיצול הזול ביותר.</p>
+            <div class="fg"><label>מסלול ותאריכים</label><input type="text" id="split-q" placeholder="למשל: TLV → לוס אנג׳לס, יולי 2026, עד 900$"></div>
+            <button class="btn btn-p" onclick="runSmartTool('split-q','split-res','מצא הזנת split ticket זולה יותר עבור המסלול: ')">✂️ חפש פיצול זול</button>
+          </div>
+          <div class="card"><div class="card-title">תוצאות</div><div class="ai-box ai-placeholder" id="split-res">התוצאה תופיע כאן…</div></div>
+        </div>
+      </div>
+      <!-- Nearby Airports -->
+      <div class="tab-pane" id="st-nearby">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">🗺️ שדות תעופה קרובים</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">בדוק אם שדות תעופה חלופיים קרובים ליעד שלך זולים יותר. כולל עלות הגעה.</p>
+            <div class="fg"><label>יעד / מוצא</label><input type="text" id="nearby-q" placeholder="למשל: אזור לונדון, אזור ניו יורק, פריז"></div>
+            <button class="btn btn-p" onclick="runSmartTool('nearby-q','nearby-res','השווה שדות תעופה חלופיים (כולל עלות הגעה) לאזור: ')">🗺️ מצא חלופות</button>
+          </div>
+          <div class="card"><div class="card-title">שדות תעופה חלופיים</div><div class="ai-box ai-placeholder" id="nearby-res">התוצאה תופיע כאן…</div></div>
+        </div>
+      </div>
+      <!-- Last Minute -->
+      <div class="tab-pane" id="st-lastmin">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">⚡ דילי דקה ה-90</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">טיסות ומלונות שנמכרים ב-72 שעות הקרובות בהנחה גדולה. הכי טוב לגמישים.</p>
+            <div class="fg"><label>מוצא ויעד (אופציונלי)</label><input type="text" id="lastmin-q" placeholder="למשל: מ-TLV לכל מקום, או TLV → ברצלונה"></div>
+            <button class="btn btn-p" onclick="runSmartTool('lastmin-q','lastmin-res','מצא דילי last minute לנסיעות ב-72 שעות הקרובות מ/ל: ')">⚡ מצא דילים</button>
+          </div>
+          <div class="card"><div class="card-title">דילי Last Minute</div><div class="ai-box ai-placeholder" id="lastmin-res">התוצאה תופיע כאן…</div></div>
+        </div>
+      </div>
+      <!-- Cheapest Day -->
+      <div class="tab-pane" id="st-cheapday">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">📅 איזה יום זול לטוס?</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">ניתוח של כל ימות השבוע על מסלול ספציפי — איזה יום הכי זול לצאת ולחזור?</p>
+            <div class="fg"><label>מסלול וחודש</label><input type="text" id="cheapday-q" placeholder="למשל: TLV → אמסטרדם, ספטמבר 2026"></div>
+            <button class="btn btn-p" onclick="runSmartTool('cheapday-q','cheapday-res','נתח את ימות השבוע הזולים ביותר לטיסה עבור המסלול: ')">📅 נתח ימים</button>
+          </div>
+          <div class="card"><div class="card-title">ניתוח ימי שבוע</div><div class="ai-box ai-placeholder" id="cheapday-res">התוצאה תופיע כאן…</div></div>
+        </div>
+      </div>
+      <!-- Package vs Independent -->
+      <div class="tab-pane" id="st-pkg-vs-ind">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">🏷️ חבילה vs עצמאי</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">האם עדיף לקנות חבילת נופש מוכנה או לארגן הכל לבד? ה-AI ישווה עבורך.</p>
+            <div class="fg"><label>יעד ופרטי הטיול</label><textarea id="pkgind-q" placeholder="למשל: 7 לילות קריב, זוג, אוגוסט 2026, תקציב 3000$"></textarea></div>
+            <button class="btn btn-p" onclick="runSmartTool('pkgind-q','pkgind-res','השווה חבילת נופש מאורגנת מול תכנון עצמאי עבור: ')">🏷️ השווה</button>
+          </div>
+          <div class="card"><div class="card-title">חבילה vs עצמאי</div><div class="ai-box ai-placeholder" id="pkgind-res">התוצאה תופיע כאן…</div></div>
+        </div>
+      </div>
+      <!-- When to Book -->
+      <div class="tab-pane" id="st-when-book">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">🕐 מתי לקנות כרטיס?</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">חלון ההזמנה האופטימלי — כמה שבועות לפני הטיסה הכי כדאי לקנות למסלול שלך?</p>
+            <div class="fg"><label>מסלול ותאריך נסיעה</label><input type="text" id="whenbook-q" placeholder="למשל: TLV → טוקיו, טיסה בפברואר 2027"></div>
+            <button class="btn btn-p" onclick="runSmartTool('whenbook-q','whenbook-res','מה חלון ההזמנה האופטימלי (כמה שבועות קודם) לקניית כרטיס לטיסה: ')">🕐 נתח</button>
+          </div>
+          <div class="card"><div class="card-title">חלון הזמנה אופטימלי</div><div class="ai-box ai-placeholder" id="whenbook-res">התוצאה תופיע כאן…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ לוח מחירים ══ -->
+    <div class="page" id="page-price-calendar">
+      <div class="sh"><h2>📆 לוח מחירים</h2></div>
+      <div class="card" style="margin-bottom:14px;max-width:500px;">
+        <div class="f2">
+          <div class="fg" style="margin:0;"><label>בחר מעקב</label><select id="cal-watch-sel"><option value="">— בחר —</option></select></div>
+          <div class="fg" style="margin:0;"><label>חודש</label><input type="month" id="cal-month"></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-p" onclick="loadPriceCalendar()">📆 הצג לוח</button>
+          <button class="btn btn-g" onclick="loadCalendarAI()">🤖 AI — מצא תאריכים זולים</button>
+        </div>
+      </div>
+      <div id="cal-container">
+        <div class="warn-box" style="max-width:500px;">
+          <div class="warn-title">📆 לוח מחירים</div>
+          בחר מעקב וחודש כדי לראות לוח מחירים. ירוק = זול, צהוב = בינוני, אדום = יקר.<br>
+          <span style="color:var(--muted);">לחץ "AI — מצא תאריכים זולים" לקבלת המלצה מהירה.</span>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;" id="cal-ai-box" style="display:none;">
+        <div class="card-title">🤖 ניתוח AI — תאריכים זולים</div>
+        <div class="ai-box ai-placeholder" id="cal-ai-res">לחץ "AI — מצא תאריכים זולים" לקבלת ניתוח.</div>
+      </div>
+    </div>
+
+    <!-- ══ דילים פגי תוקף ══ -->
+    <div class="page" id="page-expiring-deals">
+      <div class="sh"><h2>⏰ דילים פגי תוקף</h2><button class="btn btn-p" onclick="loadExpiringDeals()">🔄 רענן</button></div>
+      <div class="warn-box" style="margin-bottom:14px;">
+        <div class="warn-title">⏰ עכשיו או לעולם לא!</div>
+        דילים ומבצעים שפגים בקרוב — flash sales, מחירי טעות, מבצעי 24 שעות. AI סורק בזמן אמת.
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="fg"><label>יעד / מוצא (אופציונלי)</label><input type="text" id="exp-dest" placeholder="למשל: אירופה, מ-TLV, כל מקום"></div>
+          <button class="btn btn-p" onclick="loadExpiringDeals()">⏰ מצא דילים פגי תוקף</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 סטטוס שוק עכשיו</div>
+          <div id="exp-market" style="font-size:.84rem;color:var(--muted);">לחץ "מצא דילים" לטעינה</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔥 דילים שפגים בקרוב</div>
+        <div class="ai-box ai-placeholder" id="exp-res">לחץ "מצא דילים פגי תוקף" לסריקה.</div>
+      </div>
+    </div>
+
+    <!-- ══ בוט טלגרם ══ -->
+    <div class="page" id="page-telegram-bot">
+      <div class="sh"><h2>🤖 בוט Telegram</h2></div>
+      <div id="tg-status-box" class="warn-box" style="margin-bottom:14px;max-width:600px;">
+        <div class="warn-title" id="tg-status-title">⚠️ בוט לא מוגדר</div>
+        <span id="tg-status-msg">הגדר Bot Token ו-Chat ID למטה.</span>
+      </div>
+
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">📖 איך מגדירים? (3 שלבים)</div>
+          <ol style="font-size:.82rem;color:var(--muted);line-height:2;padding-right:16px;">
+            <li>פתח <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent);">@BotFather</a> בטלגרם, שלח <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">/newbot</code></li>
+            <li>קבל <b>Bot Token</b> (נראה כך: <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">123456:ABC-DEF...</code>)</li>
+            <li>שלח הודעה לבוט → לחץ "קבל Chat ID" אוטומטית</li>
+          </ol>
+        </div>
+        <div class="card">
+          <div class="card-title">🔑 הגדרות חיבור</div>
+          <div class="fg"><label>Bot Token</label><input type="password" id="tg-token-pg" placeholder="123456789:ABCdef…"></div>
+          <div class="fg"><label>Chat ID</label><input type="text" id="tg-chatid-pg" placeholder="-100123456789"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-p" onclick="saveTgBot()">💾 שמור</button>
+            <button class="btn btn-g" onclick="testTgBot()">📨 בדוק חיבור</button>
+            <button class="btn btn-g" onclick="getTgChatId()">🔍 קבל Chat ID</button>
+          </div>
+          <div id="tg-test-res" style="margin-top:10px;font-size:.82rem;"></div>
+        </div>
+      </div>
+
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">⚙️ סוגי התראות</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.82rem;">
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-drop" checked style="width:auto;accent-color:var(--accent);"> ✈️ ירידת מחיר בטיסות</label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-low" checked style="width:auto;accent-color:var(--accent);"> 📉 מחיר נמוך היסטורי</label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-new-deal" checked style="width:auto;accent-color:var(--accent);"> 🔥 דיל חדש</label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-expiry" checked style="width:auto;accent-color:var(--accent);"> ⏰ דיל עומד לפוג</label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-error-fare" checked style="width:auto;accent-color:var(--accent);"> ⚡ שגיאת מחיר</label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-rise" style="width:auto;accent-color:var(--accent);"> 📈 עלייה חדה</label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📨 שלח הודעה ידנית</div>
+          <div class="fg"><label>הודעה</label><textarea id="tg-manual-msg" placeholder="כתוב הודעה לשלוח לבוט…" style="min-height:70px;"></textarea></div>
+          <button class="btn btn-p" onclick="sendTgManual()">📨 שלח עכשיו</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Auto-Book ══ -->
+    <div class="page" id="page-auto-book">
+      <div class="sh"><h2>⚡ Auto-Book Engine</h2></div>
+      <div class="warn-box" style="margin-bottom:14px;">
+        <div class="warn-title">⚡ הזמנה אוטומטית</div>
+        הגדר כלל: "אם TLV → BKK &lt; $350 — שלח התראה ופתח browser". האפליקציה בודקת כל מחזור מעקב.
+      </div>
+      <div class="tabs" id="ab-tabs">
+        <button class="tab-btn active" onclick="switchAbTab('rules')">📋 כללים</button>
+        <button class="tab-btn" onclick="switchAbTab('log')">📜 לוג</button>
+        <button class="tab-btn" onclick="switchAbTab('passenger')">👤 פרטי נוסע</button>
+      </div>
+
+      <!-- Rules tab -->
+      <div class="tab-pane active" id="ab-rules">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-title">➕ הוסף כלל חדש</div>
+          <div class="f2">
+            <div class="fg"><label>שם הכלל</label><input type="text" id="ab-name" placeholder="TLV-NYC זול"></div>
+            <div class="fg"><label>מצב</label>
+              <select id="ab-mode">
+                <option value="notify">📲 התראה בלבד</option>
+                <option value="open_browser">🌐 פתח browser</option>
+                <option value="auto_fill">🤖 מלא אוטומטית</option>
+              </select>
+            </div>
+          </div>
+          <div class="f2">
+            <div class="fg"><label>מוצא (IATA)</label><input type="text" id="ab-origin" value="TLV" maxlength="3" style="text-transform:uppercase;"></div>
+            <div class="fg"><label>יעד (IATA)</label><input type="text" id="ab-dest" placeholder="NYC" maxlength="3" style="text-transform:uppercase;"></div>
+          </div>
+          <div class="f2">
+            <div class="fg"><label>מחיר מקסימלי ($)</label><input type="number" id="ab-price" value="400" min="50"></div>
+            <div class="fg"></div>
+          </div>
+          <div class="f2">
+            <div class="fg"><label>תאריך מ-</label><input type="date" id="ab-from"></div>
+            <div class="fg"><label>תאריך עד</label><input type="date" id="ab-to"></div>
+          </div>
+          <button class="btn btn-p" onclick="addAbRule()">➕ הוסף כלל</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 כללים פעילים</div>
+          <div id="ab-rules-list"><div class="loading"><div class="spin"></div>טוען…</div></div>
+        </div>
+      </div>
+
+      <!-- Log tab -->
+      <div class="tab-pane" id="ab-log">
+        <div class="card">
+          <div class="card-title">📜 לוג הזמנות</div>
+          <div id="ab-log-list"><div class="loading"><div class="spin"></div>טוען…</div></div>
+        </div>
+      </div>
+
+      <!-- Passenger tab -->
+      <div class="tab-pane" id="ab-passenger">
+        <div class="card" style="max-width:480px;">
+          <div class="card-title">👤 פרטי נוסע לאוטו-מילוי</div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">פרטים אלו ישמשו למילוי אוטומטי בטפסי הזמנה (auto_fill mode)</p>
+          <div class="f2">
+            <div class="fg"><label>שם פרטי</label><input type="text" id="p-first" placeholder="ישראל"></div>
+            <div class="fg"><label>שם משפחה</label><input type="text" id="p-last" placeholder="ישראלי"></div>
+          </div>
+          <div class="f2">
+            <div class="fg"><label>אימייל</label><input type="email" id="p-email" placeholder="you@example.com"></div>
+            <div class="fg"><label>טלפון</label><input type="text" id="p-phone" placeholder="+972501234567"></div>
+          </div>
+          <div class="f2">
+            <div class="fg"><label>מספר דרכון</label><input type="password" id="p-passport" placeholder="••••••••"></div>
+            <div class="fg"><label>תאריך לידה</label><input type="date" id="p-dob"></div>
+          </div>
+          <button class="btn btn-p" onclick="savePassenger()">💾 שמור</button>
+          <div id="ab-playwright-status" style="margin-top:10px;font-size:.8rem;color:var(--muted);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Positioning ══ -->
+    <div class="page" id="page-positioning">
+      <div class="sh"><h2>🗺️ Positioning Flight Optimizer</h2></div>
+      <div class="warn-box" style="margin-bottom:14px;">
+        <div class="warn-title">🗺️ מה זה Positioning?</div>
+        לפעמים זול יותר לטוס TLV → אמסטרדם (100$) ואז AMS → NYC (280$) מאשר TLV → NYC ישיר (600$). <b>חיסכון של עד 40%!</b>
+      </div>
+
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">🔍 מצא הזדמנויות Positioning</div>
+          <div class="f2">
+            <div class="fg"><label>יעד סופי (IATA)</label><input type="text" id="pos-dest" placeholder="JFK / BKK / LAX" style="text-transform:uppercase;"></div>
+            <div class="fg"><label>תאריך יציאה</label><input type="date" id="pos-date"></div>
+          </div>
+          <div class="f2">
+            <div class="fg"><label>תאריך חזרה (אופציונלי)</label><input type="date" id="pos-ret"></div>
+            <div class="fg"><label>נוסעים</label><input type="number" id="pos-travelers" value="1" min="1" max="9"></div>
+          </div>
+          <div class="fg"><label>תקציב מקסימלי ($ — 0 = ללא הגבלה)</label><input type="number" id="pos-budget" value="0" min="0"></div>
+          <button class="btn btn-p" onclick="runPositioning()" id="pos-btn">🔍 מצא הזדמנויות</button>
+        </div>
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+            ✈️ נתיבי Positioning זולים מ-TLV
+            <button class="btn btn-g btn-sm" onclick="loadPositioningRoutes()">🔄 טען</button>
+          </div>
+          <div id="pos-routes-res" style="font-size:.82rem;color:var(--muted);">לחץ "טען" לרשימת ה-hubs הזולים ביותר.</div>
+        </div>
+      </div>
+
+      <div id="pos-results" style="margin-bottom:14px;"></div>
+
+      <div class="card">
+        <div class="card-title">🧮 מחשבון ROI — כדאי לעשות Positioning?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="fg" style="margin:0;"><label>TLV → Hub ($)</label><input type="number" id="roi-hub" value="80" min="0"></div>
+          <div class="fg" style="margin:0;"><label>Hub → יעד ($)</label><input type="number" id="roi-dest" value="350" min="0"></div>
+          <div class="fg" style="margin:0;"><label>טיסה ישירה מ-TLV ($)</label><input type="number" id="roi-direct" value="600" min="0"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="fg" style="margin:0;"><label>זמן נוסף (שעות)</label><input type="number" id="roi-time" value="6" min="0" step="0.5"></div>
+          <div class="fg" style="margin:0;"><label>שווי שעתך ($)</label><input type="number" id="roi-rate" value="20" min="0"></div>
+        </div>
+        <button class="btn btn-p" onclick="calcROI()">🧮 חשב ROI</button>
+        <div id="roi-res" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- ══ WhatsApp Bot ══ -->
+    <div class="page" id="page-whatsapp-bot">
+      <div class="sh"><h2>💬 WhatsApp Bot</h2></div>
+      <div class="warn-box" style="margin-bottom:14px;">
+        <div class="warn-title">💬 חיפוש טיסות בוואטסאפ</div>
+        שלח "TLV NYC 15/06" בוואטסאפ וקבל מחירים תוך שניות. פקודות: <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">TLV NYC 15/06</code> · <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">דיל</code> · <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">מחירים</code> · <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">עזרה</code>
+      </div>
+      <div class="tabs" id="wa-tabs">
+        <button class="tab-btn active" onclick="switchWaTab('setup')">⚙️ הגדרות Twilio</button>
+        <button class="tab-btn" onclick="switchWaTab('test')">🧪 בדיקה</button>
+        <button class="tab-btn" onclick="switchWaTab('stats')">📊 סטטיסטיקות</button>
+      </div>
+
+      <!-- Setup -->
+      <div class="tab-pane active" id="wa-setup">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">📖 הגדרת Twilio WhatsApp Sandbox</div>
+            <ol style="font-size:.82rem;color:var(--muted);line-height:2;padding-right:16px;">
+              <li>הירשם בחינם ב-<a href="https://twilio.com" target="_blank" style="color:var(--accent);">twilio.com</a></li>
+              <li>קבל <b>Account SID</b> ו-<b>Auth Token</b> מלוח הבקרה</li>
+              <li>ב-Twilio Console: Messaging → Try it Out → Send a WhatsApp message</li>
+              <li>עקוב אחרי ההוראות לחיבור ה-Sandbox (מספר בד"כ +14155238886)</li>
+              <li>הגדר Webhook: <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">https://YOUR_APP/whatsapp_webhook</code></li>
+            </ol>
+          </div>
+          <div class="card">
+            <div class="card-title">🔑 הגדרות Twilio</div>
+            <div class="fg"><label>Account SID</label><input type="password" id="wa-sid" placeholder="ACxxxxxxxxxxxxxxxx"></div>
+            <div class="fg"><label>Auth Token</label><input type="password" id="wa-auth" placeholder="••••••••••••••••••••"></div>
+            <div class="fg"><label>מספר WhatsApp שולח</label><input type="text" id="wa-from" placeholder="whatsapp:+14155238886"></div>
+            <button class="btn btn-p" onclick="saveWaSettings()">💾 שמור</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test -->
+      <div class="tab-pane" id="wa-test">
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">🧪 בדיקת הבוט (סימולציה)</div>
+            <div class="fg"><label>שלח הודעה לבוט (כמו ב-WhatsApp)</label><input type="text" id="wa-test-msg" placeholder="TLV NYC 15/06 / דיל / עזרה"></div>
+            <button class="btn btn-p" onclick="testWaBot()">📨 שלח</button>
+            <div class="card-title" style="margin-top:14px;">תגובת הבוט:</div>
+            <div class="ai-box ai-placeholder" id="wa-test-res">התגובה תופיע כאן…</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📤 שלח הודעה אמיתית</div>
+            <div class="fg"><label>לאן לשלוח (מספר)</label><input type="text" id="wa-send-to" placeholder="+972501234567"></div>
+            <div class="fg"><label>הודעה</label><textarea id="wa-send-msg" placeholder="Hello! This is Noded..." style="min-height:70px;"></textarea></div>
+            <button class="btn btn-p" onclick="sendWaMessage()">📤 שלח WhatsApp</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="tab-pane" id="wa-stats">
+        <div class="g4" id="wa-stats-grid">
+          <div class="stat"><div class="stat-lbl">סה״כ הודעות</div><div class="stat-val" id="wa-s-total">—</div></div>
+          <div class="stat"><div class="stat-lbl">משתמשים</div><div class="stat-val" id="wa-s-users">—</div></div>
+          <div class="stat"><div class="stat-lbl">היום</div><div class="stat-val" id="wa-s-today">—</div></div>
+          <div class="stat"><div class="stat-lbl">חיפושי טיסות</div><div class="stat-val" id="wa-s-flights">—</div></div>
+        </div>
+        <button class="btn btn-g" style="margin-top:14px;" onclick="loadWaStats()">🔄 רענן</button>
       </div>
     </div>
 
@@ -696,7 +1184,9 @@ const PAGE_TITLES={
   "deal-insights":"📊 תובנות ודפוסים","price-dna":"🧬 Price DNA",competitor:"🔍 השוואת אתרים",
   sentiment:"📰 סנטימנט & חדשות",rss:"📡 RSS & Reddit",visa:"🛂 בדיקת ויזה",
   "hidden-city":"🕵️ Hidden City",kiwi:"🔍 Kiwi טיסות",exchange:"💱 שערי חליפין",
-  alerts:"🎯 כללי התראה",settings:"⚙️ הגדרות"
+  alerts:"🎯 כללי התראה",settings:"⚙️ הגדרות",
+  "smart-tools":"🛠️ כלים חכמים","price-calendar":"📆 לוח מחירים","expiring-deals":"⏰ דילים פגי תוקף",
+  "telegram-bot":"🤖 בוט Telegram","auto-book":"⚡ Auto-Book Engine","positioning":"🗺️ Positioning","whatsapp-bot":"💬 WhatsApp Bot"
 };
 
 function navigate(p){
@@ -714,6 +1204,13 @@ function navigate(p){
   if(p==="sentiment")loadSentiment("");
   if(p==="alerts")loadAlerts();
   if(p==="settings")loadSettings();
+  if(p==="price-calendar")populateCalWatches();
+  if(p==="expiring-deals"){document.getElementById("exp-res").textContent="לחץ \"מצא דילים פגי תוקף\" לסריקה.";}
+  if(p==="smart-tools")switchSmartTab('split');
+  if(p==="telegram-bot")loadTgStatus();
+  if(p==="auto-book"){switchAbTab('rules');loadAbRules();}
+  if(p==="positioning")loadPositioningRoutes();
+  if(p==="whatsapp-bot"){switchWaTab('setup');loadWaStats();}
 }
 
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>{navigate(b.dataset.page);closeSidebar();}));
@@ -774,30 +1271,108 @@ async function loadSentiment(dest){
 }
 
 // ── Watches ───────────────────────────────────────────────────
-let _watches=[];
+let _watches=[], _watchesFiltered=[];
 async function loadWatches(){
   try{
     _watches=await api("GET","/api/watches?all=true");
-    const tbody=document.getElementById("watches-tbody");
-    if(!_watches.length){tbody.innerHTML=`<tr><td colspan="7"><div style="text-align:center;padding:24px;color:var(--muted);">אין מעקבים עדיין</div></td></tr>`;return;}
-    tbody.innerHTML=_watches.map(w=>{
-      const p=w.last_price,low=w.lowest_price;
-      return`<tr>
-        <td><b>${esc(w.name)}</b><br><span style="font-size:.73rem;color:var(--muted);">${esc(w.destination)}</span></td>
-        <td>${catTag(w.category)}</td>
-        <td>${esc(w.destination)}${w.origin?` ← ${esc(w.origin)}`:""}</td>
-        <td>${p?`${p.currency} ${p.price}`:"—"}</td>
-        <td>${low?`<span class="down">${low.currency} ${low.price}</span>`:"—"}</td>
-        <td><span class="tag ${w.enabled?"t-on":"t-off"}">${w.enabled?"פעיל":"כבוי"}</span></td>
-        <td style="white-space:nowrap;">
-          <button class="btn btn-g btn-sm btn-ico" onclick="checkPrice(${w.id})" title="בדוק מחיר">🔄</button>
-          <button class="btn btn-g btn-sm btn-ico" onclick="toggleWatch(${w.id},${!w.enabled})">${w.enabled?"⏸":"▶"}</button>
-          <button class="btn btn-d btn-sm btn-ico" onclick="deleteWatch(${w.id})">🗑</button>
-        </td>
-      </tr>`;
-    }).join("");
+    _watchesFiltered=[..._watches];
+    renderWatches();
     populateHistSel();
   }catch(e){toast("שגיאה בטעינת מעקבים","err");}
+}
+
+function filterWatches(){
+  const q=(document.getElementById("watch-search")?.value||"").toLowerCase();
+  const cat=document.getElementById("watch-cat-filter")?.value||"";
+  const sort=document.getElementById("watch-sort")?.value||"name";
+  _watchesFiltered=_watches.filter(w=>{
+    const matchQ=!q||(w.name||"").toLowerCase().includes(q)||(w.destination||"").toLowerCase().includes(q);
+    const matchCat=!cat||w.category===cat;
+    return matchQ&&matchCat;
+  });
+  _watchesFiltered.sort((a,b)=>{
+    if(sort==="name")return(a.name||"").localeCompare(b.name||"");
+    if(sort==="price_asc")return(a.last_price?.price||999999)-(b.last_price?.price||999999);
+    if(sort==="price_desc")return(b.last_price?.price||0)-(a.last_price?.price||0);
+    if(sort==="deal")return dealScore(b)-dealScore(a);
+    return 0;
+  });
+  renderWatches();
+}
+
+function dealScore(w){
+  const p=w.last_price?.price;const low=w.lowest_price?.price;
+  if(!p||!low)return 0;
+  return Math.round((1-(p/low))*100);
+}
+
+function bookNowLink(cat,origin,dest,dateFrom,dateTo){
+  const o=encodeURIComponent(origin||"TLV");const d=encodeURIComponent(dest||"");
+  const df=dateFrom?dateFrom.replace(/-/g,""):"";const dt=dateTo?dateTo.replace(/-/g,""):"";
+  if(cat==="flight"){
+    if(df)return`https://www.google.com/flights#flt=${o}.${d}.${df}*${d}.${o}.${dt||df}`;
+    return`https://www.google.com/flights?hl=iw#flt=${o}.${d}`;
+  }
+  if(cat==="hotel")return`https://www.booking.com/search.html?ss=${d}`;
+  if(cat==="apartment")return`https://www.airbnb.com/s/${d}`;
+  return`https://www.kayak.com/flights/${o}-${d}/${df||""}`;
+}
+
+function dealBadge(w){
+  const p=w.last_price?.price;const low=w.lowest_price?.price;
+  if(!p||!low)return"";
+  const pct=Math.round(((p-low)/low)*100);
+  if(pct<=5)return`<span class="hot-badge">🔥 HOT ${pct===0?"ALL-TIME LOW":"-"+Math.abs(pct)+"%"}</span>`;
+  if(pct>30)return`<span class="hot-badge cold-badge">📈 +${pct}% מהנמוך</span>`;
+  return"";
+}
+
+function priceProgBar(w){
+  const p=w.last_price?.price;const low=w.lowest_price?.price;
+  if(!p||!low)return"";
+  const pct=Math.min(100,Math.max(10,Math.round(((p-low)/(low*0.5+1))*100)));
+  return`<div class="price-prog"><div class="price-prog-fill" style="width:${pct}%"></div></div>`;
+}
+
+function dealScoreBadge(w){
+  const score=dealScore(w);
+  if(!w.last_price?.price)return`<span class="deal-score ds-d">—</span>`;
+  if(score<=0)return`<span class="deal-score ds-a">A</span>`;
+  if(score<=15)return`<span class="deal-score ds-b">B</span>`;
+  if(score<=30)return`<span class="deal-score ds-c">C</span>`;
+  return`<span class="deal-score ds-d">D</span>`;
+}
+
+function renderWatches(){
+  const tbody=document.getElementById("watches-tbody");
+  if(!_watchesFiltered.length){
+    tbody.innerHTML=`<tr><td colspan="7"><div style="text-align:center;padding:24px;color:var(--muted);">אין מעקבים${_watches.length?" — שנה את הסינון":""}</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=_watchesFiltered.map(w=>{
+    const p=w.last_price;
+    const bn=bookNowLink(w.category,w.origin,w.destination,w.date_from,w.date_to);
+    return`<tr>
+      <td>
+        <b>${esc(w.name)}</b><br>
+        <span style="font-size:.73rem;color:var(--muted);">${esc(w.destination)}${w.origin?` ← ${esc(w.origin)}`:""}</span><br>
+        ${dealBadge(w)}
+      </td>
+      <td>${catTag(w.category)}</td>
+      <td>
+        ${p?`<b>${p.currency} ${p.price}</b>`:"—"}
+        ${priceProgBar(w)}
+      </td>
+      <td>${dealScoreBadge(w)}</td>
+      <td><span class="tag ${w.enabled?"t-on":"t-off"}">${w.enabled?"פעיל":"כבוי"}</span></td>
+      <td><a href="${bn}" target="_blank" class="book-btn">🛒 הזמן</a></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-g btn-sm btn-ico" onclick="checkPrice(${w.id})" title="בדוק מחיר">🔄</button>
+        <button class="btn btn-g btn-sm btn-ico" onclick="toggleWatch(${w.id},${!w.enabled})">${w.enabled?"⏸":"▶"}</button>
+        <button class="btn btn-d btn-sm btn-ico" onclick="deleteWatch(${w.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join("");
 }
 
 function openAddWatch(){["w-name","w-orig","w-dest","w-query"].forEach(id=>document.getElementById(id).value="");document.getElementById("w-drop").value="10";document.getElementById("w-maxp").value="";openModal("m-add-watch");}
@@ -984,11 +1559,424 @@ function esc(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/<
 function catTag(c){const m={flight:"t-flight",hotel:"t-hotel",apartment:"t-apt",package:"t-pkg"};const labels={flight:"טיסה ✈️",hotel:"מלון 🏨",apartment:"דירה 🏠",package:"חבילה 📦"};return`<span class="tag ${m[c]||""}">${labels[c]||c||"—"}</span>`;}
 function md(text){if(!text)return"";return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>").replace(/`(.+?)`/g,"<code>$1</code>").replace(/^#{1,3} (.+)$/gm,"<b style='font-size:.97rem;display:block;margin:8px 0 4px;'>$1</b>").replace(/^[-•] (.+)$/gm,"• $1<br>").replace(/\n\n/g,"<br><br>").replace(/\n/g,"<br>");}
 
+// ── Chat helpers ─────────────────────────────────────────────
+function clearChat(){
+  chatHist=[];
+  document.getElementById("chat-msgs").innerHTML=`<div class="bubble ai">✈️ שלום! אני סוכן הנסיעות החכם שלך. שאל אותי על טיסות, מלונות, ויזות, דילים ועוד.</div>`;
+}
+function startChat(text){
+  document.getElementById("chat-in").value=text;
+  sendChat();
+}
+
+// ── Smart Tools ───────────────────────────────────────────────
+function switchSmartTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tab-pane").forEach(p=>p.classList.remove("active"));
+  const idx={split:0,nearby:1,lastmin:2,cheapday:3,"pkg-vs-ind":4,"when-book":5};
+  const tabs=document.querySelectorAll(".tabs .tab-btn");
+  if(tabs[idx[tab]])tabs[idx[tab]].classList.add("active");
+  const pane=document.getElementById("st-"+tab);
+  if(pane)pane.classList.add("active");
+}
+
+async function runSmartTool(inputId, resultId, promptPrefix){
+  const input=document.getElementById(inputId);
+  const res=document.getElementById(resultId);
+  const text=(input?.value||"").trim();
+  if(!text){toast("הכנס פרטים","err");return;}
+  res.classList.remove("ai-placeholder");
+  res.innerHTML=`<div class="loading"><div class="spin"></div>מנתח…</div>`;
+  try{
+    const r=await api("POST","/api/ai/quick",{prompt:promptPrefix+text+" — ענה בעברית בפירוט."});
+    res.innerHTML=md(r.text||"אין תוצאה");
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+}
+
+// ── Price Calendar ────────────────────────────────────────────
+function populateCalWatches(){
+  const sel=document.getElementById("cal-watch-sel");
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">— בחר —</option>`;
+  _watches.forEach(w=>{sel.innerHTML+=`<option value="${w.id}">${esc(w.name)}</option>`;});
+  if(cur)sel.value=cur;
+  // set default month to current
+  const mon=document.getElementById("cal-month");
+  if(mon&&!mon.value){const now=new Date();mon.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;}
+}
+
+async function loadPriceCalendar(){
+  const wid=document.getElementById("cal-watch-sel").value;
+  const mon=document.getElementById("cal-month").value;
+  const container=document.getElementById("cal-container");
+  if(!wid){toast("בחר מעקב","err");return;}
+  try{
+    const hist=await api("GET",`/api/prices/${wid}?limit=100`);
+    const [yr,mo]=mon?mon.split("-").map(Number):[new Date().getFullYear(),new Date().getMonth()+1];
+    const daysInMonth=new Date(yr,mo,0).getDate();
+    const firstDay=new Date(yr,mo-1,1).getDay();// 0=Sun
+
+    // Build price map by day
+    const priceMap={};
+    hist.forEach(h=>{
+      const d=new Date(h.checked_at||"");
+      if(d.getFullYear()===yr&&d.getMonth()+1===mo){
+        const day=d.getDate();
+        if(!priceMap[day]||h.price<priceMap[day])priceMap[day]=h.price;
+      }
+    });
+
+    const prices=Object.values(priceMap);
+    const minP=prices.length?Math.min(...prices):0;
+    const maxP=prices.length?Math.max(...prices):1;
+
+    function cellClass(p){
+      if(!p)return"cal-empty";
+      const r=(p-minP)/(maxP-minP||1);
+      if(r<0.33)return"cal-low";
+      if(r<0.67)return"cal-mid";
+      return"cal-high";
+    }
+
+    const dayNames=["א","ב","ג","ד","ה","ו","ש"];
+    let html=`<div class="cal-header">${dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join("")}</div><div class="cal-grid">`;
+
+    // Empty cells before 1st
+    for(let i=0;i<firstDay;i++)html+=`<div class="cal-cell cal-empty"></div>`;
+
+    for(let day=1;day<=daysInMonth;day++){
+      const p=priceMap[day];
+      const cls=cellClass(p);
+      html+=`<div class="cal-cell ${cls}" title="${p?`$${p}`:"אין נתונים"}"><div class="cal-num">${day}</div>${p?`<div class="cal-p">$${p}</div>`:""}</div>`;
+    }
+    html+=`</div>`;
+    if(!prices.length)html=`<div class="warn-box"><div class="warn-title">📆 אין נתוני מחיר לחודש זה</div>לחץ 🔄 על מעקבים לאיסוף נתונים, ואז חזור כאן.</div>`;
+
+    container.innerHTML=`<div class="card"><div class="card-title">📆 ${esc(_watches.find(w=>w.id==wid)?.name||"מעקב")} — ${mon||"החודש"}</div>${html}</div>`;
+  }catch(e){toast("שגיאה","err");console.error(e);}
+}
+
+async function loadCalendarAI(){
+  const wid=document.getElementById("cal-watch-sel").value;
+  const mon=document.getElementById("cal-month").value;
+  const resEl=document.getElementById("cal-ai-res");
+  const box=document.getElementById("cal-ai-box");
+  box.style.display="block";
+  resEl.classList.remove("ai-placeholder");
+  resEl.innerHTML=`<div class="loading"><div class="spin"></div>מנתח…</div>`;
+  const watchName=_watches.find(w=>w.id==wid)?.name||"מסלול";
+  try{
+    const r=await api("POST","/api/ai/quick",{prompt:`מצא את התאריכים הזולים ביותר לנסיעה: ${watchName}. חודש: ${mon||"הקרוב"}. כולל המלצה על יום הזול ביותר בשבוע. ענה בעברית.`});
+    resEl.innerHTML=md(r.text||"אין תוצאה");
+  }catch(e){resEl.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+}
+
+// ── Expiring Deals ────────────────────────────────────────────
+async function loadExpiringDeals(){
+  const res=document.getElementById("exp-res");
+  const market=document.getElementById("exp-market");
+  const dest=document.getElementById("exp-dest")?.value.trim()||"";
+  res.classList.remove("ai-placeholder");
+  res.innerHTML=`<div class="loading"><div class="spin"></div>סורק דילים פגי תוקף…</div>`;
+  market.innerHTML=`<div class="loading"><div class="spin"></div>בודק שוק…</div>`;
+  try{
+    const [dealsR,mktR]=await Promise.all([
+      api("POST","/api/ai/quick",{prompt:`מצא דילים לטיסות ומלונות שפגים ב-24-72 שעות הקרובות (flash sales, limited time, error fares) ל${dest||"כל יעד"}. כלול: יעד, מחיר, חברת תעופה/מלון, תאריך פקיעה, קישור. ענה בעברית.`}),
+      api("POST","/api/ai/quick",{prompt:`תן סיכום קצר של מצב שוק הטיסות עכשיו: מגמת מחירים, האם זה זמן טוב לקנות? 2-3 משפטים בעברית.`})
+    ]);
+    res.innerHTML=md(dealsR.text||"לא נמצאו דילים");
+    market.innerHTML=md(mktR.text||"אין נתונים");
+  }catch(e){
+    res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;
+    market.textContent="שגיאה";
+  }
+}
+
+// ── Telegram Bot ─────────────────────────────────────────────
+async function loadTgStatus(){
+  try{
+    const r=await api("GET","/api/telegram/info");
+    const box=document.getElementById("tg-status-box");
+    const title=document.getElementById("tg-status-title");
+    const msg=document.getElementById("tg-status-msg");
+    if(r.ok&&r.result){
+      box.style.background="rgba(34,197,94,.05)";box.style.borderColor="rgba(34,197,94,.3)";
+      title.textContent="✅ בוט מחובר";title.style.color="#4ade80";
+      msg.textContent=`Bot: @${r.result.username||""}`;
+    }else{
+      title.textContent="⚠️ בוט לא מוגדר";
+      msg.textContent=r.error||"הגדר Bot Token ו-Chat ID למטה.";
+    }
+  }catch(e){}
+}
+async function saveTgBot(){
+  const token=document.getElementById("tg-token-pg")?.value.trim();
+  const chatId=document.getElementById("tg-chatid-pg")?.value.trim();
+  const body={};if(token)body.TELEGRAM_BOT_TOKEN=token;if(chatId)body.TELEGRAM_CHAT_ID=chatId;
+  if(!token&&!chatId){toast("הכנס לפחות שדה אחד","err");return;}
+  try{await api("POST","/api/settings",body);toast("נשמר ✅","ok");setTimeout(loadTgStatus,500);}
+  catch(e){toast("שגיאה: "+e.message,"err");}
+}
+async function testTgBot(){
+  const res=document.getElementById("tg-test-res");
+  res.textContent="בודק…";
+  try{
+    const token=document.getElementById("tg-token-pg")?.value.trim()||"";
+    const chatId=document.getElementById("tg-chatid-pg")?.value.trim()||"";
+    const r=await api("POST","/api/telegram/test",{token,chat_id:chatId});
+    res.innerHTML=r.ok?`<span style="color:#4ade80;">✅ הודעת בדיקה נשלחה! בדוק את Telegram.</span>`:`<span style="color:#f87171;">❌ שגיאה: ${esc(r.error||"לא ידוע")}</span>`;
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">❌ שגיאה: ${esc(e.message)}</span>`;}
+}
+async function getTgChatId(){
+  const res=document.getElementById("tg-test-res");res.textContent="מחפש Chat ID…";
+  try{
+    const r=await api("GET","/api/telegram/chat-id");
+    if(r.chat_id){
+      document.getElementById("tg-chatid-pg").value=r.chat_id;
+      res.innerHTML=`<span style="color:#4ade80;">✅ Chat ID נמצא: ${esc(String(r.chat_id))}</span>`;
+    }else{
+      res.innerHTML=`<span style="color:#fcd34d;">⚠️ לא נמצאו הודעות. שלח הודעה לבוט תחילה.</span>`;
+    }
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">❌ שגיאה: ${esc(e.message)}</span>`;}
+}
+async function sendTgManual(){
+  const msg=document.getElementById("tg-manual-msg")?.value.trim();
+  if(!msg){toast("הכנס הודעה","err");return;}
+  try{
+    const r=await api("POST","/api/telegram/send",{message:msg});
+    if(r.ok)toast("✅ נשלח!","ok");
+    else toast("❌ שגיאה: "+(r.error||"לא ידוע"),"err");
+  }catch(e){toast("שגיאה: "+e.message,"err");}
+}
+
+// ── Auto-Book ─────────────────────────────────────────────────
+function switchAbTab(tab){
+  const tabs=document.querySelectorAll("#ab-tabs .tab-btn");
+  const panes={rules:document.getElementById("ab-rules"),log:document.getElementById("ab-log"),passenger:document.getElementById("ab-passenger")};
+  const order={rules:0,log:1,passenger:2};
+  tabs.forEach(b=>b.classList.remove("active"));
+  Object.values(panes).forEach(p=>{if(p)p.classList.remove("active");});
+  if(tabs[order[tab]])tabs[order[tab]].classList.add("active");
+  if(panes[tab])panes[tab].classList.add("active");
+  if(tab==="log")loadAbLog();
+}
+async function loadAbRules(){
+  const el=document.getElementById("ab-rules-list");
+  try{
+    const rules=await api("GET","/api/auto-book/rules");
+    if(!rules.length){el.innerHTML=`<div style="color:var(--muted);text-align:center;padding:18px;">אין כללים. הוסף כלל למעלה.</div>`;return;}
+    const modeLabel={notify:"📲 התראה בלבד",open_browser:"🌐 פתח browser",auto_fill:"🤖 מלא אוטומטית"};
+    el.innerHTML=rules.map(r=>`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+      <div>
+        <span style="font-size:.9rem;">${r.enabled?"🟢":"⚫"}</span>
+        <b style="margin-right:6px;">${esc(r.name)}</b>
+        <span style="color:var(--muted);font-size:.78rem;">${esc(r.origin||"TLV")} → ${esc(r.destination)} &lt; $${r.max_price}</span>
+        <span style="color:var(--accent);font-size:.75rem;margin-right:6px;">${modeLabel[r.mode]||r.mode}</span>
+        ${r.trigger_count?`<span style="color:#fcd34d;font-size:.75rem;">הופעל ${r.trigger_count}×</span>`:""}
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-g btn-sm" onclick="toggleAbRule(${r.id},${!r.enabled})">${r.enabled?"⏸":"▶"}</button>
+        <button class="btn btn-d btn-sm" onclick="deleteAbRule(${r.id})">🗑</button>
+      </div>
+    </div>`).join("");
+  }catch(e){el.innerHTML=`<div style="color:#f87171;">שגיאה: ${esc(e.message)}</div>`;}
+}
+async function addAbRule(){
+  const name=document.getElementById("ab-name")?.value.trim();
+  const dest=document.getElementById("ab-dest")?.value.trim().toUpperCase();
+  if(!name||!dest){toast("שם ויעד נדרשים","err");return;}
+  try{
+    await api("POST","/api/auto-book/rules",{
+      name,origin:document.getElementById("ab-origin")?.value.trim().toUpperCase()||"TLV",
+      destination:dest,max_price:parseFloat(document.getElementById("ab-price")?.value)||400,
+      date_from:document.getElementById("ab-from")?.value||null,
+      date_to:document.getElementById("ab-to")?.value||null,
+      mode:document.getElementById("ab-mode")?.value||"notify"
+    });
+    toast("כלל נוסף ✅","ok");loadAbRules();
+  }catch(e){toast("שגיאה: "+e.message,"err");}
+}
+async function deleteAbRule(id){if(!confirm("למחוק כלל זה?"))return;try{await api("DELETE",`/api/auto-book/rules/${id}`);loadAbRules();}catch(e){toast("שגיאה","err");}}
+async function toggleAbRule(id,en){try{await api("PATCH",`/api/auto-book/rules/${id}/toggle?enabled=${en}`);loadAbRules();}catch(e){toast("שגיאה","err");}}
+async function loadAbLog(){
+  const el=document.getElementById("ab-log-list");
+  try{
+    const log=await api("GET","/api/auto-book/log");
+    if(!log.length){el.innerHTML=`<div style="color:var(--muted);text-align:center;padding:18px;">אין רשומות לוג עדיין.</div>`;return;}
+    el.innerHTML=log.map(e=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:.82rem;"><b>${esc(e.rule_name||"")}</b> | ${esc(e.action||"")} | <span style="color:var(--muted);">${(e.booked_at||"").substring(0,16)}</span></div>`).join("");
+  }catch(e){el.innerHTML=`<div style="color:#f87171;">שגיאה: ${esc(e.message)}</div>`;}
+}
+async function savePassenger(){
+  const body={
+    first_name:document.getElementById("p-first")?.value.trim()||"",
+    last_name:document.getElementById("p-last")?.value.trim()||"",
+    email:document.getElementById("p-email")?.value.trim()||"",
+    phone:document.getElementById("p-phone")?.value.trim()||"",
+    passport:document.getElementById("p-passport")?.value.trim()||"",
+    dob:document.getElementById("p-dob")?.value||""
+  };
+  try{await api("POST","/api/auto-book/passenger",body);toast("נשמר ✅","ok");}
+  catch(e){toast("שגיאה: "+e.message,"err");}
+}
+
+// ── Positioning ───────────────────────────────────────────────
+async function runPositioning(){
+  const dest=document.getElementById("pos-dest")?.value.trim().toUpperCase();
+  const date=document.getElementById("pos-date")?.value;
+  if(!dest||!date){toast("הכנס יעד ותאריך","err");return;}
+  const btn=document.getElementById("pos-btn");
+  btn.disabled=true;btn.textContent="מחפש…";
+  const res=document.getElementById("pos-results");
+  res.innerHTML=`<div class="loading"><div class="spin"></div>מחפש הזדמנויות positioning… (עשוי לקחת 30-60 שניות)</div>`;
+  try{
+    const r=await api("POST","/api/positioning",{
+      destination:dest,travel_date:date,
+      return_date:document.getElementById("pos-ret")?.value||null,
+      budget:parseFloat(document.getElementById("pos-budget")?.value)||0,
+      travelers:parseInt(document.getElementById("pos-travelers")?.value)||1
+    });
+    const opps=r.opportunities||[];
+    if(r.ai_result){res.innerHTML=`<div class="card"><div class="card-title">🤖 ניתוח AI</div><div class="ai-box">${md(r.ai_result)}</div></div>`;return;}
+    if(!opps.length){res.innerHTML=`<div class="warn-box"><div class="warn-title">לא נמצאו הזדמנויות</div>לא נמצאו הזדמנויות positioning לנתיב זה. נסה יעד אחר.</div>`;return;}
+    res.innerHTML=`<div style="font-size:.9rem;color:#4ade80;margin-bottom:10px;">✅ נמצאו ${opps.length} הזדמנויות!</div>`+opps.map(opp=>{
+      const pct=opp.savings_pct||0;const color=pct>20?"#4ade80":pct>10?"#fcd34d":"#94a3b8";
+      return`<div class="card" style="margin-bottom:10px;border-color:${color}20;">
+        <div class="card-title" style="color:${color};">🗺️ דרך ${esc(opp.positioning_city||opp.positioning_airport||"")} — חיסכון $${(opp.savings||0).toFixed(0)} (${pct.toFixed(0)}%)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:.82rem;margin-bottom:8px;">
+          <div><b>TLV → Hub</b><br>$${opp.tlv_to_hub_price||0}</div>
+          <div><b>Hub → ${dest}</b><br>$${opp.hub_to_dest_price||0}</div>
+          <div><b>ישיר TLV → ${dest}</b><br>$${opp.direct_tlv_to_dest||0}</div>
+        </div>
+        ${opp.why?`<div style="font-size:.8rem;color:var(--muted);">${esc(opp.why)}</div>`:""}
+        ${opp.overnight_needed?`<div style="margin-top:6px;font-size:.8rem;color:#fcd34d;">🌙 דורש לינה בעיר הביניים</div>`:""}
+      </div>`;
+    }).join("");
+  }catch(e){res.innerHTML=`<div style="color:#f87171;">שגיאה: ${esc(e.message)}</div>`;}
+  btn.disabled=false;btn.textContent="🔍 מצא הזדמנויות";
+}
+
+async function loadPositioningRoutes(){
+  const el=document.getElementById("pos-routes-res");
+  if(!el)return;
+  el.innerHTML=`<div class="loading"><div class="spin"></div>טוען…</div>`;
+  try{
+    const r=await api("GET","/api/positioning/routes");
+    if(r.ai_result){el.innerHTML=md(r.ai_result);return;}
+    const routes=r.routes||[];
+    if(!routes.length){el.textContent="לא נמצאו נתיבים.";return;}
+    el.innerHTML=routes.slice(0,10).map(r=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem;">✈️ <b>${esc(r.city||"")} (${esc(r.airport||"")})</b> — מ-$${r.price_from||"?"} | ${esc(r.airline||"")} | <span style="color:var(--muted);">${esc(r.why_good_positioning||"")}</span></div>`).join("");
+  }catch(e){el.textContent="שגיאה בטעינה";}
+}
+
+async function calcROI(){
+  const hub=parseFloat(document.getElementById("roi-hub")?.value)||0;
+  const dest=parseFloat(document.getElementById("roi-dest")?.value)||0;
+  const direct=parseFloat(document.getElementById("roi-direct")?.value)||0;
+  const time=parseFloat(document.getElementById("roi-time")?.value)||6;
+  const rate=parseFloat(document.getElementById("roi-rate")?.value)||20;
+  const res=document.getElementById("roi-res");
+  try{
+    const r=await api("POST","/api/positioning/roi",{tlv_to_hub:hub,hub_to_dest:dest,direct_price:direct,extra_time_hours:time,hourly_rate:rate});
+    const net=r.net_savings||0;
+    const color=net>0?"#4ade80":"#f87171";
+    res.innerHTML=`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:14px;">
+      <div style="font-size:1.1rem;font-weight:800;color:${color};margin-bottom:10px;">${esc(r.verdict||"")}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:.84rem;">
+        <div><div style="color:var(--muted);font-size:.72rem;">חיסכון גולמי</div><b style="color:#4ade80;">$${(r.gross_savings||0).toFixed(0)} (${(r.gross_savings_pct||0).toFixed(1)}%)</b></div>
+        <div><div style="color:var(--muted);font-size:.72rem;">עלות זמן</div><b style="color:#f87171;">$${(r.time_cost||0).toFixed(0)}</b></div>
+        <div><div style="color:var(--muted);font-size:.72rem;">חיסכון נטו</div><b style="color:${color};">$${net.toFixed(0)}</b></div>
+      </div>
+    </div>`;
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+}
+
+// ── WhatsApp Bot ──────────────────────────────────────────────
+function switchWaTab(tab){
+  const tabs=document.querySelectorAll("#wa-tabs .tab-btn");
+  const order={setup:0,test:1,stats:2};
+  const panes={setup:document.getElementById("wa-setup"),test:document.getElementById("wa-test"),stats:document.getElementById("wa-stats")};
+  tabs.forEach(b=>b.classList.remove("active"));
+  Object.values(panes).forEach(p=>{if(p)p.classList.remove("active");});
+  if(tabs[order[tab]])tabs[order[tab]].classList.add("active");
+  if(panes[tab])panes[tab].classList.add("active");
+}
+async function saveWaSettings(){
+  const body={};
+  const sid=document.getElementById("wa-sid")?.value.trim();
+  const auth=document.getElementById("wa-auth")?.value.trim();
+  const from=document.getElementById("wa-from")?.value.trim();
+  if(sid)body.TWILIO_ACCOUNT_SID=sid;if(auth)body.TWILIO_AUTH_TOKEN=auth;if(from)body.TWILIO_WHATSAPP_FROM=from;
+  if(!sid&&!auth){toast("הכנס Account SID ו-Auth Token","err");return;}
+  try{await api("POST","/api/settings",body);toast("נשמר ✅","ok");}
+  catch(e){toast("שגיאה: "+e.message,"err");}
+}
+async function testWaBot(){
+  const msg=document.getElementById("wa-test-msg")?.value.trim();
+  const res=document.getElementById("wa-test-res");
+  if(!msg){toast("הכנס הודעה","err");return;}
+  res.classList.remove("ai-placeholder");res.innerHTML=`<div class="loading"><div class="spin"></div>שולח…</div>`;
+  try{
+    const r=await api("POST","/api/whatsapp/test",{message:msg});
+    res.innerHTML=md(r.reply||"אין תגובה");
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+}
+async function sendWaMessage(){
+  const to=document.getElementById("wa-send-to")?.value.trim();
+  const msg=document.getElementById("wa-send-msg")?.value.trim();
+  if(!to||!msg){toast("מלא שדות","err");return;}
+  try{
+    const r=await api("POST","/api/whatsapp/send",{to,message:msg});
+    if(r.error)toast("❌ "+r.error,"err");else toast("✅ נשלח!","ok");
+  }catch(e){toast("שגיאה: "+e.message,"err");}
+}
+async function loadWaStats(){
+  try{
+    const s=await api("GET","/api/whatsapp/stats");
+    document.getElementById("wa-s-total").textContent=s.total_messages??0;
+    document.getElementById("wa-s-users").textContent=s.unique_users??0;
+    document.getElementById("wa-s-today").textContent=s.messages_today??0;
+    document.getElementById("wa-s-flights").textContent=s.flight_searches??0;
+  }catch(e){}
+}
+
+// ── Settings extras ───────────────────────────────────────────
+async function saveTelegramSettings(){
+  const token=document.getElementById("tg-token-input")?.value.trim();
+  const chatId=document.getElementById("tg-chatid-input")?.value.trim();
+  if(!token&&!chatId){toast("הכנס לפחות שדה אחד","err");return;}
+  const body={};
+  if(token)body.TELEGRAM_BOT_TOKEN=token;
+  if(chatId)body.TELEGRAM_CHAT_ID=chatId;
+  try{await api("POST","/api/settings",body);toast("הגדרות טלגרם נשמרו ✅","ok");}
+  catch(e){toast("שגיאה: "+e.message,"err");}
+}
+async function testTelegram(){
+  toast("שולח הודעת בדיקה…");
+  try{
+    await api("POST","/api/ai/quick",{prompt:"test"});// just to check server is up
+    toast("⚠️ בדיקת טלגרם ישירה אינה זמינה עדיין — וודא שהגדרת TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID");
+  }catch(e){toast("שגיאה","err");}
+}
+async function saveNtfySettings(){
+  const topic=document.getElementById("ntfy-topic-input")?.value.trim();
+  const server=document.getElementById("ntfy-server-input")?.value.trim();
+  const body={};
+  if(topic)body.NTFY_TOPIC=topic;
+  if(server)body.NTFY_SERVER=server;
+  if(!topic){toast("הכנס topic","err");return;}
+  try{await api("POST","/api/settings",body);toast("הגדרות NTFY נשמרו ✅","ok");}
+  catch(e){toast("שגיאה: "+e.message,"err");}
+}
+
 // ── Language toggle ───────────────────────────────────────────
 let _lang=localStorage.getItem("noded_lang")||"he";
-const TITLES_EN={dashboard:"🏠 Dashboard",watches:"👁 Watch List",history:"📊 Price History",chat:"💬 AI Travel Agent","wait-or-buy":"🔮 Wait or Buy?","ai-opps":"🌟 AI Opportunities","deal-hunter":"🔥 Deal Hunter",surprise:"🎲 Surprise Destination","trip-planner":"🗺️ Trip Planner","multi-city":"🌍 Multi-City","stopovers":"🔁 Free Stopovers","flexible-dates":"📅 Flexible Dates",predict:"📈 Price Prediction","true-cost":"💰 True Cost","points-vs-cash":"💳 Points vs Cash","deal-insights":"📊 Deal Insights","price-dna":"🧬 Price DNA",competitor:"🔍 Compare Sites",sentiment:"📰 Market Pulse",rss:"📡 RSS & Reddit",visa:"🛂 Visa Check","hidden-city":"🕵️ Hidden City",kiwi:"🔍 Kiwi Flights",exchange:"💱 Exchange Rates",alerts:"🎯 Alert Rules",settings:"⚙️ Settings"};
-const NAV_EN={dashboard:"Dashboard",watches:"Watch List",history:"Price History",chat:"AI Travel Agent","wait-or-buy":"Wait or Buy?","ai-opps":"AI Opportunities","deal-hunter":"Deal Hunter",surprise:"Surprise Destination","trip-planner":"Trip Planner","multi-city":"Multi-City",stopovers:"Free Stopovers","flexible-dates":"Flexible Dates",predict:"Price Prediction","true-cost":"True Cost","points-vs-cash":"Points vs Cash","deal-insights":"Deal Insights","price-dna":"Price DNA",competitor:"Compare Sites",sentiment:"Market Pulse",rss:"RSS & Reddit",visa:"Visa Check","hidden-city":"Hidden City",kiwi:"Kiwi Flights",exchange:"Exchange Rates",alerts:"Alert Rules",settings:"Settings"};
-const NAV_HE={dashboard:"לוח בקרה",watches:"רשימת מעקב",history:"היסטוריית מחירים",chat:"סוכן נסיעות AI","wait-or-buy":"כדאי לחכות?","ai-opps":"הזדמנויות AI","deal-hunter":"ציד דילים",surprise:"יעד מפתיע","trip-planner":"תכנן טיול","multi-city":"מסלול מרובה ערים",stopovers:"עצירות חינם","flexible-dates":"תאריכים גמישים",predict:"חיזוי מחיר","true-cost":"עלות אמיתית","points-vs-cash":"נקודות vs מזומן","deal-insights":"תובנות ודפוסים","price-dna":"Price DNA",competitor:"השוואת אתרים",sentiment:"סנטימנט & חדשות",rss:"RSS & Reddit",visa:"בדיקת ויזה","hidden-city":"Hidden City",kiwi:"Kiwi טיסות",exchange:"שערי חליפין",alerts:"כללי התראה",settings:"הגדרות"};
+const TITLES_EN={dashboard:"🏠 Dashboard",watches:"👁 Watch List",history:"📊 Price History",chat:"💬 AI Travel Agent","wait-or-buy":"🔮 Wait or Buy?","ai-opps":"🌟 AI Opportunities","deal-hunter":"🔥 Deal Hunter",surprise:"🎲 Surprise Destination","trip-planner":"🗺️ Trip Planner","multi-city":"🌍 Multi-City","stopovers":"🔁 Free Stopovers","flexible-dates":"📅 Flexible Dates",predict:"📈 Price Prediction","true-cost":"💰 True Cost","points-vs-cash":"💳 Points vs Cash","deal-insights":"📊 Deal Insights","price-dna":"🧬 Price DNA",competitor:"🔍 Compare Sites",sentiment:"📰 Market Pulse",rss:"📡 RSS & Reddit",visa:"🛂 Visa Check","hidden-city":"🕵️ Hidden City",kiwi:"🔍 Kiwi Flights",exchange:"💱 Exchange Rates",alerts:"🎯 Alert Rules",settings:"⚙️ Settings","smart-tools":"🛠️ Smart Tools","price-calendar":"📆 Price Calendar","expiring-deals":"⏰ Expiring Deals",
+  "telegram-bot":"🤖 Telegram Bot","auto-book":"⚡ Auto-Book Engine","positioning":"🗺️ Positioning","whatsapp-bot":"💬 WhatsApp Bot"};
+const NAV_EN={dashboard:"Dashboard",watches:"Watch List",history:"Price History",chat:"AI Travel Agent","wait-or-buy":"Wait or Buy?","ai-opps":"AI Opportunities","deal-hunter":"Deal Hunter",surprise:"Surprise Destination","trip-planner":"Trip Planner","multi-city":"Multi-City",stopovers:"Free Stopovers","flexible-dates":"Flexible Dates",predict:"Price Prediction","true-cost":"True Cost","points-vs-cash":"Points vs Cash","deal-insights":"Deal Insights","price-dna":"Price DNA",competitor:"Compare Sites",sentiment:"Market Pulse",rss:"RSS & Reddit",visa:"Visa Check","hidden-city":"Hidden City",kiwi:"Kiwi Flights",exchange:"Exchange Rates",alerts:"Alert Rules",settings:"Settings","smart-tools":"Smart Tools","price-calendar":"Price Calendar","expiring-deals":"Expiring Deals",
+  "telegram-bot":"Telegram Bot","auto-book":"Auto-Book Engine","positioning":"Positioning","whatsapp-bot":"WhatsApp Bot"};
+const NAV_HE={dashboard:"לוח בקרה",watches:"רשימת מעקב",history:"היסטוריית מחירים",chat:"סוכן נסיעות AI","wait-or-buy":"כדאי לחכות?","ai-opps":"הזדמנויות AI","deal-hunter":"ציד דילים",surprise:"יעד מפתיע","trip-planner":"תכנן טיול","multi-city":"מסלול מרובה ערים",stopovers:"עצירות חינם","flexible-dates":"תאריכים גמישים",predict:"חיזוי מחיר","true-cost":"עלות אמיתית","points-vs-cash":"נקודות vs מזומן","deal-insights":"תובנות ודפוסים","price-dna":"Price DNA",competitor:"השוואת אתרים",sentiment:"סנטימנט & חדשות",rss:"RSS & Reddit",visa:"בדיקת ויזה","hidden-city":"Hidden City",kiwi:"Kiwi טיסות",exchange:"שערי חליפין",alerts:"כללי התראה",settings:"הגדרות","smart-tools":"כלים חכמים","price-calendar":"לוח מחירים","expiring-deals":"דילים פגי תוקף",
+  "telegram-bot":"בוט טלגרם","auto-book":"Auto-Book Engine","positioning":"Positioning","whatsapp-bot":"WhatsApp Bot"};
 
 function toggleLang(){_lang=_lang==="he"?"en":"he";localStorage.setItem("noded_lang",_lang);applyLang();}
 

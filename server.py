@@ -636,6 +636,266 @@ async def rss_scan(body: AIQuery, request: Request):
     return {"result": result or ""}
 
 
+# ════════════════════════════════════════════════════════════
+# TELEGRAM BOT
+# ════════════════════════════════════════════════════════════
+
+def tg_mod():   return _lazy("telegram_bot")
+
+@app.post("/api/telegram/test")
+async def telegram_test(body: dict):
+    token   = os.environ.get("TELEGRAM_BOT_TOKEN") or body.get("token", "")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")   or body.get("chat_id", "")
+    if not token or not chat_id:
+        raise HTTPException(400, "token and chat_id required")
+    mod = tg_mod()
+    if not mod:
+        raise HTTPException(500, "telegram_bot module not available")
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, lambda: mod.test_connection(token, chat_id))
+
+@app.post("/api/telegram/send")
+async def telegram_send(body: dict):
+    token   = os.environ.get("TELEGRAM_BOT_TOKEN") or body.get("token", "")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")   or body.get("chat_id", "")
+    msg     = body.get("message", "")
+    if not token or not chat_id or not msg:
+        raise HTTPException(400, "token, chat_id and message required")
+    mod = tg_mod()
+    if not mod:
+        raise HTTPException(500, "telegram_bot module not available")
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, lambda: mod.send_message(token, chat_id, msg))
+
+@app.get("/api/telegram/info")
+async def telegram_info():
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "No token configured"}
+    mod = tg_mod()
+    if not mod:
+        return {"ok": False, "error": "module unavailable"}
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, lambda: mod.get_bot_info(token))
+
+@app.get("/api/telegram/chat-id")
+async def telegram_chat_id():
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    if not token:
+        raise HTTPException(400, "No token configured")
+    mod = tg_mod()
+    if not mod:
+        raise HTTPException(500, "module unavailable")
+    loop = asyncio.get_event_loop()
+    updates = await loop.run_in_executor(None, lambda: mod.get_updates(token))
+    found   = mod.extract_chat_id(updates)
+    return {"chat_id": found}
+
+
+# ════════════════════════════════════════════════════════════
+# AUTO-BOOK
+# ════════════════════════════════════════════════════════════
+
+def ab_mod(): return _lazy("auto_book")
+
+@app.get("/api/auto-book/rules")
+async def get_ab_rules():
+    mod = ab_mod()
+    if not mod:
+        return []
+    mod.ensure_auto_book_table()
+    return mod.get_rules(enabled_only=False) or []
+
+class AutoBookRule(BaseModel):
+    name: str
+    origin: str = "TLV"
+    destination: str
+    max_price: float
+    date_from: Optional[str] = None
+    date_to: Optional[str] = None
+    mode: str = "notify"
+
+@app.post("/api/auto-book/rules", status_code=201)
+async def add_ab_rule(body: AutoBookRule):
+    mod = ab_mod()
+    if not mod:
+        raise HTTPException(500, "auto_book module not available")
+    mod.ensure_auto_book_table()
+    rule_id = mod.add_rule(
+        name=body.name, origin=body.origin, destination=body.destination,
+        max_price=body.max_price, date_from=body.date_from,
+        date_to=body.date_to, mode=body.mode,
+    )
+    return {"id": rule_id}
+
+@app.delete("/api/auto-book/rules/{rule_id}")
+async def delete_ab_rule(rule_id: int):
+    mod = ab_mod()
+    if not mod:
+        raise HTTPException(500, "auto_book module not available")
+    mod.delete_rule(rule_id)
+    return {"ok": True}
+
+@app.patch("/api/auto-book/rules/{rule_id}/toggle")
+async def toggle_ab_rule(rule_id: int, enabled: bool = True):
+    mod = ab_mod()
+    if not mod:
+        raise HTTPException(500, "auto_book module not available")
+    mod.toggle_rule(rule_id, enabled)
+    return {"ok": True}
+
+@app.get("/api/auto-book/log")
+async def get_ab_log():
+    mod = ab_mod()
+    if not mod:
+        return []
+    return mod.get_booking_log(limit=20) or []
+
+class PassengerConfig(BaseModel):
+    first_name: str = ""
+    last_name: str = ""
+    email: str = ""
+    phone: str = ""
+    passport: str = ""
+    dob: str = ""
+
+@app.post("/api/auto-book/passenger")
+async def save_passenger(body: PassengerConfig):
+    mod = ab_mod()
+    if not mod:
+        raise HTTPException(500, "auto_book module not available")
+    mod.save_passenger_config(body.dict())
+    return {"ok": True}
+
+
+# ════════════════════════════════════════════════════════════
+# POSITIONING
+# ════════════════════════════════════════════════════════════
+
+def pos_mod(): return _lazy("positioning")
+
+class PositioningQuery(BaseModel):
+    destination: str
+    travel_date: str
+    return_date: Optional[str] = None
+    budget: float = 0
+    travelers: int = 1
+
+@app.post("/api/positioning")
+async def find_positioning(body: PositioningQuery, request: Request):
+    allowed, plan, _ = _check_ai_quota(request)
+    if not allowed:
+        raise HTTPException(429, "Daily AI limit reached")
+    mod = pos_mod()
+    loop = asyncio.get_event_loop()
+    if mod:
+        opps = await loop.run_in_executor(
+            None,
+            lambda: mod.find_positioning_opportunities(
+                destination=body.destination, travel_date=body.travel_date,
+                return_date=body.return_date or "", budget=body.budget,
+                travelers=body.travelers,
+            )
+        )
+        return {"opportunities": opps or []}
+    # AI fallback
+    prompt = (
+        f"Find positioning flight opportunities from TLV to {body.destination} on {body.travel_date}. "
+        f"Budget: ${body.budget or 'any'}. Is it cheaper to fly TLV→Hub→{body.destination}? "
+        "List top 3 hubs with estimated prices, savings%, and tips. Respond in Hebrew."
+    )
+    result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=900))
+    return {"opportunities": [], "ai_result": result or ""}
+
+@app.get("/api/positioning/routes")
+async def positioning_routes(request: Request):
+    allowed, plan, _ = _check_ai_quota(request)
+    if not allowed:
+        raise HTTPException(429, "Daily AI limit reached")
+    mod = pos_mod()
+    loop = asyncio.get_event_loop()
+    if mod:
+        routes = await loop.run_in_executor(None, mod.get_cheapest_tlv_positioning_routes)
+        return {"routes": routes or []}
+    result = await loop.run_in_executor(None, lambda: ai_client.ask(
+        prompt="What are the 5 cheapest positioning hubs from TLV? List city, airport code, price from TLV, best airline, and why it's good for positioning. Respond in Hebrew.",
+        web_search=True, max_tokens=600
+    ))
+    return {"routes": [], "ai_result": result or ""}
+
+class ROIQuery(BaseModel):
+    tlv_to_hub: float
+    hub_to_dest: float
+    direct_price: float
+    extra_time_hours: float = 6
+    hourly_rate: float = 20
+
+@app.post("/api/positioning/roi")
+async def positioning_roi(body: ROIQuery):
+    mod = pos_mod()
+    if mod:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: mod.calculate_positioning_roi(
+                tlv_to_hub=body.tlv_to_hub, hub_to_dest=body.hub_to_dest,
+                direct_price=body.direct_price, extra_time_hours=body.extra_time_hours,
+                hourly_rate=body.hourly_rate,
+            )
+        )
+        return result or {}
+    total      = body.tlv_to_hub + body.hub_to_dest
+    savings    = body.direct_price - total
+    time_cost  = body.extra_time_hours * body.hourly_rate
+    net        = savings - time_cost
+    return {
+        "gross_savings": round(savings, 2),
+        "gross_savings_pct": round(savings / body.direct_price * 100, 1) if body.direct_price else 0,
+        "time_cost": round(time_cost, 2),
+        "net_savings": round(net, 2),
+        "verdict": f"✅ משתלם! חוסך ${net:.0f} נטו" if net > 0 else f"❌ לא משתלם — עלות הזמן (${time_cost:.0f}) גדולה מהחיסכון (${savings:.0f})",
+    }
+
+
+# ════════════════════════════════════════════════════════════
+# WHATSAPP BOT
+# ════════════════════════════════════════════════════════════
+
+def wa_mod(): return _lazy("whatsapp_bot")
+
+@app.post("/api/whatsapp/test")
+async def whatsapp_test(body: dict):
+    msg = body.get("message", "")
+    if not msg:
+        raise HTTPException(400, "message required")
+    mod = wa_mod()
+    if not mod:
+        raise HTTPException(500, "whatsapp_bot module not available")
+    loop = asyncio.get_event_loop()
+    reply = await loop.run_in_executor(None, lambda: mod.process_incoming_message("test_user", msg))
+    return {"reply": reply}
+
+@app.post("/api/whatsapp/send")
+async def whatsapp_send(body: dict):
+    to  = body.get("to", "")
+    msg = body.get("message", "")
+    if not to or not msg:
+        raise HTTPException(400, "to and message required")
+    mod = wa_mod()
+    if not mod:
+        raise HTTPException(500, "whatsapp_bot module not available")
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, lambda: mod.send_whatsapp_message(to, msg))
+
+@app.get("/api/whatsapp/stats")
+async def whatsapp_stats():
+    mod = wa_mod()
+    if not mod:
+        return {"total_messages": 0, "unique_users": 0, "messages_today": 0, "flight_searches": 0}
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, mod.get_stats) or {}
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8080))
