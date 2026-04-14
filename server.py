@@ -22,7 +22,7 @@ import ai_client
 import agent as price_agent
 import wizelife_auth
 
-# ── Optional modules (graceful fallback if import fails) ─────────────────────
+# ── Optional modules (lazy — imported on first use, not at startup) ───────────
 def _try_import(name):
     try:
         import importlib
@@ -30,15 +30,15 @@ def _try_import(name):
     except Exception:
         return None
 
-price_dna_mod    = _try_import("price_dna")
-deal_hunter_mod  = _try_import("deal_hunter")
-hidden_city_mod  = _try_import("hidden_city")
-visa_check_mod   = _try_import("visa_check")
-exchange_mod     = _try_import("exchange_rates")
-exporters_mod    = _try_import("exporters")
-positioning_mod  = _try_import("positioning")
-cost_calc_mod    = _try_import("cost_calculator")
-sentiment_mod    = _try_import("sentiment_analyzer")
+_optional_cache: dict = {}
+def _lazy(name):
+    if name not in _optional_cache:
+        _optional_cache[name] = _try_import(name)
+    return _optional_cache[name]
+
+# Aliases used in endpoints
+def price_dna_mod():   return _lazy("price_dna")
+def exchange_mod():    return _lazy("exchange_rates")
 
 # ── AI Rate limiting (plan-aware, daily) ─────────────────────────────────────
 _AI_DAILY_LIMITS = {"free": 5, "pro": 20, "yolo": 40}
@@ -261,10 +261,11 @@ async def ai_quick(body: dict, request: Request):
 
 @app.get("/api/price-dna")
 async def get_price_dna():
-    if not price_dna_mod:
+    mod = price_dna_mod()
+    if not mod:
         return {"error": "Module not available"}
     loop   = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, price_dna_mod.analyze_price_dna)
+    result = await loop.run_in_executor(None, mod.analyze_price_dna)
     return result or {"summary": "No data yet"}
 
 
@@ -337,11 +338,12 @@ async def hidden_city_search(body: HiddenCityQuery, request: Request):
 
 @app.get("/api/exchange-rates")
 async def get_exchange_rates():
-    if not exchange_mod:
+    mod = exchange_mod()
+    if not mod:
         return {"rates": {}}
     try:
         loop  = asyncio.get_event_loop()
-        rates = await loop.run_in_executor(None, lambda: exchange_mod.get_rates("USD"))
+        rates = await loop.run_in_executor(None, lambda: mod.get_rates("USD"))
         return {"base": "USD", "rates": rates or {}}
     except Exception as e:
         return {"base": "USD", "rates": {}, "error": str(e)}
