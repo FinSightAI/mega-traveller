@@ -62,7 +62,7 @@ import whatsapp_bot
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="WizeTravel ✈️",
-    page_icon="🧳",
+    page_icon="✈️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
