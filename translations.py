@@ -335,6 +335,117 @@ TRANSLATIONS = {
         "disable": "Desativar",
         "settings": "Configurações",
     },
+
+    "es": {
+        "app_title": "WizeTravel ✈️",
+        "tagline": "Agente inteligente de precios de viajes",
+        "nav_label": "Navegación",
+        "lang_label": "🌐 Idioma",
+
+        # Sidebar buttons
+        "start_monitor": "▶ Iniciar Monitor Automático",
+        "stop_monitor": "⏹ Detener Monitor",
+        "monitor_active": "🟢 Monitor Activo",
+        "api_key_ok": "🔑 Clave API configurada",
+        "api_key_missing": "❌ Falta ANTHROPIC_API_KEY",
+        "api_key_hint": "Agregar al .env",
+
+        # Pages
+        "pages": [
+            "🏠 Panel",
+            "➕ Agregar Seguimiento",
+            "💬 Agente de Viaje AI",
+            "🔮 ¿Vale Esperar?",
+            "🌟 Oportunidades AI",
+            "🔥 Cazador de Ofertas",
+            "🎲 Destino Sorpresa",
+            "🛠️ Herramientas Inteligentes",
+            "📊 Historial de Precios",
+            "🎯 Reglas de Alerta",
+            "🔍 Comparación de Sitios",
+            "📰 Sentimiento & Noticias",
+            "⏰ Ofertas por Vencer",
+            "🛂 Verificación de Visa",
+            "📆 Calendario de Precios",
+            "📅 Fechas Flexibles",
+            "📈 Pronóstico de Precio",
+            "🗺️ Planificar Viaje",
+            "🌍 Multi-Ciudades",
+            "🔁 Escalas Gratuitas",
+            "💰 Costo Real",
+            "💳 Puntos vs Efectivo",
+            "📊 Perspectivas",
+            "🤖 Bot de Telegram",
+            "🔍 Vuelos Kiwi",
+            "🕵️ Hidden City",
+            "📡 RSS & Reddit",
+            "⚡ Auto-Book",
+            "🧬 Price DNA",
+            "🗺️ Posicionamiento",
+            "💬 Bot de WhatsApp",
+            "💱 Tipos de Cambio",
+            "📥 Exportar Datos",
+            "⚙️ Configuración",
+        ],
+
+        # Dashboard
+        "dashboard_title": "Panel",
+        "dashboard_subtitle": "Resumen de todos los seguimientos y ofertas",
+        "total_watches": "Seguimientos Activos",
+        "total_checks": "Verificaciones de Precio",
+        "total_deals": "Ofertas Encontradas",
+        "active_alerts": "Alertas Activas",
+        "price_drop": "Baja de Precio",
+        "price_rise": "Alza de Precio",
+        "no_watches": "Sin seguimientos aún. Haz clic en 'Agregar Seguimiento' para comenzar.",
+        "refresh": "🔄 Actualizar",
+        "check_now": "🔍 Verificar Ahora",
+        "last_check": "Última verificación",
+        "vs_avg": "vs promedio",
+
+        # Add watch
+        "add_watch_title": "Agregar Seguimiento de Precio",
+        "origin": "Origen",
+        "destination": "Destino",
+        "route_name": "Nombre de la ruta",
+        "date_from": "Fecha de ida",
+        "date_to": "Fecha de vuelta",
+        "travelers": "Pasajeros",
+        "max_price": "Precio máximo para alerta",
+        "add_btn": "➕ Agregar Seguimiento",
+        "added_success": "✅ ¡Agregado con éxito!",
+
+        # Common
+        "search": "Buscar",
+        "save": "💾 Guardar",
+        "delete": "🗑 Eliminar",
+        "cancel": "Cancelar",
+        "loading": "Cargando...",
+        "error": "Error",
+        "success": "Éxito",
+        "no_data": "Sin datos",
+        "currency": "Moneda",
+        "price": "Precio",
+        "savings": "Ahorro",
+        "airline": "Aerolínea",
+        "stops": "Escalas",
+        "direct": "Directo",
+        "duration": "Duración",
+        "departure": "Salida",
+        "arrival": "Llegada",
+        "book_now": "Reservar Ahora",
+        "show_details": "Ver Detalles",
+        "minutes": "minutos",
+        "hours": "horas",
+        "days": "días",
+        "analyze": "Analizar",
+        "generate": "Generar",
+        "send": "Enviar",
+        "test": "Probar",
+        "enable": "Activar",
+        "disable": "Desactivar",
+        "settings": "Configuración",
+    },
 }
 
 # Map Hebrew page names → English page names (for routing)
@@ -351,9 +462,15 @@ PT_TO_EN_PAGE = {
     for pt, en in zip(TRANSLATIONS["pt"]["pages"], TRANSLATIONS["en"]["pages"])
 }
 
+# Map Spanish page names → English page names (for routing)
+ES_TO_EN_PAGE = {
+    es: en
+    for es, en in zip(TRANSLATIONS["es"]["pages"], TRANSLATIONS["en"]["pages"])
+}
+
 
 def t(key: str, lang: str = "he") -> str:
-    """Get translation for key in given language (he, en, or pt for Brazilian Portuguese)."""
+    """Get translation for key in given language (he, en, pt for Brazilian Portuguese, or es for Spanish)."""
     return TRANSLATIONS.get(lang, TRANSLATIONS["he"]).get(key, key)
 
 

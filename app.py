@@ -842,12 +842,12 @@ with st.sidebar:
     # Language selector (top of sidebar)
     lang_choice = st.radio(
         i18n.t("lang_label", _lang),
-        ["🇮🇱 עברית", "🇺🇸 English", "🇧🇷 Português"],
-        index=0 if _lang == "he" else (2 if _lang == "pt" else 1),
+        ["🇮🇱 עברית", "🇺🇸 English", "🇧🇷 Português", "🇪🇸 Español"],
+        index=0 if _lang == "he" else (2 if _lang == "pt" else (3 if _lang == "es" else 1)),
         horizontal=True,
         label_visibility="collapsed",
     )
-    new_lang = "he" if "עברית" in lang_choice else ("pt" if "Português" in lang_choice else "en")
+    new_lang = "he" if "עברית" in lang_choice else ("pt" if "Português" in lang_choice else ("es" if "Español" in lang_choice else "en"))
     if new_lang != st.session_state.lang:
         st.session_state.lang = new_lang
         st.rerun()
@@ -908,6 +908,9 @@ with st.sidebar:
         page = i18n.EN_TO_HE_PAGE.get(page_display, page_display)
     elif _lang == "pt":
         en_page = i18n.PT_TO_EN_PAGE.get(page_display, page_display)
+        page = i18n.EN_TO_HE_PAGE.get(en_page, en_page)
+    elif _lang == "es":
+        en_page = i18n.ES_TO_EN_PAGE.get(page_display, page_display)
         page = i18n.EN_TO_HE_PAGE.get(en_page, en_page)
     else:
         page = page_display
