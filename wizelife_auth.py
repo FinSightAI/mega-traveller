@@ -57,6 +57,25 @@ def get_plan(uid: str, id_token: str) -> str:
         return "free"
 
 
+def sync_cross_app_data(id_token: str, app_id: str, app_name: str, summary: str) -> bool:
+    """Push a summary to WizeLife cross-app AI (Yolo plan only)."""
+    if not id_token or not summary:
+        return False
+    try:
+        r = httpx.post(
+            "https://us-central1-finzilla-7f1f9.cloudfunctions.net/syncCrossAppData",
+            headers={
+                "Authorization": f"Bearer {id_token}",
+                "Content-Type": "application/json",
+            },
+            json={"data": {"appId": app_id, "appName": app_name, "summary": summary}},
+            timeout=5,
+        )
+        return r.is_success
+    except Exception:
+        return False
+
+
 def refresh_token(refresh_tok: str) -> Optional[str]:
     """Exchange a refresh token for a fresh ID token (call before token expiry ~1hr)."""
     try:

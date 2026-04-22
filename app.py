@@ -4212,6 +4212,32 @@ elif page == "🗺️ תכנן טיול":
                 for w in plan["warnings"]:
                     st.warning(f"⚠️ {w}")
 
+            # Cross-app sync for Yolo users
+            if st.session_state.get("wizelife_plan") == "yolo" and st.session_state.get("wizelife_token"):
+                import wizelife_auth as _wla_sync
+                _duration_days = ""
+                if tp_from and tp_to:
+                    try:
+                        _duration_days = str((tp_to - tp_from).days)
+                    except Exception:
+                        _duration_days = ""
+                _sync_summary = (
+                    f"WizeTraveller - Last trip plan:\n"
+                    f"Destination: {tp_dest}\n"
+                    f"Estimated cost: ${plan.get('total_estimated', est.get('estimated_total', ''))}\n"
+                    f"Duration: {_duration_days} days\n"
+                    f"Travel dates: {tp_from or ''} — {tp_to or ''}\n"
+                    f"Notes: {plan.get('summary', '')}"
+                )
+                _synced = _wla_sync.sync_cross_app_data(
+                    id_token=st.session_state["wizelife_token"],
+                    app_id="wize_travel",
+                    app_name="WizeTraveller",
+                    summary=_sync_summary,
+                )
+                if _synced:
+                    st.caption("✦ Synced to WizeLife AI")
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE: Exchange Rates
