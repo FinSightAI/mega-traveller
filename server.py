@@ -16,7 +16,9 @@ load_dotenv(Path(__file__).parent / ".env")
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+
+import re
 
 import database as db
 import ai_client
@@ -80,6 +82,22 @@ def _check_ai_quota(request: Request) -> tuple[bool, str, str]:
     return True, plan, key
 
 
+# ── Validation helpers ────────────────────────────────────────────────────────
+_VALID_CATEGORIES = {"flight", "hotel", "apartment", "package"}
+_VALID_LANGS      = {"he", "en", "pt", "es"}
+_DATE_RE          = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+def _check_date(v: Optional[str]) -> Optional[str]:
+    if v is None:
+        return v
+    if not _DATE_RE.match(v):
+        raise ValueError("date must be YYYY-MM-DD")
+    return v
+
+def _clean_lang(v: Optional[str]) -> str:
+    return v if v in _VALID_LANGS else "he"
+
+
 # ── App init ──────────────────────────────────────────────────────────────────
 db.init_db()
 
@@ -108,20 +126,42 @@ async def health():
 # ════════════════════════════════════════════════════════════
 
 class WatchItemIn(BaseModel):
-    name: str
-    category: str          # flight / hotel / apartment / package
-    query: str
-    destination: str
-    origin: Optional[str] = None
+    name: str        = Field(..., min_length=1, max_length=200)
+    category: str    # flight / hotel / apartment / package
+    query: str       = Field(..., min_length=1, max_length=500)
+    destination: str = Field(..., min_length=1, max_length=100)
+    origin: Optional[str] = Field(None, max_length=100)
     date_from: Optional[str] = None
     date_to: Optional[str] = None
-    max_price: Optional[float] = None
-    drop_pct: float = 10.0
+    max_price: Optional[float] = Field(None, gt=0)
+    drop_pct: float  = Field(10.0, ge=1.0, le=90.0)
+
+    @field_validator("category")
+    @classmethod
+    def val_category(cls, v: str) -> str:
+        if v not in _VALID_CATEGORIES:
+            raise ValueError(f"category must be one of {sorted(_VALID_CATEGORIES)}")
+        return v
+
+    @field_validator("date_from", "date_to")
+    @classmethod
+    def val_date(cls, v: Optional[str]) -> Optional[str]:
+        return _check_date(v)
+
+    @field_validator("name", "query", "destination")
+    @classmethod
+    def no_html(cls, v: str) -> str:
+        if re.search(r"[<>\"'`]", v):
+            raise ValueError("field contains disallowed characters")
+        return v.strip()
 
 
 @app.get("/api/watches")
-async def list_watches(all: bool = False):
+async def list_watches(all: bool = False, limit: int = 200, offset: int = 0):
+    limit  = max(1, min(limit, 500))
+    offset = max(0, offset)
     items = db.get_all_watch_items(enabled_only=not all)
+    items = items[offset: offset + limit]
     for item in items:
         last = db.get_last_price(item["id"])
         item["last_price"] = last
@@ -214,9 +254,22 @@ async def price_stats(watch_id: int):
 # ════════════════════════════════════════════════════════════
 
 class ChatMsg(BaseModel):
-    messages: list[dict]    # [{"role": "user"|"model", "parts": [{"text": "..."}]}]
-    system: str = ""
-    web_search: bool = False
+    messages: list[dict] = Field(..., max_length=100)  # [{"role": "user"|"model", "parts": [{"text": "..."}]}]
+    system: str          = Field("", max_length=1000)
+    web_search: bool     = False
+
+    @field_validator("messages")
+    @classmethod
+    def val_messages(cls, v: list) -> list:
+        if not v:
+            raise ValueError("messages must not be empty")
+        last = v[-1]
+        if not isinstance(last, dict) or "parts" not in last:
+            raise ValueError("last message must have 'parts'")
+        text = last.get("parts", [{}])[0].get("text", "")
+        if len(text) > 4000:
+            raise ValueError("message text too long (max 4000 chars)")
+        return v
 
 
 @app.post("/api/ai/chat")
@@ -283,11 +336,16 @@ async def get_price_dna():
 # ════════════════════════════════════════════════════════════
 
 class DealHuntQuery(BaseModel):
-    origin: str
-    budget: Optional[float] = None
-    dates: Optional[str] = None
-    preferences: str = ""
-    lang: Optional[str] = "he"
+    origin:      str           = Field(..., min_length=1, max_length=100)
+    budget:      Optional[float] = Field(None, gt=0)
+    dates:       Optional[str] = Field(None, max_length=200)
+    preferences: str           = Field("", max_length=500)
+    lang:        Optional[str] = "he"
+
+    @field_validator("lang")
+    @classmethod
+    def val_lang(cls, v: Optional[str]) -> str:
+        return _clean_lang(v)
 
 
 @app.post("/api/deal-hunter")
@@ -306,8 +364,8 @@ async def hunt_deals(body: DealHuntQuery, request: Request):
 # ════════════════════════════════════════════════════════════
 
 class VisaQuery(BaseModel):
-    passport: str
-    destination: str
+    passport:    str = Field(..., min_length=2, max_length=100)
+    destination: str = Field(..., min_length=2, max_length=100)
 
 
 @app.post("/api/visa-check")
@@ -326,9 +384,14 @@ async def check_visa(body: VisaQuery, request: Request):
 # ════════════════════════════════════════════════════════════
 
 class HiddenCityQuery(BaseModel):
-    origin: str
-    destination: str
-    date: Optional[str] = None
+    origin:      str           = Field(..., min_length=2, max_length=10)
+    destination: str           = Field(..., min_length=2, max_length=10)
+    date:        Optional[str] = None
+
+    @field_validator("date")
+    @classmethod
+    def val_date(cls, v: Optional[str]) -> Optional[str]:
+        return _check_date(v)
 
 
 @app.post("/api/hidden-city")
@@ -371,9 +434,9 @@ async def list_alerts():
 
 
 class AlertIn(BaseModel):
-    name: str
-    watch_id: Optional[int] = None
-    conditions: dict = {}
+    name:       str          = Field(..., min_length=1, max_length=200)
+    watch_id:   Optional[int] = Field(None, gt=0)
+    conditions: dict         = Field(default_factory=dict)
 
 
 @app.post("/api/alerts", status_code=201)
@@ -445,6 +508,8 @@ async def save_settings(body: dict):
     for key, value in body.items():
         if key not in SETTINGS_KEYS or not value or value == "***":
             continue
+        if not isinstance(value, str) or len(value) > 500 or "\n" in value or "\r" in value:
+            continue
         updated = False
         for i, line in enumerate(lines):
             if line.startswith(f"{key}="):
@@ -499,9 +564,19 @@ def _lang_instruction(lang: str) -> str:
 
 
 class AIQuery(BaseModel):
-    text: str
-    extra: Optional[str] = ""
-    lang: Optional[str] = "he"
+    text:  str           = Field(..., max_length=1000)
+    extra: Optional[str] = Field("", max_length=500)
+    lang:  Optional[str] = "he"
+
+    @field_validator("lang")
+    @classmethod
+    def val_lang(cls, v: Optional[str]) -> str:
+        return _clean_lang(v)
+
+    @field_validator("text")
+    @classmethod
+    def val_text(cls, v: str) -> str:
+        return v.strip()
 
 
 @app.post("/api/wait-or-buy")
@@ -800,12 +875,22 @@ async def save_passenger(body: PassengerConfig):
 def pos_mod(): return _lazy("positioning")
 
 class PositioningQuery(BaseModel):
-    destination: str
+    destination: str           = Field(..., min_length=2, max_length=10)
     travel_date: str
     return_date: Optional[str] = None
-    budget: float = 0
-    travelers: int = 1
-    lang: Optional[str] = "he"
+    budget:      float         = Field(0.0, ge=0)
+    travelers:   int           = Field(1, ge=1, le=9)
+    lang:        Optional[str] = "he"
+
+    @field_validator("travel_date", "return_date")
+    @classmethod
+    def val_date(cls, v: Optional[str]) -> Optional[str]:
+        return _check_date(v)
+
+    @field_validator("lang")
+    @classmethod
+    def val_lang(cls, v: Optional[str]) -> str:
+        return _clean_lang(v)
 
 @app.post("/api/positioning")
 async def find_positioning(body: PositioningQuery, request: Request):

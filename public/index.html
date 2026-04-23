@@ -305,47 +305,47 @@ textarea{resize:vertical;min-height:70px;}
     <!-- ══ לוח בקרה ══ -->
     <div class="page active" id="page-dashboard">
       <div class="g4" style="margin-bottom:16px;">
-        <div class="stat"><div class="stat-lbl">מעקבים פעילים</div><div class="stat-val" id="s-watches">—</div></div>
-        <div class="stat"><div class="stat-lbl">המחיר הנמוך ביותר</div><div class="stat-val down" id="s-low">—</div></div>
-        <div class="stat"><div class="stat-lbl">ירידות מחיר</div><div class="stat-val up" id="s-drops">—</div></div>
-        <div class="stat"><div class="stat-lbl">AI שאילתות היום</div><div class="stat-val" id="s-ai">—</div></div>
+        <div class="stat"><div class="stat-lbl" data-ui="active_watches">מעקבים פעילים</div><div class="stat-val" id="s-watches">—</div></div>
+        <div class="stat"><div class="stat-lbl" data-ui="lowest_price">המחיר הנמוך ביותר</div><div class="stat-val down" id="s-low">—</div></div>
+        <div class="stat"><div class="stat-lbl" data-ui="price_drops">ירידות מחיר</div><div class="stat-val up" id="s-drops">—</div></div>
+        <div class="stat"><div class="stat-lbl" data-ui="ai_queries">AI שאילתות היום</div><div class="stat-val" id="s-ai">—</div></div>
       </div>
       <div class="g2">
         <div class="card">
-          <div class="card-title">📋 מעקבים אחרונים</div>
-          <div id="db-watches"><div class="loading"><div class="spin"></div>טוען…</div></div>
+          <div class="card-title" data-ui="recent_watches">📋 מעקבים אחרונים</div>
+          <div id="db-watches"><div class="loading"><div class="spin"></div><span data-ui="loading">טוען…</span></div></div>
         </div>
         <div class="card">
-          <div class="card-title">📰 סנטימנט שוק</div>
-          <div id="db-sentiment"><div class="loading"><div class="spin"></div>טוען…</div></div>
-          <button class="btn btn-g btn-sm" style="margin-top:10px;" onclick="loadSentiment('')">🔄 רענן</button>
+          <div class="card-title" data-ui="market_sentiment">📰 סנטימנט שוק</div>
+          <div id="db-sentiment"><div class="loading"><div class="spin"></div><span data-ui="loading">טוען…</span></div></div>
+          <button class="btn btn-g btn-sm" style="margin-top:10px;" onclick="loadSentiment('')" data-ui="refresh">🔄 רענן</button>
         </div>
       </div>
     </div>
 
     <!-- ══ רשימת מעקב ══ -->
     <div class="page" id="page-watches">
-      <div class="sh"><h2>👁 רשימת מעקב</h2><button class="btn btn-p" onclick="openAddWatch()">+ הוסף מעקב</button></div>
+      <div class="sh"><h2 data-ui="nav_watches_h">👁 רשימת מעקב</h2><button class="btn btn-p" onclick="openAddWatch()" data-ui="btn_add_watch">+ הוסף מעקב</button></div>
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
         <input type="text" id="watch-search" placeholder="🔍 חיפוש לפי שם, יעד…" style="max-width:260px;flex:1;" oninput="filterWatches()">
         <select id="watch-cat-filter" onchange="filterWatches()" style="width:auto;">
-          <option value="">כל הקטגוריות</option>
-          <option value="flight">טיסות</option>
-          <option value="hotel">מלונות</option>
-          <option value="apartment">דירות</option>
-          <option value="package">חבילות</option>
+          <option value="" data-ui="opt_all_cats">כל הקטגוריות</option>
+          <option value="flight" data-ui="opt_flights">טיסות</option>
+          <option value="hotel" data-ui="opt_hotels">מלונות</option>
+          <option value="apartment" data-ui="opt_apts">דירות</option>
+          <option value="package" data-ui="opt_packages">חבילות</option>
         </select>
         <select id="watch-sort" onchange="filterWatches()" style="width:auto;">
-          <option value="name">מיין: שם</option>
-          <option value="price_asc">מיין: מחיר ↑</option>
-          <option value="price_desc">מיין: מחיר ↓</option>
-          <option value="deal">מיין: ציון דיל</option>
+          <option value="name" data-ui="opt_sort_name">מיין: שם</option>
+          <option value="price_asc" data-ui="opt_sort_price_asc">מיין: מחיר ↑</option>
+          <option value="price_desc" data-ui="opt_sort_price_desc">מיין: מחיר ↓</option>
+          <option value="deal" data-ui="opt_sort_deal">מיין: ציון דיל</option>
         </select>
       </div>
       <div class="card">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>שם</th><th>קטגוריה</th><th>מחיר אחרון</th><th>ציון</th><th>סטטוס</th><th>Book Now</th><th>פעולות</th></tr></thead>
+            <thead><tr><th data-ui="th_name">שם</th><th data-ui="th_cat">קטגוריה</th><th data-ui="th_price">מחיר אחרון</th><th data-ui="th_score">ציון</th><th data-ui="th_status">סטטוס</th><th>Book Now</th><th data-ui="th_actions">פעולות</th></tr></thead>
             <tbody id="watches-tbody"></tbody>
           </table>
         </div>
@@ -1205,7 +1205,7 @@ function navigate(p){
   if(p==="alerts")loadAlerts();
   if(p==="settings")loadSettings();
   if(p==="price-calendar")populateCalWatches();
-  if(p==="expiring-deals"){document.getElementById("exp-res").textContent="לחץ \"מצא דילים פגי תוקף\" לסריקה.";}
+  if(p==="expiring-deals"){document.getElementById("exp-res").textContent=ui("exp_placeholder");}
   if(p==="smart-tools")switchSmartTab('split');
   if(p==="telegram-bot")loadTgStatus();
   if(p==="auto-book"){switchAbTab('rules');loadAbRules();}
@@ -1248,7 +1248,7 @@ async function loadDashboard(){
     document.getElementById("s-watches").textContent=watches.filter(w=>w.enabled).length;
     let low=Infinity,cur="USD";
     const el=document.getElementById("db-watches");
-    if(!watches.length){el.innerHTML=`<div style="color:var(--muted);font-size:.84rem;padding:12px 0;">אין מעקבים עדיין. לחץ על "הוסף מעקב" להתחלה.</div>`;
+    if(!watches.length){el.innerHTML=`<div style="color:var(--muted);font-size:.84rem;padding:12px 0;">${ui("no_watches")}</div>`;
     }else{
       el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:.8rem;"><tbody>`+watches.slice(0,6).map(w=>{
         const p=w.last_price;if(p&&p.price<low){low=p.price;cur=p.currency||"USD";}
@@ -1262,12 +1262,12 @@ async function loadDashboard(){
 
 async function loadSentiment(dest){
   const els=[document.getElementById("db-sentiment"),document.getElementById("sent-res")];
-  els.forEach(e=>{if(e)e.innerHTML=`<div class="loading"><div class="spin"></div>טוען…</div>`;});
+  els.forEach(e=>{if(e)e.innerHTML=spin("loading");});
   try{
     const r=await api("GET",`/api/sentiment?destination=${encodeURIComponent(dest)}`);
-    const h=md(r.result||"אין נתונים");
+    const h=md(r.result||ui("no_data"));
     els.forEach(e=>{if(e)e.innerHTML=h;});
-  }catch(e){els.forEach(el=>{if(el)el.textContent="נכשל בטעינה";});}
+  }catch(e){els.forEach(el=>{if(el)el.textContent=ui("error_loading");});}
 }
 
 // ── Watches ───────────────────────────────────────────────────
@@ -1278,7 +1278,7 @@ async function loadWatches(){
     _watchesFiltered=[..._watches];
     renderWatches();
     populateHistSel();
-  }catch(e){toast("שגיאה בטעינת מעקבים","err");}
+  }catch(e){toast(ui("error_loading_watches"),"err");}
 }
 
 function filterWatches(){
@@ -1323,7 +1323,7 @@ function dealBadge(w){
   if(!p||!low)return"";
   const pct=Math.round(((p-low)/low)*100);
   if(pct<=5)return`<span class="hot-badge">🔥 HOT ${pct===0?"ALL-TIME LOW":"-"+Math.abs(pct)+"%"}</span>`;
-  if(pct>30)return`<span class="hot-badge cold-badge">📈 +${pct}% מהנמוך</span>`;
+  if(pct>30)return`<span class="hot-badge cold-badge">📈 +${pct}% ${ui("above_low")}</span>`;
   return"";
 }
 
@@ -1346,7 +1346,7 @@ function dealScoreBadge(w){
 function renderWatches(){
   const tbody=document.getElementById("watches-tbody");
   if(!_watchesFiltered.length){
-    tbody.innerHTML=`<tr><td colspan="7"><div style="text-align:center;padding:24px;color:var(--muted);">אין מעקבים${_watches.length?" — שנה את הסינון":""}</div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="7"><div style="text-align:center;padding:24px;color:var(--muted);">${_watches.length?ui("no_watches_filter"):ui("no_watches")}</div></td></tr>`;
     return;
   }
   tbody.innerHTML=_watchesFiltered.map(w=>{
@@ -1364,8 +1364,8 @@ function renderWatches(){
         ${priceProgBar(w)}
       </td>
       <td>${dealScoreBadge(w)}</td>
-      <td><span class="tag ${w.enabled?"t-on":"t-off"}">${w.enabled?"פעיל":"כבוי"}</span></td>
-      <td><a href="${bn}" target="_blank" class="book-btn">🛒 הזמן</a></td>
+      <td><span class="tag ${w.enabled?"t-on":"t-off"}">${w.enabled?ui("active"):ui("inactive")}</span></td>
+      <td><a href="${bn}" target="_blank" class="book-btn">${ui("btn_book")}</a></td>
       <td style="white-space:nowrap;">
         <button class="btn btn-g btn-sm btn-ico" onclick="checkPrice(${w.id})" title="בדוק מחיר">🔄</button>
         <button class="btn btn-g btn-sm btn-ico" onclick="toggleWatch(${w.id},${!w.enabled})">${w.enabled?"⏸":"▶"}</button>
@@ -1380,21 +1380,21 @@ function openAddWatch(){["w-name","w-orig","w-dest","w-query"].forEach(id=>docum
 async function submitAddWatch(){
   const name=document.getElementById("w-name").value.trim();
   const dest=document.getElementById("w-dest").value.trim();
-  if(!name||!dest){toast("שם ויעד נדרשים","err");return;}
+  if(!name||!dest){toast(ui("need_name_dest"),"err");return;}
   try{
     await api("POST","/api/watches",{name,category:document.getElementById("w-cat").value,query:document.getElementById("w-query").value.trim()||name,destination:dest,origin:document.getElementById("w-orig").value.trim()||null,date_from:document.getElementById("w-dfrom").value||null,date_to:document.getElementById("w-dto").value||null,max_price:parseFloat(document.getElementById("w-maxp").value)||null,drop_pct:parseFloat(document.getElementById("w-drop").value)||10});
-    closeModal("m-add-watch");loadWatches();toast("מעקב נוסף ✅","ok");
-  }catch(e){toast("שגיאה: "+e.message,"err");}
+    closeModal("m-add-watch");loadWatches();toast(ui("watch_added"),"ok");
+  }catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 
-async function deleteWatch(id){if(!confirm("למחוק מעקב זה?"))return;try{await api("DELETE",`/api/watches/${id}`);loadWatches();toast("נמחק");}catch(e){toast("שגיאה","err");}}
-async function toggleWatch(id,en){try{await api("PATCH",`/api/watches/${id}/toggle?enabled=${en}`);loadWatches();}catch(e){toast("שגיאה","err");}}
-async function checkPrice(id){toast("בודק מחיר…");try{await api("POST",`/api/watches/${id}/check`);setTimeout(loadWatches,3000);}catch(e){toast("שגיאה","err");}}
+async function deleteWatch(id){if(!confirm(ui("confirm_delete_watch")))return;try{await api("DELETE",`/api/watches/${id}`);loadWatches();toast(ui("deleted"));}catch(e){toast(ui("error"),"err");}}
+async function toggleWatch(id,en){try{await api("PATCH",`/api/watches/${id}/toggle?enabled=${en}`);loadWatches();}catch(e){toast(ui("error"),"err");}}
+async function checkPrice(id){toast(ui("checking_price"));try{await api("POST",`/api/watches/${id}/check`);setTimeout(loadWatches,3000);}catch(e){toast(ui("error"),"err");}}
 
 // ── History ───────────────────────────────────────────────────
 function populateHistSel(){
   const s=document.getElementById("hist-sel");const as=document.getElementById("al-watch");
-  const cur=s.value;s.innerHTML=`<option value="">— בחר —</option>`;as.innerHTML=`<option value="">כל המעקבים</option>`;
+  const cur=s.value;s.innerHTML=`<option value="">${ui("select_option")}</option>`;as.innerHTML=`<option value="">${ui("all_watches")}</option>`;
   _watches.forEach(w=>{s.innerHTML+=`<option value="${w.id}">${esc(w.name)}</option>`;as.innerHTML+=`<option value="${w.id}">${esc(w.name)}</option>`;});
   if(cur)s.value=cur;
 }
@@ -1408,9 +1408,9 @@ async function loadHistory(){
     const chart=document.getElementById("p-chart");
     if(hist.length){const prices=hist.map(h=>h.price),min=Math.min(...prices),max=Math.max(...prices),range=max-min||1;
       chart.innerHTML=[...hist].reverse().map(h=>`<div class="p-bar" style="height:${Math.max(8,((h.price-min)/range)*100)}%" data-p="${h.currency} ${h.price}"></div>`).join("");}
-    else chart.innerHTML=`<div style="color:var(--muted);font-size:.8rem;">אין נתונים</div>`;
-    document.getElementById("hist-tbody").innerHTML=hist.map(h=>`<tr><td style="color:var(--muted);font-size:.76rem;">${(h.checked_at||"").substring(0,16).replace("T"," ")||"—"}</td><td><b>${h.currency} ${h.price}</b></td><td>${h.currency}</td><td style="color:var(--muted);">${esc(h.source||"AI")}</td></tr>`).join("")||`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:18px;">אין רשומות</td></tr>`;
-  }catch(e){toast("שגיאה בטעינת היסטוריה","err");}
+    else chart.innerHTML=`<div style="color:var(--muted);font-size:.8rem;">${ui("no_data")}</div>`;
+    document.getElementById("hist-tbody").innerHTML=hist.map(h=>`<tr><td style="color:var(--muted);font-size:.76rem;">${(h.checked_at||"").substring(0,16).replace("T"," ")||"—"}</td><td><b>${h.currency} ${h.price}</b></td><td>${h.currency}</td><td style="color:var(--muted);">${esc(h.source||"AI")}</td></tr>`).join("")||`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:18px;">${ui("no_records")}</td></tr>`;
+  }catch(e){toast(ui("error_loading_history"),"err");}
 }
 
 // ── Chat ──────────────────────────────────────────────────────
@@ -1425,13 +1425,13 @@ async function sendChat(){
   chatHist.push({role:"user",parts:[{text}]});
   try{
     const web=document.getElementById("web-tog").checked;
-    const r=await fetch("/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json",...(_token?{"Authorization":"Bearer "+_token}:{})},body:JSON.stringify({messages:chatHist,system:"אתה סוכן נסיעות AI חכם. ענה בעברית.",web_search:web})});
+    const r=await fetch("/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json",...(_token?{"Authorization":"Bearer "+_token}:{})},body:JSON.stringify({messages:chatHist,system:ui("chat_system"),web_search:web})});
     ai.classList.remove("typing");let full="";
     const reader=r.body.getReader();const dec=new TextDecoder();
     while(true){const{done,value}=await reader.read();if(done)break;
       dec.decode(value).split("\n").forEach(line=>{if(!line.startsWith("data: "))return;const d=line.slice(6);if(d==="[DONE]")return;try{full+=JSON.parse(d).text||"";ai.innerHTML=md(full);msgs.scrollTop=msgs.scrollHeight;}catch(e){}});}
     chatHist.push({role:"model",parts:[{text:full}]});
-  }catch(e){ai.classList.remove("typing");ai.textContent="⚠️ שגיאה: "+e.message;}
+  }catch(e){ai.classList.remove("typing");ai.textContent=ui("chat_error")+e.message;}
 }
 
 // ── Generic AI query runner ───────────────────────────────────
@@ -1439,12 +1439,12 @@ async function runAI(endpoint,inputId,resultId){
   const input=document.getElementById(inputId);const res=document.getElementById(resultId);const btn=document.getElementById(endpoint+"-btn");
   const text=input?.value?.trim()||"";
   res.classList.remove("ai-placeholder");
-  res.innerHTML=`<div class="loading"><div class="spin"></div>מנתח…</div>`;
-  if(btn){btn.disabled=true;const orig=btn.textContent;btn.dataset.orig=orig;btn.textContent="מעבד…";}
+  res.innerHTML=spin("analyzing");
+  if(btn){btn.disabled=true;const orig=btn.textContent;btn.dataset.orig=orig;btn.textContent=ui("processing");}
   try{
     const r=await api("POST",`/api/${endpoint}`,{text,extra:"",lang:_lang});
-    res.innerHTML=md(r.result||r.error||"אין תוצאה");
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+    res.innerHTML=md(r.result||r.error||ui("no_result"));
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
   if(btn){btn.disabled=false;btn.textContent=btn.dataset.orig||btn.textContent;}
 }
 
@@ -1452,62 +1452,62 @@ async function runAI(endpoint,inputId,resultId){
 async function runDealHunter(){
   const btn=document.getElementById("dh-btn");const res=document.getElementById("dh-res");
   const origin=document.getElementById("dh-orig").value.trim();
-  if(!origin){toast("הכנס נקודת מוצא","err");return;}
-  btn.disabled=true;btn.textContent="מחפש…";res.classList.remove("ai-placeholder");
-  res.innerHTML=`<div class="loading"><div class="spin"></div>מחפש דילים…</div>`;
+  if(!origin){toast(ui("enter_origin"),"err");return;}
+  btn.disabled=true;btn.textContent=ui("searching");res.classList.remove("ai-placeholder");
+  res.innerHTML=spin("searching_deals");
   try{
     const r=await api("POST","/api/deal-hunter",{origin,budget:parseFloat(document.getElementById("dh-budget").value)||null,dates:document.getElementById("dh-dates").value.trim(),preferences:document.getElementById("dh-prefs").value.trim(),lang:_lang});
-    res.innerHTML=md(r.result||"לא נמצאו דילים");
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
-  btn.disabled=false;btn.textContent="🔥 צוד דילים";
+    res.innerHTML=md(r.result||ui("no_deals"));
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
+  btn.disabled=false;btn.textContent=ui("btn_hunt_deals");
 }
 
 // ── Surprise ──────────────────────────────────────────────────
 async function runSurprise(){
   const btn=document.getElementById("surp-btn");const res=document.getElementById("surp-res");
-  btn.disabled=true;btn.textContent="מחשב…";res.classList.remove("ai-placeholder");
-  res.innerHTML=`<div class="loading"><div class="spin"></div>בוחר יעדים מפתיעים…</div>`;
+  btn.disabled=true;btn.textContent=ui("calculating");res.classList.remove("ai-placeholder");
+  res.innerHTML=spin("selecting_surprise");
   try{
     const r=await api("POST","/api/surprise",{text:document.getElementById("surp-budget").value.trim(),extra:document.getElementById("surp-prefs").value.trim(),lang:_lang});
-    res.innerHTML=md(r.result||"אין תוצאה");
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
-  btn.disabled=false;btn.textContent="🎲 הפתע אותי!";
+    res.innerHTML=md(r.result||ui("no_result"));
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
+  btn.disabled=false;btn.textContent=ui("btn_surprise");
 }
 
 // ── Visa ──────────────────────────────────────────────────────
 async function runVisaCheck(){
   const btn=document.getElementById("visa-btn");
   const passport=document.getElementById("visa-pass").value.trim();const dest=document.getElementById("visa-dest").value.trim();
-  if(!passport||!dest){toast("מלא את שני השדות","err");return;}
-  btn.disabled=true;btn.textContent="בודק…";
+  if(!passport||!dest){toast(ui("fill_both_fields"),"err");return;}
+  btn.disabled=true;btn.textContent=ui("checking");
   try{
     const r=await api("POST","/api/visa-check",{passport,destination:dest});
-    document.getElementById("visa-res").innerHTML=md(r.result||"אין נתונים");
+    document.getElementById("visa-res").innerHTML=md(r.result||ui("no_data"));
     document.getElementById("visa-card").style.display="block";
-  }catch(e){toast("שגיאה: "+e.message,"err");}
-  btn.disabled=false;btn.textContent="בדוק ויזה";
+  }catch(e){toast(ui("error_prefix")+e.message,"err");}
+  btn.disabled=false;btn.textContent=ui("btn_check_visa");
 }
 
 // ── Hidden City ───────────────────────────────────────────────
 async function runHiddenCity(){
   const btn=document.getElementById("hc-btn");
   const orig=document.getElementById("hc-from").value.trim();const dest=document.getElementById("hc-to").value.trim();
-  if(!orig||!dest){toast("הכנס מוצא ויעד","err");return;}
-  btn.disabled=true;btn.textContent="מחפש…";
+  if(!orig||!dest){toast(ui("enter_origin_dest"),"err");return;}
+  btn.disabled=true;btn.textContent=ui("searching");
   try{
     const r=await api("POST","/api/hidden-city",{origin:orig,destination:dest,date:document.getElementById("hc-date").value||null});
-    document.getElementById("hc-res").innerHTML=md(r.result||"אין תוצאות");
+    document.getElementById("hc-res").innerHTML=md(r.result||ui("no_result"));
     document.getElementById("hc-card").style.display="block";
-  }catch(e){toast("שגיאה: "+e.message,"err");}
-  btn.disabled=false;btn.textContent="🔍 חפש";
+  }catch(e){toast(ui("error_prefix")+e.message,"err");}
+  btn.disabled=false;btn.textContent=ui("btn_search_hc");
 }
 
 // ── Price DNA ────────────────────────────────────────────────
 async function loadPriceDNA(){
-  const el=document.getElementById("dna-res");el.innerHTML=`<div class="loading"><div class="spin"></div>מנתח…</div>`;
+  const el=document.getElementById("dna-res");el.innerHTML=spin("analyzing");
   try{
     const r=await api("GET","/api/price-dna");
-    if(r.error){el.textContent="שגיאה: "+r.error;return;}
+    if(r.error){el.textContent=ui("error_prefix")+r.error;return;}
     const dna=r.dna||{};
     const fmt=n=>n!=null?Math.round(n).toLocaleString("he-IL"):"—";
     const cur=dna.currency||"";
@@ -1520,9 +1520,9 @@ async function loadPriceDNA(){
     // Stats row
     if(dna.price_range){
       html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
-        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:.72rem;color:var(--muted);">מינימום</div><div style="font-weight:700;">${cur} ${fmt(dna.price_range.min)}</div></div>
-        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:.72rem;color:var(--muted);">ממוצע</div><div style="font-weight:700;">${cur} ${fmt(dna.price_range.avg)}</div></div>
-        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:.72rem;color:var(--muted);">מקסימום</div><div style="font-weight:700;">${cur} ${fmt(dna.price_range.max)}</div></div>
+        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:.72rem;color:var(--muted);">${ui("min")}</div><div style="font-weight:700;">${cur} ${fmt(dna.price_range.min)}</div></div>
+        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:.72rem;color:var(--muted);">${ui("avg")}</div><div style="font-weight:700;">${cur} ${fmt(dna.price_range.avg)}</div></div>
+        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:.72rem;color:var(--muted);">${ui("max")}</div><div style="font-weight:700;">${cur} ${fmt(dna.price_range.max)}</div></div>
       </div>`;
     }
     // Insights
@@ -1539,11 +1539,11 @@ async function loadPriceDNA(){
     });
     // Actions
     if(r.actions&&r.actions.length){
-      html+=`<div style="margin-top:12px;"><div style="font-weight:600;margin-bottom:8px;">✅ פעולות מומלצות</div>${r.actions.map(a=>`<div style="background:var(--surf2);border-radius:7px;padding:8px 12px;margin-bottom:6px;font-size:.88rem;">• ${a}</div>`).join("")}</div>`;
+      html+=`<div style="margin-top:12px;"><div style="font-weight:600;margin-bottom:8px;">${ui("recommended_actions")}</div>${r.actions.map(a=>`<div style="background:var(--surf2);border-radius:7px;padding:8px 12px;margin-bottom:6px;font-size:.88rem;">• ${a}</div>`).join("")}</div>`;
     }
     el.innerHTML=html||md(JSON.stringify(r,null,2));
   }
-  catch(e){el.textContent="שגיאה: "+e.message;}
+  catch(e){el.textContent=ui("error_prefix")+e.message;}
 }
 
 // ── Exchange ──────────────────────────────────────────────────
@@ -1551,31 +1551,31 @@ async function loadExchange(){
   const card=document.getElementById("exch-card");
   try{
     const r=await api("GET","/api/exchange-rates");
-    if(!r.rates||!Object.keys(r.rates).length){card.innerHTML=`<div style="color:var(--muted);">לא נמצאו שערי חליפין. הגדר את מודול exchange_rates.</div>`;return;}
+    if(!r.rates||!Object.keys(r.rates).length){card.innerHTML=`<div style="color:var(--muted);">${ui("no_exchange")}</div>`;return;}
     const pairs=Object.entries(r.rates).slice(0,30);
     card.innerHTML=`<div class="card-title">בסיס: ${r.base}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:9px;margin-top:10px;">`+pairs.map(([c,v])=>`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;"><div style="font-weight:700;">${c}</div><div style="color:var(--muted);font-size:.78rem;">${typeof v==="number"?v.toFixed(4):v}</div></div>`).join("")+`</div>`;
-  }catch(e){card.innerHTML=`<div style="color:var(--muted);">שגיאה בטעינת שערים</div>`;}
+  }catch(e){card.innerHTML=`<div style="color:var(--muted);">${ui("error_exchange")}</div>`;}
 }
 
 // ── Alerts ────────────────────────────────────────────────────
 async function loadAlerts(){
   try{
     const alerts=await api("GET","/api/alerts");const tbody=document.getElementById("alerts-tbody");
-    if(!alerts.length){tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:18px;color:var(--muted);">אין התראות מוגדרות</td></tr>`;return;}
+    if(!alerts.length){tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:18px;color:var(--muted);">${ui("no_alerts")}</td></tr>`;return;}
     tbody.innerHTML=alerts.map(a=>{const c=typeof a.conditions==="string"?JSON.parse(a.conditions||"{}"):a.conditions||{};
       return`<tr><td><b>${esc(a.name)}</b></td><td>${a.watch_id?`מעקב #${a.watch_id}`:"הכל"}</td><td style="font-size:.76rem;color:var(--muted);">${JSON.stringify(c)}</td><td><span class="tag t-on">פעיל</span></td><td><button class="btn btn-d btn-sm" onclick="deleteAlert(${a.id})">🗑</button></td></tr>`;
     }).join("");
-  }catch(e){toast("שגיאה בטעינת התראות","err");}
+  }catch(e){toast(ui("error_loading_alerts"),"err");}
 }
 
 function openAddAlert(){openModal("m-add-alert");}
 async function submitAlert(){
-  const name=document.getElementById("al-name").value.trim();if(!name){toast("שם נדרש","err");return;}
+  const name=document.getElementById("al-name").value.trim();if(!name){toast(ui("name_required"),"err");return;}
   const cond={};const mp=parseFloat(document.getElementById("al-maxp").value);if(mp)cond.max_price=mp;
-  try{await api("POST","/api/alerts",{name,watch_id:parseInt(document.getElementById("al-watch").value)||null,conditions:cond});closeModal("m-add-alert");loadAlerts();toast("התראה נוצרה ✅","ok");}
-  catch(e){toast("שגיאה: "+e.message,"err");}
+  try{await api("POST","/api/alerts",{name,watch_id:parseInt(document.getElementById("al-watch").value)||null,conditions:cond});closeModal("m-add-alert");loadAlerts();toast(ui("alert_created"),"ok");}
+  catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
-async function deleteAlert(id){if(!confirm("למחוק התראה זו?"))return;try{await api("DELETE",`/api/alerts/${id}`);loadAlerts();}catch(e){toast("שגיאה","err");}}
+async function deleteAlert(id){if(!confirm(ui("confirm_delete_alert")))return;try{await api("DELETE",`/api/alerts/${id}`);loadAlerts();}catch(e){toast(ui("error"),"err");}}
 
 // ── Settings ──────────────────────────────────────────────────
 const SETTINGS_LABELS={GEMINI_API_KEY:"מפתח Gemini API",AMADEUS_CLIENT_ID:"Amadeus Client ID",AMADEUS_CLIENT_SECRET:"Amadeus Client Secret",KIWI_API_KEY:"מפתח Kiwi API",TELEGRAM_BOT_TOKEN:"Telegram Bot Token",TELEGRAM_CHAT_ID:"Telegram Chat ID",NTFY_TOPIC:"NTFY Topic",NTFY_SERVER:"NTFY Server"};
@@ -1583,23 +1583,23 @@ const SETTINGS_LABELS={GEMINI_API_KEY:"מפתח Gemini API",AMADEUS_CLIENT_ID:"A
 async function loadSettings(){
   try{
     const s=await api("GET","/api/settings");const form=document.getElementById("settings-form");
-    form.innerHTML=Object.entries(SETTINGS_LABELS).map(([k,lbl])=>`<div class="fg"><label>${lbl}</label><input type="text" id="s-${k}" placeholder="${s[k]==="***"?"••••• (מוגדר)":"לא מוגדר"}" value=""></div>`).join("");
-  }catch(e){toast("שגיאה בטעינת הגדרות","err");}
+    form.innerHTML=Object.entries(SETTINGS_LABELS).map(([k,lbl])=>`<div class="fg"><label>${lbl}</label><input type="text" id="s-${k}" placeholder="${s[k]==="***"?ui("settings_configured"):ui("settings_not_set")}" value=""></div>`).join("");
+  }catch(e){toast(ui("error_loading_settings"),"err");}
 }
 async function saveSettings(){
   const body={};Object.keys(SETTINGS_LABELS).forEach(k=>{const v=document.getElementById(`s-${k}`)?.value.trim();if(v)body[k]=v;});
-  try{await api("POST","/api/settings",body);toast("הגדרות נשמרו ✅","ok");loadSettings();}catch(e){toast("שגיאה: "+e.message,"err");}
+  try{await api("POST","/api/settings",body);toast(ui("settings_saved"),"ok");loadSettings();}catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 
 // ── Helpers ───────────────────────────────────────────────────
 function esc(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function catTag(c){const m={flight:"t-flight",hotel:"t-hotel",apartment:"t-apt",package:"t-pkg"};const labels={flight:"טיסה ✈️",hotel:"מלון 🏨",apartment:"דירה 🏠",package:"חבילה 📦"};return`<span class="tag ${m[c]||""}">${labels[c]||c||"—"}</span>`;}
+function catTag(c){const m={flight:"t-flight",hotel:"t-hotel",apartment:"t-apt",package:"t-pkg"};const k="cat_"+c;return`<span class="tag ${m[c]||""}">${ui(k)||c||"—"}</span>`;}
 function md(text){if(!text)return"";return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>").replace(/`(.+?)`/g,"<code>$1</code>").replace(/^#{1,3} (.+)$/gm,"<b style='font-size:.97rem;display:block;margin:8px 0 4px;'>$1</b>").replace(/^[-•] (.+)$/gm,"• $1<br>").replace(/\n\n/g,"<br><br>").replace(/\n/g,"<br>");}
 
 // ── Chat helpers ─────────────────────────────────────────────
 function clearChat(){
   chatHist=[];
-  document.getElementById("chat-msgs").innerHTML=`<div class="bubble ai">✈️ שלום! אני סוכן הנסיעות החכם שלך. שאל אותי על טיסות, מלונות, ויזות, דילים ועוד.</div>`;
+  document.getElementById("chat-msgs").innerHTML=`<div class="bubble ai">${ui("chat_greeting")}</div>`;
 }
 function startChat(text){
   document.getElementById("chat-in").value=text;
@@ -1621,13 +1621,13 @@ async function runSmartTool(inputId, resultId, promptPrefix){
   const input=document.getElementById(inputId);
   const res=document.getElementById(resultId);
   const text=(input?.value||"").trim();
-  if(!text){toast("הכנס פרטים","err");return;}
+  if(!text){toast(ui("enter_details"),"err");return;}
   res.classList.remove("ai-placeholder");
-  res.innerHTML=`<div class="loading"><div class="spin"></div>מנתח…</div>`;
+  res.innerHTML=spin("analyzing");
   try{
     const r=await api("POST","/api/ai/quick",{prompt:promptPrefix+text+langSuffix()});
-    res.innerHTML=md(r.text||"אין תוצאה");
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+    res.innerHTML=md(r.text||ui("no_result"));
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
 }
 
 // ── Price Calendar ────────────────────────────────────────────
@@ -1635,7 +1635,7 @@ function populateCalWatches(){
   const sel=document.getElementById("cal-watch-sel");
   if(!sel)return;
   const cur=sel.value;
-  sel.innerHTML=`<option value="">— בחר —</option>`;
+  sel.innerHTML=`<option value="">${ui("select_option")}</option>`;
   _watches.forEach(w=>{sel.innerHTML+=`<option value="${w.id}">${esc(w.name)}</option>`;});
   if(cur)sel.value=cur;
   // set default month to current
@@ -1647,7 +1647,7 @@ async function loadPriceCalendar(){
   const wid=document.getElementById("cal-watch-sel").value;
   const mon=document.getElementById("cal-month").value;
   const container=document.getElementById("cal-container");
-  if(!wid){toast("בחר מעקב","err");return;}
+  if(!wid){toast(ui("select_watch"),"err");return;}
   try{
     const hist=await api("GET",`/api/prices/${wid}?limit=100`);
     const [yr,mo]=mon?mon.split("-").map(Number):[new Date().getFullYear(),new Date().getMonth()+1];
@@ -1685,10 +1685,10 @@ async function loadPriceCalendar(){
     for(let day=1;day<=daysInMonth;day++){
       const p=priceMap[day];
       const cls=cellClass(p);
-      html+=`<div class="cal-cell ${cls}" title="${p?`$${p}`:"אין נתונים"}"><div class="cal-num">${day}</div>${p?`<div class="cal-p">$${p}</div>`:""}</div>`;
+      html+=`<div class="cal-cell ${cls}" title="${p?`$${p}`:ui("no_data")}"><div class="cal-num">${day}</div>${p?`<div class="cal-p">$${p}</div>`:""}</div>`;
     }
     html+=`</div>`;
-    if(!prices.length)html=`<div class="warn-box"><div class="warn-title">📆 אין נתוני מחיר לחודש זה</div>לחץ 🔄 על מעקבים לאיסוף נתונים, ואז חזור כאן.</div>`;
+    if(!prices.length)html=`<div class="warn-box"><div class="warn-title">${ui("no_price_data")}</div>${ui("no_price_hint")}</div>`;
 
     container.innerHTML=`<div class="card"><div class="card-title">📆 ${esc(_watches.find(w=>w.id==wid)?.name||"מעקב")} — ${mon||"החודש"}</div>${html}</div>`;
   }catch(e){toast("שגיאה","err");console.error(e);}
@@ -1701,12 +1701,12 @@ async function loadCalendarAI(){
   const box=document.getElementById("cal-ai-box");
   box.style.display="block";
   resEl.classList.remove("ai-placeholder");
-  resEl.innerHTML=`<div class="loading"><div class="spin"></div>מנתח…</div>`;
-  const watchName=_watches.find(w=>w.id==wid)?.name||"מסלול";
+  resEl.innerHTML=spin("analyzing");
+  const watchName=_watches.find(w=>w.id==wid)?.name||"route";
   try{
     const r=await api("POST","/api/ai/quick",{prompt:`Find the cheapest travel dates for: ${watchName}. Month: ${mon||"upcoming"}. Include a recommendation for the cheapest day of the week to fly.${langSuffix()}`});
-    resEl.innerHTML=md(r.text||"אין תוצאה");
-  }catch(e){resEl.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+    resEl.innerHTML=md(r.text||ui("no_result"));
+  }catch(e){resEl.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
 }
 
 // ── Expiring Deals ────────────────────────────────────────────
@@ -1715,18 +1715,18 @@ async function loadExpiringDeals(){
   const market=document.getElementById("exp-market");
   const dest=document.getElementById("exp-dest")?.value.trim()||"";
   res.classList.remove("ai-placeholder");
-  res.innerHTML=`<div class="loading"><div class="spin"></div>סורק דילים פגי תוקף…</div>`;
-  market.innerHTML=`<div class="loading"><div class="spin"></div>בודק שוק…</div>`;
+  res.innerHTML=spin("scanning_expiring");
+  market.innerHTML=spin("checking_market");
   try{
     const [dealsR,mktR]=await Promise.all([
       api("POST","/api/ai/quick",{prompt:`Find flights and hotel deals expiring in the next 24-72 hours (flash sales, limited time, error fares) for ${dest||"any destination"}. Include: destination, price, airline/hotel, expiry date, link.${langSuffix()}`}),
       api("POST","/api/ai/quick",{prompt:`Give a brief summary of the current flight market: price trends, is now a good time to buy? 2-3 sentences.${langSuffix()}`})
     ]);
-    res.innerHTML=md(dealsR.text||"לא נמצאו דילים");
-    market.innerHTML=md(mktR.text||"אין נתונים");
+    res.innerHTML=md(dealsR.text||ui("no_deals"));
+    market.innerHTML=md(mktR.text||ui("no_data"));
   }catch(e){
-    res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;
-    market.textContent="שגיאה";
+    res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;
+    market.textContent=ui("error");
   }
 }
 
@@ -1739,11 +1739,11 @@ async function loadTgStatus(){
     const msg=document.getElementById("tg-status-msg");
     if(r.ok&&r.result){
       box.style.background="rgba(34,197,94,.05)";box.style.borderColor="rgba(34,197,94,.3)";
-      title.textContent="✅ בוט מחובר";title.style.color="#4ade80";
+      title.textContent=ui("tg_connected");title.style.color="#4ade80";
       msg.textContent=`Bot: @${r.result.username||""}`;
     }else{
-      title.textContent="⚠️ בוט לא מוגדר";
-      msg.textContent=r.error||"הגדר Bot Token ו-Chat ID למטה.";
+      title.textContent=ui("tg_not_configured");
+      msg.textContent=r.error||ui("tg_setup_hint");
     }
   }catch(e){}
 }
@@ -1751,40 +1751,40 @@ async function saveTgBot(){
   const token=document.getElementById("tg-token-pg")?.value.trim();
   const chatId=document.getElementById("tg-chatid-pg")?.value.trim();
   const body={};if(token)body.TELEGRAM_BOT_TOKEN=token;if(chatId)body.TELEGRAM_CHAT_ID=chatId;
-  if(!token&&!chatId){toast("הכנס לפחות שדה אחד","err");return;}
-  try{await api("POST","/api/settings",body);toast("נשמר ✅","ok");setTimeout(loadTgStatus,500);}
-  catch(e){toast("שגיאה: "+e.message,"err");}
+  if(!token&&!chatId){toast(ui("enter_at_least_one"),"err");return;}
+  try{await api("POST","/api/settings",body);toast(ui("saved"),"ok");setTimeout(loadTgStatus,500);}
+  catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 async function testTgBot(){
   const res=document.getElementById("tg-test-res");
-  res.textContent="בודק…";
+  res.textContent=ui("checking");
   try{
     const token=document.getElementById("tg-token-pg")?.value.trim()||"";
     const chatId=document.getElementById("tg-chatid-pg")?.value.trim()||"";
     const r=await api("POST","/api/telegram/test",{token,chat_id:chatId});
-    res.innerHTML=r.ok?`<span style="color:#4ade80;">✅ הודעת בדיקה נשלחה! בדוק את Telegram.</span>`:`<span style="color:#f87171;">❌ שגיאה: ${esc(r.error||"לא ידוע")}</span>`;
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">❌ שגיאה: ${esc(e.message)}</span>`;}
+    res.innerHTML=r.ok?`<span style="color:#4ade80;">${ui("tg_send_test")}</span>`:`<span style="color:#f87171;">❌ ${ui("error_prefix")}${esc(r.error||"unknown")}</span>`;
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">❌ ${ui("error_prefix")}${esc(e.message)}</span>`;}
 }
 async function getTgChatId(){
-  const res=document.getElementById("tg-test-res");res.textContent="מחפש Chat ID…";
+  const res=document.getElementById("tg-test-res");res.textContent=ui("searching_chat_id");
   try{
     const r=await api("GET","/api/telegram/chat-id");
     if(r.chat_id){
       document.getElementById("tg-chatid-pg").value=r.chat_id;
-      res.innerHTML=`<span style="color:#4ade80;">✅ Chat ID נמצא: ${esc(String(r.chat_id))}</span>`;
+      res.innerHTML=`<span style="color:#4ade80;">✅ Chat ID: ${esc(String(r.chat_id))}</span>`;
     }else{
-      res.innerHTML=`<span style="color:#fcd34d;">⚠️ לא נמצאו הודעות. שלח הודעה לבוט תחילה.</span>`;
+      res.innerHTML=`<span style="color:#fcd34d;">${ui("chat_id_not_found")}</span>`;
     }
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">❌ שגיאה: ${esc(e.message)}</span>`;}
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">❌ ${ui("error_prefix")}${esc(e.message)}</span>`;}
 }
 async function sendTgManual(){
   const msg=document.getElementById("tg-manual-msg")?.value.trim();
-  if(!msg){toast("הכנס הודעה","err");return;}
+  if(!msg){toast(ui("enter_message"),"err");return;}
   try{
     const r=await api("POST","/api/telegram/send",{message:msg});
-    if(r.ok)toast("✅ נשלח!","ok");
-    else toast("❌ שגיאה: "+(r.error||"לא ידוע"),"err");
-  }catch(e){toast("שגיאה: "+e.message,"err");}
+    if(r.ok)toast(ui("sent"),"ok");
+    else toast("❌ "+ui("error_prefix")+(r.error||"unknown"),"err");
+  }catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 
 // ── Auto-Book ─────────────────────────────────────────────────
@@ -1802,27 +1802,27 @@ async function loadAbRules(){
   const el=document.getElementById("ab-rules-list");
   try{
     const rules=await api("GET","/api/auto-book/rules");
-    if(!rules.length){el.innerHTML=`<div style="color:var(--muted);text-align:center;padding:18px;">אין כללים. הוסף כלל למעלה.</div>`;return;}
-    const modeLabel={notify:"📲 התראה בלבד",open_browser:"🌐 פתח browser",auto_fill:"🤖 מלא אוטומטית"};
+    if(!rules.length){el.innerHTML=`<div style="color:var(--muted);text-align:center;padding:18px;">${ui("no_rules")}</div>`;return;}
+    const modeLabel={notify:ui("ab_notify"),open_browser:ui("ab_open_browser"),auto_fill:ui("ab_auto_fill")};
     el.innerHTML=rules.map(r=>`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
       <div>
         <span style="font-size:.9rem;">${r.enabled?"🟢":"⚫"}</span>
         <b style="margin-right:6px;">${esc(r.name)}</b>
         <span style="color:var(--muted);font-size:.78rem;">${esc(r.origin||"TLV")} → ${esc(r.destination)} &lt; $${r.max_price}</span>
         <span style="color:var(--accent);font-size:.75rem;margin-right:6px;">${modeLabel[r.mode]||r.mode}</span>
-        ${r.trigger_count?`<span style="color:#fcd34d;font-size:.75rem;">הופעל ${r.trigger_count}×</span>`:""}
+        ${r.trigger_count?`<span style="color:#fcd34d;font-size:.75rem;">${ui("triggered")} ${r.trigger_count}×</span>`:""}
       </div>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-g btn-sm" onclick="toggleAbRule(${r.id},${!r.enabled})">${r.enabled?"⏸":"▶"}</button>
         <button class="btn btn-d btn-sm" onclick="deleteAbRule(${r.id})">🗑</button>
       </div>
     </div>`).join("");
-  }catch(e){el.innerHTML=`<div style="color:#f87171;">שגיאה: ${esc(e.message)}</div>`;}
+  }catch(e){el.innerHTML=`<div style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</div>`;}
 }
 async function addAbRule(){
   const name=document.getElementById("ab-name")?.value.trim();
   const dest=document.getElementById("ab-dest")?.value.trim().toUpperCase();
-  if(!name||!dest){toast("שם ויעד נדרשים","err");return;}
+  if(!name||!dest){toast(ui("need_name_dest"),"err");return;}
   try{
     await api("POST","/api/auto-book/rules",{
       name,origin:document.getElementById("ab-origin")?.value.trim().toUpperCase()||"TLV",
@@ -1831,18 +1831,18 @@ async function addAbRule(){
       date_to:document.getElementById("ab-to")?.value||null,
       mode:document.getElementById("ab-mode")?.value||"notify"
     });
-    toast("כלל נוסף ✅","ok");loadAbRules();
-  }catch(e){toast("שגיאה: "+e.message,"err");}
+    toast(ui("rule_added"),"ok");loadAbRules();
+  }catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
-async function deleteAbRule(id){if(!confirm("למחוק כלל זה?"))return;try{await api("DELETE",`/api/auto-book/rules/${id}`);loadAbRules();}catch(e){toast("שגיאה","err");}}
-async function toggleAbRule(id,en){try{await api("PATCH",`/api/auto-book/rules/${id}/toggle?enabled=${en}`);loadAbRules();}catch(e){toast("שגיאה","err");}}
+async function deleteAbRule(id){if(!confirm(ui("confirm_delete_rule")))return;try{await api("DELETE",`/api/auto-book/rules/${id}`);loadAbRules();}catch(e){toast(ui("error"),"err");}}
+async function toggleAbRule(id,en){try{await api("PATCH",`/api/auto-book/rules/${id}/toggle?enabled=${en}`);loadAbRules();}catch(e){toast(ui("error"),"err");}}
 async function loadAbLog(){
   const el=document.getElementById("ab-log-list");
   try{
     const log=await api("GET","/api/auto-book/log");
-    if(!log.length){el.innerHTML=`<div style="color:var(--muted);text-align:center;padding:18px;">אין רשומות לוג עדיין.</div>`;return;}
+    if(!log.length){el.innerHTML=`<div style="color:var(--muted);text-align:center;padding:18px;">${ui("no_log")}</div>`;return;}
     el.innerHTML=log.map(e=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:.82rem;"><b>${esc(e.rule_name||"")}</b> | ${esc(e.action||"")} | <span style="color:var(--muted);">${(e.booked_at||"").substring(0,16)}</span></div>`).join("");
-  }catch(e){el.innerHTML=`<div style="color:#f87171;">שגיאה: ${esc(e.message)}</div>`;}
+  }catch(e){el.innerHTML=`<div style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</div>`;}
 }
 async function savePassenger(){
   const body={
@@ -1853,19 +1853,19 @@ async function savePassenger(){
     passport:document.getElementById("p-passport")?.value.trim()||"",
     dob:document.getElementById("p-dob")?.value||""
   };
-  try{await api("POST","/api/auto-book/passenger",body);toast("נשמר ✅","ok");}
-  catch(e){toast("שגיאה: "+e.message,"err");}
+  try{await api("POST","/api/auto-book/passenger",body);toast(ui("saved"),"ok");}
+  catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 
 // ── Positioning ───────────────────────────────────────────────
 async function runPositioning(){
   const dest=document.getElementById("pos-dest")?.value.trim().toUpperCase();
   const date=document.getElementById("pos-date")?.value;
-  if(!dest||!date){toast("הכנס יעד ותאריך","err");return;}
+  if(!dest||!date){toast(ui("enter_dest_date"),"err");return;}
   const btn=document.getElementById("pos-btn");
-  btn.disabled=true;btn.textContent="מחפש…";
+  btn.disabled=true;btn.textContent=ui("searching");
   const res=document.getElementById("pos-results");
-  res.innerHTML=`<div class="loading"><div class="spin"></div>מחפש הזדמנויות positioning… (עשוי לקחת 30-60 שניות)</div>`;
+  res.innerHTML=spin("searching_positioning");
   try{
     const r=await api("POST","/api/positioning",{
       destination:dest,travel_date:date,
@@ -1875,36 +1875,36 @@ async function runPositioning(){
       lang:_lang
     });
     const opps=r.opportunities||[];
-    if(r.ai_result){res.innerHTML=`<div class="card"><div class="card-title">🤖 ניתוח AI</div><div class="ai-box">${md(r.ai_result)}</div></div>`;return;}
-    if(!opps.length){res.innerHTML=`<div class="warn-box"><div class="warn-title">לא נמצאו הזדמנויות</div>לא נמצאו הזדמנויות positioning לנתיב זה. נסה יעד אחר.</div>`;return;}
-    res.innerHTML=`<div style="font-size:.9rem;color:#4ade80;margin-bottom:10px;">✅ נמצאו ${opps.length} הזדמנויות!</div>`+opps.map(opp=>{
+    if(r.ai_result){res.innerHTML=`<div class="card"><div class="card-title">${ui("ai_analysis")}</div><div class="ai-box">${md(r.ai_result)}</div></div>`;return;}
+    if(!opps.length){res.innerHTML=`<div class="warn-box"><div class="warn-title">${ui("no_opps_title")}</div>${ui("no_positioning")}</div>`;return;}
+    res.innerHTML=`<div style="font-size:.9rem;color:#4ade80;margin-bottom:10px;">${uif("btn_found_opps",opps.length)}</div>`+opps.map(opp=>{
       const pct=opp.savings_pct||0;const color=pct>20?"#4ade80":pct>10?"#fcd34d":"#94a3b8";
       return`<div class="card" style="margin-bottom:10px;border-color:${color}20;">
-        <div class="card-title" style="color:${color};">🗺️ דרך ${esc(opp.positioning_city||opp.positioning_airport||"")} — חיסכון $${(opp.savings||0).toFixed(0)} (${pct.toFixed(0)}%)</div>
+        <div class="card-title" style="color:${color};">🗺️ ${ui("via")} ${esc(opp.positioning_city||opp.positioning_airport||"")} — ${ui("savings")} $${(opp.savings||0).toFixed(0)} (${pct.toFixed(0)}%)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:.82rem;margin-bottom:8px;">
           <div><b>TLV → Hub</b><br>$${opp.tlv_to_hub_price||0}</div>
           <div><b>Hub → ${dest}</b><br>$${opp.hub_to_dest_price||0}</div>
-          <div><b>ישיר TLV → ${dest}</b><br>$${opp.direct_tlv_to_dest||0}</div>
+          <div><b>${ui("direct_tlv")} ${dest}</b><br>$${opp.direct_tlv_to_dest||0}</div>
         </div>
         ${opp.why?`<div style="font-size:.8rem;color:var(--muted);">${esc(opp.why)}</div>`:""}
-        ${opp.overnight_needed?`<div style="margin-top:6px;font-size:.8rem;color:#fcd34d;">🌙 דורש לינה בעיר הביניים</div>`:""}
+        ${opp.overnight_needed?`<div style="margin-top:6px;font-size:.8rem;color:#fcd34d;">${ui("needs_overnight")}</div>`:""}
       </div>`;
     }).join("");
-  }catch(e){res.innerHTML=`<div style="color:#f87171;">שגיאה: ${esc(e.message)}</div>`;}
-  btn.disabled=false;btn.textContent="🔍 מצא הזדמנויות";
+  }catch(e){res.innerHTML=`<div style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</div>`;}
+  btn.disabled=false;btn.textContent=ui("btn_find_opps");
 }
 
 async function loadPositioningRoutes(){
   const el=document.getElementById("pos-routes-res");
   if(!el)return;
-  el.innerHTML=`<div class="loading"><div class="spin"></div>טוען…</div>`;
+  el.innerHTML=spin("loading");
   try{
     const r=await api("GET","/api/positioning/routes");
     if(r.ai_result){el.innerHTML=md(r.ai_result);return;}
     const routes=r.routes||[];
-    if(!routes.length){el.textContent="לא נמצאו נתיבים.";return;}
+    if(!routes.length){el.textContent=ui("no_routes");return;}
     el.innerHTML=routes.slice(0,10).map(r=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem;">✈️ <b>${esc(r.city||"")} (${esc(r.airport||"")})</b> — מ-$${r.price_from||"?"} | ${esc(r.airline||"")} | <span style="color:var(--muted);">${esc(r.why_good_positioning||"")}</span></div>`).join("");
-  }catch(e){el.textContent="שגיאה בטעינה";}
+  }catch(e){el.textContent=ui("error_loading");}
 }
 
 async function calcROI(){
@@ -1921,12 +1921,12 @@ async function calcROI(){
     res.innerHTML=`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:14px;">
       <div style="font-size:1.1rem;font-weight:800;color:${color};margin-bottom:10px;">${esc(r.verdict||"")}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:.84rem;">
-        <div><div style="color:var(--muted);font-size:.72rem;">חיסכון גולמי</div><b style="color:#4ade80;">$${(r.gross_savings||0).toFixed(0)} (${(r.gross_savings_pct||0).toFixed(1)}%)</b></div>
-        <div><div style="color:var(--muted);font-size:.72rem;">עלות זמן</div><b style="color:#f87171;">$${(r.time_cost||0).toFixed(0)}</b></div>
-        <div><div style="color:var(--muted);font-size:.72rem;">חיסכון נטו</div><b style="color:${color};">$${net.toFixed(0)}</b></div>
+        <div><div style="color:var(--muted);font-size:.72rem;">${ui("gross_savings")}</div><b style="color:#4ade80;">$${(r.gross_savings||0).toFixed(0)} (${(r.gross_savings_pct||0).toFixed(1)}%)</b></div>
+        <div><div style="color:var(--muted);font-size:.72rem;">${ui("time_cost")}</div><b style="color:#f87171;">$${(r.time_cost||0).toFixed(0)}</b></div>
+        <div><div style="color:var(--muted);font-size:.72rem;">${ui("net_savings")}</div><b style="color:${color};">$${net.toFixed(0)}</b></div>
       </div>
     </div>`;
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
 }
 
 // ── WhatsApp Bot ──────────────────────────────────────────────
@@ -1945,28 +1945,28 @@ async function saveWaSettings(){
   const auth=document.getElementById("wa-auth")?.value.trim();
   const from=document.getElementById("wa-from")?.value.trim();
   if(sid)body.TWILIO_ACCOUNT_SID=sid;if(auth)body.TWILIO_AUTH_TOKEN=auth;if(from)body.TWILIO_WHATSAPP_FROM=from;
-  if(!sid&&!auth){toast("הכנס Account SID ו-Auth Token","err");return;}
-  try{await api("POST","/api/settings",body);toast("נשמר ✅","ok");}
-  catch(e){toast("שגיאה: "+e.message,"err");}
+  if(!sid&&!auth){toast(ui("enter_sid_auth"),"err");return;}
+  try{await api("POST","/api/settings",body);toast(ui("saved"),"ok");}
+  catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 async function testWaBot(){
   const msg=document.getElementById("wa-test-msg")?.value.trim();
   const res=document.getElementById("wa-test-res");
-  if(!msg){toast("הכנס הודעה","err");return;}
-  res.classList.remove("ai-placeholder");res.innerHTML=`<div class="loading"><div class="spin"></div>שולח…</div>`;
+  if(!msg){toast(ui("enter_message"),"err");return;}
+  res.classList.remove("ai-placeholder");res.innerHTML=spin("sending");
   try{
     const r=await api("POST","/api/whatsapp/test",{message:msg});
-    res.innerHTML=md(r.reply||"אין תגובה");
-  }catch(e){res.innerHTML=`<span style="color:#f87171;">שגיאה: ${esc(e.message)}</span>`;}
+    res.innerHTML=md(r.reply||ui("wa_no_reply"));
+  }catch(e){res.innerHTML=`<span style="color:#f87171;">${ui("error_prefix")}${esc(e.message)}</span>`;}
 }
 async function sendWaMessage(){
   const to=document.getElementById("wa-send-to")?.value.trim();
   const msg=document.getElementById("wa-send-msg")?.value.trim();
-  if(!to||!msg){toast("מלא שדות","err");return;}
+  if(!to||!msg){toast(ui("fill_fields"),"err");return;}
   try{
     const r=await api("POST","/api/whatsapp/send",{to,message:msg});
-    if(r.error)toast("❌ "+r.error,"err");else toast("✅ נשלח!","ok");
-  }catch(e){toast("שגיאה: "+e.message,"err");}
+    if(r.error)toast("❌ "+r.error,"err");else toast(ui("sent"),"ok");
+  }catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 async function loadWaStats(){
   try{
@@ -1982,19 +1982,19 @@ async function loadWaStats(){
 async function saveTelegramSettings(){
   const token=document.getElementById("tg-token-input")?.value.trim();
   const chatId=document.getElementById("tg-chatid-input")?.value.trim();
-  if(!token&&!chatId){toast("הכנס לפחות שדה אחד","err");return;}
+  if(!token&&!chatId){toast(ui("enter_at_least_one"),"err");return;}
   const body={};
   if(token)body.TELEGRAM_BOT_TOKEN=token;
   if(chatId)body.TELEGRAM_CHAT_ID=chatId;
-  try{await api("POST","/api/settings",body);toast("הגדרות טלגרם נשמרו ✅","ok");}
-  catch(e){toast("שגיאה: "+e.message,"err");}
+  try{await api("POST","/api/settings",body);toast(ui("telegram_settings_saved"),"ok");}
+  catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 async function testTelegram(){
-  toast("שולח הודעת בדיקה…");
+  toast(ui("sending_test"));
   try{
     await api("POST","/api/ai/quick",{prompt:"test"});// just to check server is up
-    toast("⚠️ בדיקת טלגרם ישירה אינה זמינה עדיין — וודא שהגדרת TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID");
-  }catch(e){toast("שגיאה","err");}
+    toast(ui("tg_test_hint"));
+  }catch(e){toast(ui("error"),"err");}
 }
 async function saveNtfySettings(){
   const topic=document.getElementById("ntfy-topic-input")?.value.trim();
@@ -2002,9 +2002,9 @@ async function saveNtfySettings(){
   const body={};
   if(topic)body.NTFY_TOPIC=topic;
   if(server)body.NTFY_SERVER=server;
-  if(!topic){toast("הכנס topic","err");return;}
-  try{await api("POST","/api/settings",body);toast("הגדרות NTFY נשמרו ✅","ok");}
-  catch(e){toast("שגיאה: "+e.message,"err");}
+  if(!topic){toast(ui("enter_topic"),"err");return;}
+  try{await api("POST","/api/settings",body);toast(ui("ntfy_settings_saved"),"ok");}
+  catch(e){toast(ui("error_prefix")+e.message,"err");}
 }
 
 // ── Language toggle ───────────────────────────────────────────
@@ -2019,6 +2019,262 @@ const NAV_HE={dashboard:"לוח בקרה",watches:"רשימת מעקב",history:
 function toggleLang(){const langs=["he","en","pt","es"];_lang=langs[(langs.indexOf(_lang)+1)%langs.length];localStorage.setItem("noded_lang",_lang);localStorage.setItem("wl_lang",_lang);applyLang();}
 
 function langSuffix(){return _lang==="he"?" ענה בעברית.":_lang==="pt"?" Respond in Portuguese.":_lang==="es"?" Respond in Spanish.":"";}
+
+// ── UI Translations ───────────────────────────────────────────
+const UI={
+  he:{
+    active:"פעיל",inactive:"כבוי",loading:"טוען…",analyzing:"מנתח…",searching:"מחפש…",
+    searching_deals:"מחפש דילים…",calculating:"מחשב…",processing:"מעבד…",checking:"בודק…",
+    sending:"שולח…",error:"שגיאה",error_prefix:"שגיאה: ",no_result:"אין תוצאה",
+    saved:"נשמר ✅",sent:"✅ נשלח!",no_deals:"לא נמצאו דילים",no_data:"אין נתונים",
+    no_records:"אין רשומות",no_result_ai:"אין תוצאה",
+    no_watches:'אין מעקבים עדיין. לחץ על "הוסף מעקב" להתחלה.',
+    no_watches_filter:"אין מעקבים — שנה את הסינון",
+    btn_book:"🛒 הזמן",btn_hunt_deals:"🔥 צוד דילים",btn_surprise:"🎲 הפתע אותי!",
+    btn_check_visa:"בדוק ויזה",btn_search_hc:"🔍 חפש",btn_find_opps:"🔍 מצא הזדמנויות",
+    confirm_delete_watch:"למחוק מעקב זה?",watch_added:"מעקב נוסף ✅",deleted:"נמחק",
+    checking_price:"בודק מחיר…",need_name_dest:"שם ויעד נדרשים",
+    fill_both_fields:"מלא את שני השדות",enter_origin_dest:"הכנס מוצא ויעד",
+    enter_origin:"הכנס נקודת מוצא",enter_details:"הכנס פרטים",enter_message:"הכנס הודעה",
+    enter_dest_date:"הכנס יעד ותאריך",enter_at_least_one:"הכנס לפחות שדה אחד",
+    enter_topic:"הכנס topic",fill_fields:"מלא שדות",enter_sid_auth:"הכנס Account SID ו-Auth Token",
+    select_watch:"בחר מעקב",name_required:"שם נדרש",
+    alert_created:"התראה נוצרה ✅",confirm_delete_alert:"למחוק התראה זו?",no_alerts:"אין התראות מוגדרות",
+    error_loading_alerts:"שגיאה בטעינת התראות",error_loading_watches:"שגיאה בטעינת מעקבים",
+    error_loading_history:"שגיאה בטעינת היסטוריה",error_loading_settings:"שגיאה בטעינת הגדרות",
+    settings_saved:"הגדרות נשמרו ✅",settings_configured:"••••• (מוגדר)",settings_not_set:"לא מוגדר",
+    telegram_settings_saved:"הגדרות טלגרם נשמרו ✅",ntfy_settings_saved:"הגדרות NTFY נשמרו ✅",
+    tg_connected:"✅ בוט מחובר",tg_not_configured:"⚠️ בוט לא מוגדר",
+    tg_setup_hint:"הגדר Bot Token ו-Chat ID למטה.",
+    tg_send_test:"✅ הודעת בדיקה נשלחה! בדוק את Telegram.",
+    chat_id_not_found:"⚠️ לא נמצאו הודעות. שלח הודעה לבוט תחילה.",
+    searching_chat_id:"מחפש Chat ID…",
+    no_rules:"אין כללים. הוסף כלל למעלה.",rule_added:"כלל נוסף ✅",
+    confirm_delete_rule:"למחוק כלל זה?",no_log:"אין רשומות לוג עדיין.",
+    searching_positioning:"מחפש הזדמנויות positioning… (עשוי לקחת 30-60 שניות)",
+    ai_analysis:"🤖 ניתוח AI",no_opps_title:"לא נמצאו הזדמנויות",
+    no_positioning:"לא נמצאו הזדמנויות positioning לנתיב זה. נסה יעד אחר.",
+    btn_found_opps:(n)=>`✅ נמצאו ${n} הזדמנויות!`,
+    via:"דרך",direct_tlv:"ישיר TLV →",needs_overnight:"🌙 דורש לינה בעיר הביניים",
+    no_routes:"לא נמצאו נתיבים.",error_loading:"שגיאה בטעינה",
+    gross_savings:"חיסכון גולמי",time_cost:"עלות זמן",net_savings:"חיסכון נטו",
+    no_price_data:"📆 אין נתוני מחיר לחודש זה",
+    no_price_hint:"לחץ 🔄 על מעקבים לאיסוף נתונים, ואז חזור כאן.",
+    scanning_expiring:"סורק דילים פגי תוקף…",checking_market:"בודק שוק…",
+    exp_placeholder:"לחץ \"מצא דילים פגי תוקף\" לסריקה.",
+    wa_no_reply:"אין תגובה",sending_test:"שולח הודעת בדיקה…",
+    tg_test_hint:"⚠️ בדיקת טלגרם ישירה אינה זמינה עדיין — וודא שהגדרת TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID",
+    chat_system:"אתה סוכן נסיעות AI חכם. ענה בעברית.",
+    chat_greeting:"✈️ שלום! אני סוכן הנסיעות החכם שלך. שאל אותי על טיסות, מלונות, ויזות, דילים ועוד.",
+    chat_error:"⚠️ שגיאה: ",
+    min:"מינימום",avg:"ממוצע",max:"מקסימום",recommended_actions:"✅ פעולות מומלצות",
+    no_exchange:"לא נמצאו שערי חליפין. הגדר את מודול exchange_rates.",
+    error_exchange:"שגיאה בטעינת שערים",select_option:"— בחר —",all_watches:"כל המעקבים",
+    cat_flight:"טיסה ✈️",cat_hotel:"מלון 🏨",cat_apartment:"דירה 🏠",cat_package:"חבילה 📦",
+    ab_notify:"📲 התראה בלבד",ab_open_browser:"🌐 פתח browser",ab_auto_fill:"🤖 מלא אוטומטית",
+    triggered:"הופעל",above_low:"מהנמוך",plan_free:"חינמי",plan_label:"תוכנית: ",
+    active_watches:"מעקבים פעילים",lowest_price:"המחיר הנמוך ביותר",
+    price_drops:"ירידות מחיר",ai_queries:"AI שאילתות היום",
+    recent_watches:"📋 מעקבים אחרונים",market_sentiment:"📰 סנטימנט שוק",refresh:"🔄 רענן",
+    nav_watches_h:"👁 רשימת מעקב",btn_add_watch:"+ הוסף מעקב",
+    opt_all_cats:"כל הקטגוריות",opt_flights:"טיסות",opt_hotels:"מלונות",
+    opt_apts:"דירות",opt_packages:"חבילות",
+    opt_sort_name:"מיין: שם",opt_sort_price_asc:"מיין: מחיר ↑",
+    opt_sort_price_desc:"מיין: מחיר ↓",opt_sort_deal:"מיין: ציון דיל",
+    th_name:"שם",th_cat:"קטגוריה",th_price:"מחיר אחרון",
+    th_score:"ציון",th_status:"סטטוס",th_actions:"פעולות",
+  },
+  en:{
+    active:"Active",inactive:"Off",loading:"Loading…",analyzing:"Analyzing…",searching:"Searching…",
+    searching_deals:"Searching deals…",calculating:"Calculating…",processing:"Processing…",checking:"Checking…",
+    sending:"Sending…",error:"Error",error_prefix:"Error: ",no_result:"No result",
+    saved:"Saved ✅",sent:"✅ Sent!",no_deals:"No deals found",no_data:"No data",
+    no_records:"No records",no_result_ai:"No result",
+    no_watches:'No watches yet. Click "Add Watch" to get started.',
+    no_watches_filter:"No watches — change filter",
+    btn_book:"🛒 Book",btn_hunt_deals:"🔥 Hunt Deals",btn_surprise:"🎲 Surprise Me!",
+    btn_check_visa:"Check Visa",btn_search_hc:"🔍 Search",btn_find_opps:"🔍 Find Opportunities",
+    confirm_delete_watch:"Delete this watch?",watch_added:"Watch added ✅",deleted:"Deleted",
+    checking_price:"Checking price…",need_name_dest:"Name and destination required",
+    fill_both_fields:"Fill in both fields",enter_origin_dest:"Enter origin and destination",
+    enter_origin:"Enter origin",enter_details:"Enter details",enter_message:"Enter message",
+    enter_dest_date:"Enter destination and date",enter_at_least_one:"Enter at least one field",
+    enter_topic:"Enter topic",fill_fields:"Fill in fields",enter_sid_auth:"Enter Account SID and Auth Token",
+    select_watch:"Select a watch",name_required:"Name required",
+    alert_created:"Alert created ✅",confirm_delete_alert:"Delete this alert?",no_alerts:"No alerts configured",
+    error_loading_alerts:"Error loading alerts",error_loading_watches:"Error loading watches",
+    error_loading_history:"Error loading history",error_loading_settings:"Error loading settings",
+    settings_saved:"Settings saved ✅",settings_configured:"••••• (set)",settings_not_set:"Not set",
+    telegram_settings_saved:"Telegram settings saved ✅",ntfy_settings_saved:"NTFY settings saved ✅",
+    tg_connected:"✅ Bot connected",tg_not_configured:"⚠️ Bot not configured",
+    tg_setup_hint:"Set Bot Token and Chat ID below.",
+    tg_send_test:"✅ Test message sent! Check Telegram.",
+    chat_id_not_found:"⚠️ No messages found. Send a message to the bot first.",
+    searching_chat_id:"Looking for Chat ID…",
+    no_rules:"No rules. Add a rule above.",rule_added:"Rule added ✅",
+    confirm_delete_rule:"Delete this rule?",no_log:"No log entries yet.",
+    searching_positioning:"Searching positioning opportunities… (may take 30-60 seconds)",
+    ai_analysis:"🤖 AI Analysis",no_opps_title:"No Opportunities Found",
+    no_positioning:"No positioning opportunities found for this route. Try another destination.",
+    btn_found_opps:(n)=>`✅ Found ${n} opportunities!`,
+    via:"via",direct_tlv:"Direct TLV →",needs_overnight:"🌙 Overnight stay required at hub",
+    no_routes:"No routes found.",error_loading:"Error loading",
+    gross_savings:"Gross Savings",time_cost:"Time Cost",net_savings:"Net Savings",
+    no_price_data:"📆 No price data for this month",
+    no_price_hint:"Click 🔄 on watches to collect data, then come back here.",
+    scanning_expiring:"Scanning expiring deals…",checking_market:"Checking market…",
+    exp_placeholder:'Click "Find Expiring Deals" to scan.',
+    wa_no_reply:"No reply",sending_test:"Sending test message…",
+    tg_test_hint:"⚠️ Direct Telegram test not available yet — make sure you've set TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID",
+    chat_system:"You are a smart AI travel agent. Be helpful and concise.",
+    chat_greeting:"✈️ Hello! I'm your AI travel agent. Ask me about flights, hotels, visas, deals and more.",
+    chat_error:"⚠️ Error: ",
+    min:"Min",avg:"Avg",max:"Max",recommended_actions:"✅ Recommended Actions",
+    no_exchange:"No exchange rates found. Configure the exchange_rates module.",
+    error_exchange:"Error loading exchange rates",select_option:"— Select —",all_watches:"All Watches",
+    cat_flight:"Flight ✈️",cat_hotel:"Hotel 🏨",cat_apartment:"Apt 🏠",cat_package:"Package 📦",
+    ab_notify:"📲 Notify only",ab_open_browser:"🌐 Open browser",ab_auto_fill:"🤖 Auto-fill",
+    triggered:"triggered",above_low:"above low",plan_free:"Free",plan_label:"Plan: ",
+    active_watches:"Active Watches",lowest_price:"Lowest Price",
+    price_drops:"Price Drops",ai_queries:"AI Queries Today",
+    recent_watches:"📋 Recent Watches",market_sentiment:"📰 Market Sentiment",refresh:"🔄 Refresh",
+    nav_watches_h:"👁 Watch List",btn_add_watch:"+ Add Watch",
+    opt_all_cats:"All Categories",opt_flights:"Flights",opt_hotels:"Hotels",
+    opt_apts:"Apartments",opt_packages:"Packages",
+    opt_sort_name:"Sort: Name",opt_sort_price_asc:"Sort: Price ↑",
+    opt_sort_price_desc:"Sort: Price ↓",opt_sort_deal:"Sort: Deal Score",
+    th_name:"Name",th_cat:"Category",th_price:"Last Price",
+    th_score:"Score",th_status:"Status",th_actions:"Actions",
+  },
+  pt:{
+    active:"Ativo",inactive:"Off",loading:"Carregando…",analyzing:"Analisando…",searching:"Procurando…",
+    searching_deals:"Procurando ofertas…",calculating:"Calculando…",processing:"Processando…",checking:"Verificando…",
+    sending:"Enviando…",error:"Erro",error_prefix:"Erro: ",no_result:"Sem resultado",
+    saved:"Salvo ✅",sent:"✅ Enviado!",no_deals:"Nenhuma oferta encontrada",no_data:"Sem dados",
+    no_records:"Sem registros",no_result_ai:"Sem resultado",
+    no_watches:'Nenhum monitoramento ainda. Clique em "Adicionar" para começar.',
+    no_watches_filter:"Nenhum monitoramento — mude o filtro",
+    btn_book:"🛒 Reservar",btn_hunt_deals:"🔥 Caçar Ofertas",btn_surprise:"🎲 Me Surpreenda!",
+    btn_check_visa:"Verificar Visto",btn_search_hc:"🔍 Buscar",btn_find_opps:"🔍 Buscar Oportunidades",
+    confirm_delete_watch:"Excluir este monitoramento?",watch_added:"Monitoramento adicionado ✅",deleted:"Excluído",
+    checking_price:"Verificando preço…",need_name_dest:"Nome e destino são obrigatórios",
+    fill_both_fields:"Preencha ambos os campos",enter_origin_dest:"Digite origem e destino",
+    enter_origin:"Digite a origem",enter_details:"Digite os detalhes",enter_message:"Digite a mensagem",
+    enter_dest_date:"Digite destino e data",enter_at_least_one:"Insira pelo menos um campo",
+    enter_topic:"Digite o tópico",fill_fields:"Preencha os campos",enter_sid_auth:"Digite Account SID e Auth Token",
+    select_watch:"Selecione um monitoramento",name_required:"Nome obrigatório",
+    alert_created:"Alerta criado ✅",confirm_delete_alert:"Excluir este alerta?",no_alerts:"Nenhum alerta configurado",
+    error_loading_alerts:"Erro ao carregar alertas",error_loading_watches:"Erro ao carregar monitoramentos",
+    error_loading_history:"Erro ao carregar histórico",error_loading_settings:"Erro ao carregar configurações",
+    settings_saved:"Configurações salvas ✅",settings_configured:"••••• (definido)",settings_not_set:"Não definido",
+    telegram_settings_saved:"Configurações do Telegram salvas ✅",ntfy_settings_saved:"Configurações NTFY salvas ✅",
+    tg_connected:"✅ Bot conectado",tg_not_configured:"⚠️ Bot não configurado",
+    tg_setup_hint:"Configure o Bot Token e Chat ID abaixo.",
+    tg_send_test:"✅ Mensagem de teste enviada! Verifique o Telegram.",
+    chat_id_not_found:"⚠️ Nenhuma mensagem encontrada. Envie uma mensagem ao bot primeiro.",
+    searching_chat_id:"Procurando Chat ID…",
+    no_rules:"Nenhuma regra. Adicione uma acima.",rule_added:"Regra adicionada ✅",
+    confirm_delete_rule:"Excluir esta regra?",no_log:"Nenhum registro de log ainda.",
+    searching_positioning:"Buscando oportunidades de posicionamento… (pode levar 30-60 segundos)",
+    ai_analysis:"🤖 Análise AI",no_opps_title:"Nenhuma Oportunidade",
+    no_positioning:"Nenhuma oportunidade de posicionamento para esta rota. Tente outro destino.",
+    btn_found_opps:(n)=>`✅ ${n} oportunidades encontradas!`,
+    via:"via",direct_tlv:"Direto TLV →",needs_overnight:"🌙 Pernoite obrigatório no hub",
+    no_routes:"Nenhuma rota encontrada.",error_loading:"Erro ao carregar",
+    gross_savings:"Economia Bruta",time_cost:"Custo de Tempo",net_savings:"Economia Líquida",
+    no_price_data:"📆 Sem dados de preço para este mês",
+    no_price_hint:"Clique em 🔄 nos monitoramentos para coletar dados, depois volte aqui.",
+    scanning_expiring:"Buscando ofertas expirando…",checking_market:"Verificando mercado…",
+    exp_placeholder:'Clique em "Buscar Ofertas Expirando" para escanear.',
+    wa_no_reply:"Sem resposta",sending_test:"Enviando mensagem de teste…",
+    tg_test_hint:"⚠️ Teste direto do Telegram ainda não disponível — certifique-se de ter definido TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID",
+    chat_system:"Você é um agente de viagens AI inteligente. Responda em português.",
+    chat_greeting:"✈️ Olá! Sou seu agente de viagens AI. Pergunte sobre voos, hotéis, vistos, ofertas e mais.",
+    chat_error:"⚠️ Erro: ",
+    min:"Mín",avg:"Média",max:"Máx",recommended_actions:"✅ Ações Recomendadas",
+    no_exchange:"Nenhuma taxa de câmbio encontrada. Configure o módulo exchange_rates.",
+    error_exchange:"Erro ao carregar taxas de câmbio",select_option:"— Selecionar —",all_watches:"Todos",
+    cat_flight:"Voo ✈️",cat_hotel:"Hotel 🏨",cat_apartment:"Apt 🏠",cat_package:"Pacote 📦",
+    ab_notify:"📲 Apenas notificar",ab_open_browser:"🌐 Abrir browser",ab_auto_fill:"🤖 Preencher automaticamente",
+    triggered:"ativado",above_low:"acima do mínimo",plan_free:"Gratuito",plan_label:"Plano: ",
+    active_watches:"Monitoramentos Ativos",lowest_price:"Menor Preço",
+    price_drops:"Quedas de Preço",ai_queries:"Consultas AI Hoje",
+    recent_watches:"📋 Monitoramentos Recentes",market_sentiment:"📰 Sentimento do Mercado",refresh:"🔄 Atualizar",
+    nav_watches_h:"👁 Monitoramentos",btn_add_watch:"+ Adicionar",
+    opt_all_cats:"Todas as Categorias",opt_flights:"Voos",opt_hotels:"Hotéis",
+    opt_apts:"Apartamentos",opt_packages:"Pacotes",
+    opt_sort_name:"Ordenar: Nome",opt_sort_price_asc:"Ordenar: Preço ↑",
+    opt_sort_price_desc:"Ordenar: Preço ↓",opt_sort_deal:"Ordenar: Melhor Oferta",
+    th_name:"Nome",th_cat:"Categoria",th_price:"Último Preço",
+    th_score:"Pontuação",th_status:"Status",th_actions:"Ações",
+  },
+  es:{
+    active:"Activo",inactive:"Off",loading:"Cargando…",analyzing:"Analizando…",searching:"Buscando…",
+    searching_deals:"Buscando ofertas…",calculating:"Calculando…",processing:"Procesando…",checking:"Verificando…",
+    sending:"Enviando…",error:"Error",error_prefix:"Error: ",no_result:"Sin resultado",
+    saved:"Guardado ✅",sent:"✅ ¡Enviado!",no_deals:"No se encontraron ofertas",no_data:"Sin datos",
+    no_records:"Sin registros",no_result_ai:"Sin resultado",
+    no_watches:'Sin monitoreos aún. Haz clic en "Agregar" para empezar.',
+    no_watches_filter:"Sin monitoreos — cambia el filtro",
+    btn_book:"🛒 Reservar",btn_hunt_deals:"🔥 Cazar Ofertas",btn_surprise:"🎲 ¡Sorpréndeme!",
+    btn_check_visa:"Verificar Visa",btn_search_hc:"🔍 Buscar",btn_find_opps:"🔍 Buscar Oportunidades",
+    confirm_delete_watch:"¿Eliminar este monitoreo?",watch_added:"Monitoreo agregado ✅",deleted:"Eliminado",
+    checking_price:"Verificando precio…",need_name_dest:"Nombre y destino son obligatorios",
+    fill_both_fields:"Rellena ambos campos",enter_origin_dest:"Ingresa origen y destino",
+    enter_origin:"Ingresa origen",enter_details:"Ingresa detalles",enter_message:"Ingresa el mensaje",
+    enter_dest_date:"Ingresa destino y fecha",enter_at_least_one:"Ingresa al menos un campo",
+    enter_topic:"Ingresa el tema",fill_fields:"Rellena los campos",enter_sid_auth:"Ingresa Account SID y Auth Token",
+    select_watch:"Selecciona un monitoreo",name_required:"Nombre requerido",
+    alert_created:"Alerta creada ✅",confirm_delete_alert:"¿Eliminar esta alerta?",no_alerts:"Sin alertas configuradas",
+    error_loading_alerts:"Error al cargar alertas",error_loading_watches:"Error al cargar monitoreos",
+    error_loading_history:"Error al cargar historial",error_loading_settings:"Error al cargar configuración",
+    settings_saved:"Configuración guardada ✅",settings_configured:"••••• (definido)",settings_not_set:"No definido",
+    telegram_settings_saved:"Configuración de Telegram guardada ✅",ntfy_settings_saved:"Configuración NTFY guardada ✅",
+    tg_connected:"✅ Bot conectado",tg_not_configured:"⚠️ Bot no configurado",
+    tg_setup_hint:"Configura el Bot Token y Chat ID abajo.",
+    tg_send_test:"✅ ¡Mensaje de prueba enviado! Revisa Telegram.",
+    chat_id_not_found:"⚠️ No se encontraron mensajes. Envía un mensaje al bot primero.",
+    searching_chat_id:"Buscando Chat ID…",
+    no_rules:"Sin reglas. Agrega una arriba.",rule_added:"Regla agregada ✅",
+    confirm_delete_rule:"¿Eliminar esta regla?",no_log:"Sin registros de log aún.",
+    searching_positioning:"Buscando oportunidades de posicionamiento… (puede tomar 30-60 segundos)",
+    ai_analysis:"🤖 Análisis AI",no_opps_title:"Sin Oportunidades",
+    no_positioning:"No se encontraron oportunidades de posicionamiento para esta ruta. Prueba otro destino.",
+    btn_found_opps:(n)=>`✅ ¡${n} oportunidades encontradas!`,
+    via:"vía",direct_tlv:"Directo TLV →",needs_overnight:"🌙 Noche obligatoria en el hub",
+    no_routes:"No se encontraron rutas.",error_loading:"Error al cargar",
+    gross_savings:"Ahorro Bruto",time_cost:"Costo de Tiempo",net_savings:"Ahorro Neto",
+    no_price_data:"📆 Sin datos de precio para este mes",
+    no_price_hint:"Haz clic en 🔄 en los monitoreos para recopilar datos, luego vuelve aquí.",
+    scanning_expiring:"Escaneando ofertas por expirar…",checking_market:"Verificando mercado…",
+    exp_placeholder:'Haz clic en "Buscar Ofertas Expirando" para escanear.',
+    wa_no_reply:"Sin respuesta",sending_test:"Enviando mensaje de prueba…",
+    tg_test_hint:"⚠️ La prueba directa de Telegram aún no está disponible — asegúrate de haber configurado TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID",
+    chat_system:"Eres un agente de viajes AI inteligente. Responde en español.",
+    chat_greeting:"✈️ ¡Hola! Soy tu agente de viajes AI. Pregúntame sobre vuelos, hoteles, visas, ofertas y más.",
+    chat_error:"⚠️ Error: ",
+    min:"Mín",avg:"Prom",max:"Máx",recommended_actions:"✅ Acciones Recomendadas",
+    no_exchange:"No se encontraron tipos de cambio. Configura el módulo exchange_rates.",
+    error_exchange:"Error al cargar tipos de cambio",select_option:"— Seleccionar —",all_watches:"Todos",
+    cat_flight:"Vuelo ✈️",cat_hotel:"Hotel 🏨",cat_apartment:"Apt 🏠",cat_package:"Paquete 📦",
+    ab_notify:"📲 Solo notificar",ab_open_browser:"🌐 Abrir browser",ab_auto_fill:"🤖 Autocompletar",
+    triggered:"activado",above_low:"sobre el mínimo",plan_free:"Gratis",plan_label:"Plan: ",
+    active_watches:"Monitoreos Activos",lowest_price:"Precio Más Bajo",
+    price_drops:"Caídas de Precio",ai_queries:"Consultas AI Hoy",
+    recent_watches:"📋 Monitoreos Recientes",market_sentiment:"📰 Sentimiento del Mercado",refresh:"🔄 Actualizar",
+    nav_watches_h:"👁 Monitoreos",btn_add_watch:"+ Agregar",
+    opt_all_cats:"Todas las Categorías",opt_flights:"Vuelos",opt_hotels:"Hoteles",
+    opt_apts:"Apartamentos",opt_packages:"Paquetes",
+    opt_sort_name:"Ordenar: Nombre",opt_sort_price_asc:"Ordenar: Precio ↑",
+    opt_sort_price_desc:"Ordenar: Precio ↓",opt_sort_deal:"Ordenar: Mejor Oferta",
+    th_name:"Nombre",th_cat:"Categoría",th_price:"Último Precio",
+    th_score:"Puntuación",th_status:"Estado",th_actions:"Acciones",
+  }
+};
+function ui(k){const t=UI[_lang]||UI.en;const v=t[k];if(typeof v==="string")return v;const e=UI.en[k];if(typeof e==="string")return e;return k;}
+function uif(k,...a){const t=UI[_lang]||UI.en;const fn=t[k]||UI.en[k];return typeof fn==="function"?fn(...a):k;}
+function spin(k){return`<div class="loading"><div class="spin"></div>${ui(k)}</div>`;}
+
 function applyLang(){
   const en=_lang!=="he";
   const lblNext={he:"🌐 EN",en:"🌐 PT",pt:"🌐 ES",es:"🌐 עב"};
@@ -2031,6 +2287,11 @@ function applyLang(){
   });
   const cur=document.querySelector(".nav-btn.active")?.dataset.page;
   if(cur)document.getElementById("topbar-title").textContent=(en?TITLES_EN:PAGE_TITLES)[cur]||cur;
+  // Translate data-ui elements
+  document.querySelectorAll("[data-ui]").forEach(el=>{el.textContent=ui(el.dataset.ui);});
+  // Quota / plan display
+  const qd=document.getElementById("quota-display");if(qd)qd.textContent=ui("plan_label")+ui("plan_free");
+  const pl=document.getElementById("plan-lbl");if(pl)pl.textContent=ui("plan_free");
 }
 
 // ── Init ──────────────────────────────────────────────────────
