@@ -217,14 +217,14 @@ textarea{resize:vertical;min-height:70px;}
   <div class="s-logo"><span>✈️</span> Noded</div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">ראשי</div>
+    <div class="nav-lbl" data-ui="nav_main">ראשי</div>
     <button class="nav-btn active" data-page="dashboard"><span class="ico">🏠</span>לוח בקרה</button>
     <button class="nav-btn" data-page="watches"><span class="ico">👁</span>רשימת מעקב</button>
     <button class="nav-btn" data-page="history"><span class="ico">📊</span>היסטוריית מחירים</button>
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">AI — כלים</div>
+    <div class="nav-lbl" data-ui="nav_ai_tools">AI — כלים</div>
     <button class="nav-btn" data-page="chat"><span class="ico">💬</span>סוכן נסיעות AI</button>
     <button class="nav-btn" data-page="wait-or-buy"><span class="ico">🔮</span>כדאי לחכות?</button>
     <button class="nav-btn" data-page="ai-opps"><span class="ico">🌟</span>הזדמנויות AI</button>
@@ -233,7 +233,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">תכנון נסיעה</div>
+    <div class="nav-lbl" data-ui="nav_planning">תכנון נסיעה</div>
     <button class="nav-btn" data-page="trip-planner"><span class="ico">🗺️</span>תכנן טיול</button>
     <button class="nav-btn" data-page="multi-city"><span class="ico">🌍</span>מסלול מרובה ערים</button>
     <button class="nav-btn" data-page="stopovers"><span class="ico">🔁</span>עצירות חינם</button>
@@ -243,7 +243,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">ניתוח & חקר</div>
+    <div class="nav-lbl" data-ui="nav_analysis">ניתוח & חקר</div>
     <button class="nav-btn" data-page="predict"><span class="ico">📈</span>חיזוי מחיר</button>
     <button class="nav-btn" data-page="deal-insights"><span class="ico">📊</span>תובנות ודפוסים</button>
     <button class="nav-btn" data-page="price-dna"><span class="ico">🧬</span>Price DNA</button>
@@ -253,7 +253,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">כלים</div>
+    <div class="nav-lbl" data-ui="nav_tools_lbl">כלים</div>
     <button class="nav-btn" data-page="visa"><span class="ico">🛂</span>בדיקת ויזה</button>
     <button class="nav-btn" data-page="hidden-city"><span class="ico">🕵️</span>Hidden City</button>
     <button class="nav-btn" data-page="kiwi"><span class="ico">🔍</span>Kiwi טיסות</button>
@@ -261,7 +261,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">כלים חכמים</div>
+    <div class="nav-lbl" data-ui="nav_smart">כלים חכמים</div>
     <button class="nav-btn" data-page="smart-tools"><span class="ico">🛠️</span>כלים חכמים</button>
     <button class="nav-btn" data-page="price-calendar"><span class="ico">📆</span>לוח מחירים</button>
     <button class="nav-btn" data-page="expiring-deals"><span class="ico">⏰</span>דילים פגי תוקף</button>
@@ -270,13 +270,13 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">בוטים</div>
+    <div class="nav-lbl" data-ui="nav_bots">בוטים</div>
     <button class="nav-btn" data-page="telegram-bot"><span class="ico">🤖</span>בוט טלגרם</button>
     <button class="nav-btn" data-page="whatsapp-bot"><span class="ico">💬</span>WhatsApp Bot</button>
   </div>
 
   <div class="nav-sec">
-    <div class="nav-lbl">מערכת</div>
+    <div class="nav-lbl" data-ui="nav_system">מערכת</div>
     <button class="nav-btn" data-page="alerts"><span class="ico">🎯</span>כללי התראה</button>
     <button class="nav-btn" data-page="settings"><span class="ico">⚙️</span>הגדרות</button>
   </div>
@@ -406,7 +406,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="card">
           <div class="card-title" data-ui="ct_flight_details">פרטי הטיסה / מלון</div>
           <div class="fg"><label data-ui="lbl_route_dest">מסלול ויעד</label><input type="text" id="wob-q" placeholder="למשל: טיסה TLV → NYC בינואר 2026, מחיר כיום 800$"></div>
-          <button class="btn btn-p" onclick="runAI('wait-or-buy','wob-q','wob-res')" id="wob-btn">🔮 נתח</button>
+          <button class="btn btn-p" onclick="runAI('wait-or-buy','wob-q','wob-res')" id="wob-btn" data-ui="btn_analyze">🔮 נתח</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_ai_result">ניתוח AI</div><div class="ai-box ai-placeholder" id="wob-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -418,7 +418,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_origin_opt">יעד / מוצא (אופציונלי)</label><input type="text" id="opps-q" placeholder="למשל: טיסות מתל אביב, אירופה, כל מקום"></div>
-          <button class="btn btn-p" onclick="runAI('ai-opps','opps-q','opps-res')" id="opps-btn">🌟 חפש הזדמנויות</button>
+          <button class="btn btn-p" onclick="runAI('ai-opps','opps-q','opps-res')" id="opps-btn" data-ui="btn_search_opps">🌟 חפש הזדמנויות</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_opps_now">הזדמנויות עכשיו</div><div class="ai-box ai-placeholder" id="opps-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -433,7 +433,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="fg"><label data-ui="lbl_budget_max">תקציב מקסימלי (USD)</label><input type="number" id="dh-budget" placeholder="למשל: 500"></div>
           <div class="fg"><label data-ui="lbl_dates">תאריכים</label><input type="text" id="dh-dates" placeholder="למשל: ינואר 2026, גמיש"></div>
           <div class="fg"><label data-ui="lbl_prefs">העדפות</label><textarea id="dh-prefs" placeholder="למשל: חוף ים, מזג אוויר חם, 7-10 ימים, טיסה ישירה"></textarea></div>
-          <button class="btn btn-p" onclick="runDealHunter()" id="dh-btn">🔥 צוד דילים</button>
+          <button class="btn btn-p" onclick="runDealHunter()" id="dh-btn" data-ui="btn_hunt_deals">🔥 צוד דילים</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_results">תוצאות</div><div class="ai-box ai-placeholder" id="dh-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -446,7 +446,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="card">
           <div class="fg"><label data-ui="lbl_budget_max">תקציב</label><input type="text" id="surp-budget" placeholder="למשל: 500 USD, 1500 שקל"></div>
           <div class="fg"><label data-ui="lbl_prefs_opt">העדפות (אופציונלי)</label><textarea id="surp-prefs" placeholder="למשל: אוהב טבע, מאסיל הומים, חופשה רומנטית"></textarea></div>
-          <button class="btn btn-p" onclick="runSurprise()" id="surp-btn">🎲 הפתע אותי!</button>
+          <button class="btn btn-p" onclick="runSurprise()" id="surp-btn" data-ui="btn_surprise">🎲 הפתע אותי!</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_surprise_dest">יעדים מפתיעים</div><div class="ai-box ai-placeholder" id="surp-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -458,7 +458,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_trip_details">פרטי הטיול</label><textarea id="tp-q" placeholder="למשל: 10 ימים בטוקיו ועוד 3 ימים בקיוטו, זוג, תקציב 3000$, ינואר 2026" style="min-height:100px;"></textarea></div>
-          <button class="btn btn-p" onclick="runAI('trip-planner','tp-q','tp-res')" id="tp-btn">🗺️ תכנן</button>
+          <button class="btn btn-p" onclick="runAI('trip-planner','tp-q','tp-res')" id="tp-btn" data-ui="btn_plan_trip">🗺️ תכנן</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_trip_plan">תוכנית הטיול</div><div class="ai-box ai-placeholder" id="tp-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -470,7 +470,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_cities">ערים לביקור</label><textarea id="mc-q" placeholder="למשל: TLV → פריז → אמסטרדם → ברלין → TLV, מאי 2026, תקציב 1500$"></textarea></div>
-          <button class="btn btn-p" onclick="runAI('multi-city','mc-q','mc-res')" id="mc-btn">🌍 תכנן מסלול</button>
+          <button class="btn btn-p" onclick="runAI('multi-city','mc-q','mc-res')" id="mc-btn" data-ui="btn_plan_multi">🌍 תכנן מסלול</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_optimal_route">מסלול אופטימלי</div><div class="ai-box ai-placeholder" id="mc-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -482,7 +482,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_route">מסלול</label><input type="text" id="stp-q" placeholder="למשל: TLV → ניו יורק, מצא עצירת חינם בדובאי או איסטנבול"></div>
-          <button class="btn btn-p" onclick="runAI('stopovers','stp-q','stp-res')" id="stp-btn">🔁 חפש עצירות</button>
+          <button class="btn btn-p" onclick="runAI('stopovers','stp-q','stp-res')" id="stp-btn" data-ui="btn_search_stops">🔁 חפש עצירות</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_stopover_opps">הזדמנויות עצירה</div><div class="ai-box ai-placeholder" id="stp-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -494,7 +494,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_route_month">מסלול וחודש</label><input type="text" id="fd-q" placeholder="למשל: TLV → בנגקוק, מרץ-אפריל 2026, גמיש ב-10 ימים"></div>
-          <button class="btn btn-p" onclick="runAI('flexible-dates','fd-q','fd-res')" id="fd-btn">📅 מצא תאריכים זולים</button>
+          <button class="btn btn-p" onclick="runAI('flexible-dates','fd-q','fd-res')" id="fd-btn" data-ui="btn_find_cheap_dates">📅 מצא תאריכים זולים</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_date_compare">השוואת תאריכים</div><div class="ai-box ai-placeholder" id="fd-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -506,7 +506,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_route_current_price">מסלול ומחיר נוכחי</label><input type="text" id="pred-q" placeholder="למשל: TLV → לונדון, מחיר נוכחי 600$, נסיעה בפברואר 2026"></div>
-          <button class="btn btn-p" onclick="runAI('predict','pred-q','pred-res')" id="pred-btn">📈 חזה מחיר</button>
+          <button class="btn btn-p" onclick="runAI('predict','pred-q','pred-res')" id="pred-btn" data-ui="btn_predict_price">📈 חזה מחיר</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_price_forecast">תחזית מחיר</div><div class="ai-box ai-placeholder" id="pred-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -518,7 +518,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_trip_details">פרטי הטיול</label><textarea id="tc-q" placeholder="למשל: 7 ימים בברצלונה לזוג, אפריל 2026, כולל אירוח וטיסה" style="min-height:80px;"></textarea></div>
-          <button class="btn btn-p" onclick="runAI('true-cost','tc-q','tc-res')" id="tc-btn">💰 חשב עלות מלאה</button>
+          <button class="btn btn-p" onclick="runAI('true-cost','tc-q','tc-res')" id="tc-btn" data-ui="btn_calc_cost">💰 חשב עלות מלאה</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_cost_breakdown">פירוט עלויות</div><div class="ai-box ai-placeholder" id="tc-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -530,7 +530,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_loyalty_plan">מסלול ותוכנית נאמנות</label><input type="text" id="pvc-q" placeholder="למשל: TLV → מיאמי, יש לי 80,000 נקודות ארקיע / אל על"></div>
-          <button class="btn btn-p" onclick="runAI('points-vs-cash','pvc-q','pvc-res')" id="pvc-btn">💳 השווה</button>
+          <button class="btn btn-p" onclick="runAI('points-vs-cash','pvc-q','pvc-res')" id="pvc-btn" data-ui="btn_compare_pts">💳 השווה</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_points_analysis">ניתוח ערך נקודות</div><div class="ai-box ai-placeholder" id="pvc-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -542,7 +542,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_route">מסלול</label><input type="text" id="di-q" placeholder="למשל: TLV → אתונה, מצא דפוסי מחיר ושבועות זולים"></div>
-          <button class="btn btn-p" onclick="runAI('deal-insights','di-q','di-res')" id="di-btn">📊 נתח</button>
+          <button class="btn btn-p" onclick="runAI('deal-insights','di-q','di-res')" id="di-btn" data-ui="btn_analyze2">📊 נתח</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_insights">תובנות</div><div class="ai-box ai-placeholder" id="di-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -560,7 +560,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_route_dates">מסלול ותאריכים</label><input type="text" id="comp-q" placeholder="למשל: TLV → פריז 15.3.2026 → 22.3.2026"></div>
-          <button class="btn btn-p" onclick="runAI('competitor','comp-q','comp-res')" id="comp-btn">🔍 השווה מחירים</button>
+          <button class="btn btn-p" onclick="runAI('competitor','comp-q','comp-res')" id="comp-btn" data-ui="btn_compare_prices">🔍 השווה מחירים</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_price_compare">השוואת מחירים</div><div class="ai-box ai-placeholder" id="comp-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -572,7 +572,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="card" style="margin-bottom:14px;max-width:420px;">
         <div style="display:flex;gap:8px;">
           <div style="flex:1;"><label data-ui="lbl_dest_opt">יעד (אופציונלי)</label><input type="text" id="sent-dest" placeholder="למשל: אירופה, טוקיו, כל מקום"></div>
-          <button class="btn btn-p" onclick="loadSentiment(document.getElementById('sent-dest').value)" style="align-self:flex-end;">נתח</button>
+          <button class="btn btn-p" onclick="loadSentiment(document.getElementById('sent-dest').value)" style="align-self:flex-end;" data-ui="btn_analyze_sentiment">נתח</button>
         </div>
       </div>
       <div class="card"><div class="card-title" data-ui="ct_market_analysis">ניתוח שוק</div><div class="ai-box ai-placeholder" id="sent-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
@@ -584,7 +584,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_topic">יעד / נושא</label><input type="text" id="rss-q" placeholder="למשל: דילים לאירופה, error fares, TLV"></div>
-          <button class="btn btn-p" onclick="runAI('rss','rss-q','rss-res')" id="rss-btn">📡 סרוק</button>
+          <button class="btn btn-p" onclick="runAI('rss','rss-q','rss-res')" id="rss-btn" data-ui="btn_scan_rss">📡 סרוק</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_reddit">מה אומרים ב-Reddit</div><div class="ai-box ai-placeholder" id="rss-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -624,7 +624,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="g2">
         <div class="card">
           <div class="fg"><label data-ui="lbl_route_dates">מסלול ותאריכים</label><input type="text" id="kiwi-q" placeholder="למשל: TLV → מדריד, יוני 2026, עד 600$"></div>
-          <button class="btn btn-p" onclick="runAI('kiwi','kiwi-q','kiwi-res')" id="kiwi-btn">🔍 חפש ב-Kiwi</button>
+          <button class="btn btn-p" onclick="runAI('kiwi','kiwi-q','kiwi-res')" id="kiwi-btn" data-ui="btn_search_kiwi">🔍 חפש ב-Kiwi</button>
         </div>
         <div class="card"><div class="card-title" data-ui="ct_kiwi_routes">מסלולי Kiwi</div><div class="ai-box ai-placeholder" id="kiwi-res" data-ui="ph_ai_result">התוצאה תופיע כאן…</div></div>
       </div>
@@ -661,7 +661,7 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="g2">
         <div class="card">
-          <div class="card-title">📲 התראות Telegram</div>
+          <div class="card-title" data-ui="ct_tg_alerts">📲 התראות Telegram</div>
           <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">קבל התראות על ירידות מחיר ישירות לטלגרם. שלב:</p>
           <ol style="font-size:.82rem;color:var(--muted);margin-bottom:12px;padding-right:16px;line-height:1.8;">
             <li>פתח <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent);">@BotFather</a> בטלגרם</li>
@@ -671,11 +671,11 @@ textarea{resize:vertical;min-height:70px;}
           </ol>
           <div class="fg"><label>Telegram Bot Token</label><input type="text" id="tg-token-input" placeholder="1234567890:ABCdef..."></div>
           <div class="fg"><label>Telegram Chat ID</label><input type="text" id="tg-chatid-input" placeholder="למשל: 123456789 או @channelname"></div>
-          <button class="btn btn-p" onclick="saveTelegramSettings()">💾 שמור</button>
-          <button class="btn btn-g btn-sm" style="margin-right:8px;" onclick="testTelegram()">🧪 שלח הודעת בדיקה</button>
+          <button class="btn btn-p" onclick="saveTelegramSettings()" data-ui="btn_save_settings_tg">💾 שמור</button>
+          <button class="btn btn-g btn-sm" style="margin-right:8px;" onclick="testTelegram()" data-ui="btn_test_settings_tg">🧪 שלח הודעת בדיקה</button>
         </div>
         <div class="card">
-          <div class="card-title">📱 התראות NTFY (Push)</div>
+          <div class="card-title" data-ui="ct_ntfy_alerts">📱 התראות NTFY (Push)</div>
           <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;"><a href="https://ntfy.sh" target="_blank" style="color:var(--accent);">ntfy.sh</a> — שירות push חינמי לכל מכשיר.</p>
           <ol style="font-size:.82rem;color:var(--muted);margin-bottom:12px;padding-right:16px;line-height:1.8;">
             <li>הורד אפליקציית ntfy.sh</li>
@@ -683,8 +683,8 @@ textarea{resize:vertical;min-height:70px;}
             <li>הכנס את שם ה-topic למטה</li>
           </ol>
           <div class="fg"><label>NTFY Topic</label><input type="text" id="ntfy-topic-input" placeholder="noded-alerts-myname123"></div>
-          <div class="fg"><label>NTFY Server (ברירת מחדל: ntfy.sh)</label><input type="text" id="ntfy-server-input" placeholder="https://ntfy.sh"></div>
-          <button class="btn btn-p" onclick="saveNtfySettings()">💾 שמור</button>
+          <div class="fg"><label data-ui="lbl_ntfy_server">NTFY Server (ברירת מחדל: ntfy.sh)</label><input type="text" id="ntfy-server-input" placeholder="https://ntfy.sh"></div>
+          <button class="btn btn-p" onclick="saveNtfySettings()" data-ui="btn_save_ntfy_settings">💾 שמור</button>
         </div>
       </div>
     </div>
@@ -824,7 +824,7 @@ textarea{resize:vertical;min-height:70px;}
 
     <!-- ══ בוט טלגרם ══ -->
     <div class="page" id="page-telegram-bot">
-      <div class="sh"><h2>🤖 בוט Telegram</h2></div>
+      <div class="sh"><h2 data-ui="h2_telegram_bot">🤖 בוט Telegram</h2></div>
       <div id="tg-status-box" class="warn-box" style="margin-bottom:14px;max-width:600px;">
         <div class="warn-title" id="tg-status-title">⚠️ בוט לא מוגדר</div>
         <span id="tg-status-msg">הגדר Bot Token ו-Chat ID למטה.</span>
@@ -832,7 +832,7 @@ textarea{resize:vertical;min-height:70px;}
 
       <div class="g2" style="margin-bottom:14px;">
         <div class="card">
-          <div class="card-title">📖 איך מגדירים? (3 שלבים)</div>
+          <div class="card-title" data-ui="tg_how_title">📖 איך מגדירים? (3 שלבים)</div>
           <ol style="font-size:.82rem;color:var(--muted);line-height:2;padding-right:16px;">
             <li>פתח <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent);">@BotFather</a> בטלגרם, שלח <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">/newbot</code></li>
             <li>קבל <b>Bot Token</b> (נראה כך: <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">123456:ABC-DEF...</code>)</li>
@@ -840,13 +840,13 @@ textarea{resize:vertical;min-height:70px;}
           </ol>
         </div>
         <div class="card">
-          <div class="card-title">🔑 הגדרות חיבור</div>
+          <div class="card-title" data-ui="tg_conn_title">🔑 הגדרות חיבור</div>
           <div class="fg"><label>Bot Token</label><input type="password" id="tg-token-pg" placeholder="123456789:ABCdef…"></div>
           <div class="fg"><label>Chat ID</label><input type="text" id="tg-chatid-pg" placeholder="-100123456789"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-p" onclick="saveTgBot()">💾 שמור</button>
-            <button class="btn btn-g" onclick="testTgBot()">📨 בדוק חיבור</button>
-            <button class="btn btn-g" onclick="getTgChatId()">🔍 קבל Chat ID</button>
+            <button class="btn btn-p" onclick="saveTgBot()" data-ui="btn_save_tg">💾 שמור</button>
+            <button class="btn btn-g" onclick="testTgBot()" data-ui="btn_test_tg">📨 בדוק חיבור</button>
+            <button class="btn btn-g" onclick="getTgChatId()" data-ui="btn_get_chatid">🔍 קבל Chat ID</button>
           </div>
           <div id="tg-test-res" style="margin-top:10px;font-size:.82rem;"></div>
         </div>
@@ -854,44 +854,44 @@ textarea{resize:vertical;min-height:70px;}
 
       <div class="g2" style="margin-bottom:14px;">
         <div class="card">
-          <div class="card-title">⚙️ סוגי התראות</div>
+          <div class="card-title" data-ui="tg_notif_title">⚙️ סוגי התראות</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.82rem;">
-            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-drop" checked style="width:auto;accent-color:var(--accent);"> ✈️ ירידת מחיר בטיסות</label>
-            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-low" checked style="width:auto;accent-color:var(--accent);"> 📉 מחיר נמוך היסטורי</label>
-            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-new-deal" checked style="width:auto;accent-color:var(--accent);"> 🔥 דיל חדש</label>
-            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-expiry" checked style="width:auto;accent-color:var(--accent);"> ⏰ דיל עומד לפוג</label>
-            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-error-fare" checked style="width:auto;accent-color:var(--accent);"> ⚡ שגיאת מחיר</label>
-            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-rise" style="width:auto;accent-color:var(--accent);"> 📈 עלייה חדה</label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-drop" checked style="width:auto;accent-color:var(--accent);"> <span data-ui="tg_notif_price_drop">✈️ ירידת מחיר בטיסות</span></label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-low" checked style="width:auto;accent-color:var(--accent);"> <span data-ui="tg_notif_low">📉 מחיר נמוך היסטורי</span></label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-new-deal" checked style="width:auto;accent-color:var(--accent);"> <span data-ui="tg_notif_new_deal">🔥 דיל חדש</span></label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-expiry" checked style="width:auto;accent-color:var(--accent);"> <span data-ui="tg_notif_expiry">⏰ דיל עומד לפוג</span></label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-error-fare" checked style="width:auto;accent-color:var(--accent);"> <span data-ui="tg_notif_error_fare">⚡ שגיאת מחיר</span></label>
+            <label style="display:flex;align-items:center;gap:7px;color:var(--text);"><input type="checkbox" id="tg-price-rise" style="width:auto;accent-color:var(--accent);"> <span data-ui="tg_notif_rise">📈 עלייה חדה</span></label>
           </div>
         </div>
         <div class="card">
-          <div class="card-title">📨 שלח הודעה ידנית</div>
-          <div class="fg"><label>הודעה</label><textarea id="tg-manual-msg" placeholder="כתוב הודעה לשלוח לבוט…" style="min-height:70px;"></textarea></div>
-          <button class="btn btn-p" onclick="sendTgManual()">📨 שלח עכשיו</button>
+          <div class="card-title" data-ui="tg_manual_title">📨 שלח הודעה ידנית</div>
+          <div class="fg"><label data-ui="lbl_message">הודעה</label><textarea id="tg-manual-msg" placeholder="כתוב הודעה לשלוח לבוט…" style="min-height:70px;"></textarea></div>
+          <button class="btn btn-p" onclick="sendTgManual()" data-ui="btn_send_now">📨 שלח עכשיו</button>
         </div>
       </div>
     </div>
 
     <!-- ══ Auto-Book ══ -->
     <div class="page" id="page-auto-book">
-      <div class="sh"><h2>⚡ Auto-Book Engine</h2></div>
+      <div class="sh"><h2 data-ui="h2_auto_book">⚡ Auto-Book Engine</h2></div>
       <div class="warn-box" style="margin-bottom:14px;">
-        <div class="warn-title">⚡ הזמנה אוטומטית</div>
+        <div class="warn-title" data-ui="ab_warn_title">⚡ הזמנה אוטומטית</div>
         הגדר כלל: "אם TLV → BKK &lt; $350 — שלח התראה ופתח browser". האפליקציה בודקת כל מחזור מעקב.
       </div>
       <div class="tabs" id="ab-tabs">
-        <button class="tab-btn active" onclick="switchAbTab('rules')">📋 כללים</button>
-        <button class="tab-btn" onclick="switchAbTab('log')">📜 לוג</button>
-        <button class="tab-btn" onclick="switchAbTab('passenger')">👤 פרטי נוסע</button>
+        <button class="tab-btn active" onclick="switchAbTab('rules')" data-ui="ab_tab_rules">📋 כללים</button>
+        <button class="tab-btn" onclick="switchAbTab('log')" data-ui="ab_tab_log">📜 לוג</button>
+        <button class="tab-btn" onclick="switchAbTab('passenger')" data-ui="ab_tab_passenger">👤 פרטי נוסע</button>
       </div>
 
       <!-- Rules tab -->
       <div class="tab-pane active" id="ab-rules">
         <div class="card" style="margin-bottom:14px;">
-          <div class="card-title">➕ הוסף כלל חדש</div>
+          <div class="card-title" data-ui="ab_add_rule_title">➕ הוסף כלל חדש</div>
           <div class="f2">
-            <div class="fg"><label>שם הכלל</label><input type="text" id="ab-name" placeholder="TLV-NYC זול"></div>
-            <div class="fg"><label>מצב</label>
+            <div class="fg"><label data-ui="lbl_rule_name">שם הכלל</label><input type="text" id="ab-name" placeholder="TLV-NYC זול"></div>
+            <div class="fg"><label data-ui="lbl_mode">מצב</label>
               <select id="ab-mode">
                 <option value="notify">📲 התראה בלבד</option>
                 <option value="open_browser">🌐 פתח browser</option>
@@ -900,21 +900,21 @@ textarea{resize:vertical;min-height:70px;}
             </div>
           </div>
           <div class="f2">
-            <div class="fg"><label>מוצא (IATA)</label><input type="text" id="ab-origin" value="TLV" maxlength="3" style="text-transform:uppercase;"></div>
-            <div class="fg"><label>יעד (IATA)</label><input type="text" id="ab-dest" placeholder="NYC" maxlength="3" style="text-transform:uppercase;"></div>
+            <div class="fg"><label data-ui="lbl_origin_iata">מוצא (IATA)</label><input type="text" id="ab-origin" value="TLV" maxlength="3" style="text-transform:uppercase;"></div>
+            <div class="fg"><label data-ui="lbl_dest_iata">יעד (IATA)</label><input type="text" id="ab-dest" placeholder="NYC" maxlength="3" style="text-transform:uppercase;"></div>
           </div>
           <div class="f2">
-            <div class="fg"><label>מחיר מקסימלי ($)</label><input type="number" id="ab-price" value="400" min="50"></div>
+            <div class="fg"><label data-ui="lbl_max_price_usd">מחיר מקסימלי ($)</label><input type="number" id="ab-price" value="400" min="50"></div>
             <div class="fg"></div>
           </div>
           <div class="f2">
-            <div class="fg"><label>תאריך מ-</label><input type="date" id="ab-from"></div>
-            <div class="fg"><label>תאריך עד</label><input type="date" id="ab-to"></div>
+            <div class="fg"><label data-ui="lbl_date_from_ab">תאריך מ-</label><input type="date" id="ab-from"></div>
+            <div class="fg"><label data-ui="lbl_date_to_ab">תאריך עד</label><input type="date" id="ab-to"></div>
           </div>
-          <button class="btn btn-p" onclick="addAbRule()">➕ הוסף כלל</button>
+          <button class="btn btn-p" onclick="addAbRule()" data-ui="btn_add_rule">➕ הוסף כלל</button>
         </div>
         <div class="card">
-          <div class="card-title">📋 כללים פעילים</div>
+          <div class="card-title" data-ui="ab_active_rules">📋 כללים פעילים</div>
           <div id="ab-rules-list"><div class="loading"><div class="spin"></div>טוען…</div></div>
         </div>
       </div>
@@ -922,7 +922,7 @@ textarea{resize:vertical;min-height:70px;}
       <!-- Log tab -->
       <div class="tab-pane" id="ab-log">
         <div class="card">
-          <div class="card-title">📜 לוג הזמנות</div>
+          <div class="card-title" data-ui="ab_log_title">📜 לוג הזמנות</div>
           <div id="ab-log-list"><div class="loading"><div class="spin"></div>טוען…</div></div>
         </div>
       </div>
@@ -930,21 +930,21 @@ textarea{resize:vertical;min-height:70px;}
       <!-- Passenger tab -->
       <div class="tab-pane" id="ab-passenger">
         <div class="card" style="max-width:480px;">
-          <div class="card-title">👤 פרטי נוסע לאוטו-מילוי</div>
-          <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">פרטים אלו ישמשו למילוי אוטומטי בטפסי הזמנה (auto_fill mode)</p>
+          <div class="card-title" data-ui="ab_passenger_title">👤 פרטי נוסע לאוטו-מילוי</div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;" data-ui="ab_passenger_desc">פרטים אלו ישמשו למילוי אוטומטי בטפסי הזמנה (auto_fill mode)</p>
           <div class="f2">
-            <div class="fg"><label>שם פרטי</label><input type="text" id="p-first" placeholder="ישראל"></div>
-            <div class="fg"><label>שם משפחה</label><input type="text" id="p-last" placeholder="ישראלי"></div>
+            <div class="fg"><label data-ui="lbl_first_name">שם פרטי</label><input type="text" id="p-first" placeholder="ישראל"></div>
+            <div class="fg"><label data-ui="lbl_last_name">שם משפחה</label><input type="text" id="p-last" placeholder="ישראלי"></div>
           </div>
           <div class="f2">
-            <div class="fg"><label>אימייל</label><input type="email" id="p-email" placeholder="you@example.com"></div>
-            <div class="fg"><label>טלפון</label><input type="text" id="p-phone" placeholder="+972501234567"></div>
+            <div class="fg"><label data-ui="lbl_email">אימייל</label><input type="email" id="p-email" placeholder="you@example.com"></div>
+            <div class="fg"><label data-ui="lbl_phone">טלפון</label><input type="text" id="p-phone" placeholder="+972501234567"></div>
           </div>
           <div class="f2">
-            <div class="fg"><label>מספר דרכון</label><input type="password" id="p-passport" placeholder="••••••••"></div>
-            <div class="fg"><label>תאריך לידה</label><input type="date" id="p-dob"></div>
+            <div class="fg"><label data-ui="lbl_passport_num">מספר דרכון</label><input type="password" id="p-passport" placeholder="••••••••"></div>
+            <div class="fg"><label data-ui="lbl_dob">תאריך לידה</label><input type="date" id="p-dob"></div>
           </div>
-          <button class="btn btn-p" onclick="savePassenger()">💾 שמור</button>
+          <button class="btn btn-p" onclick="savePassenger()" data-ui="btn_save_tg">💾 שמור</button>
           <div id="ab-playwright-status" style="margin-top:10px;font-size:.8rem;color:var(--muted);"></div>
         </div>
       </div>
@@ -952,30 +952,30 @@ textarea{resize:vertical;min-height:70px;}
 
     <!-- ══ Positioning ══ -->
     <div class="page" id="page-positioning">
-      <div class="sh"><h2>🗺️ Positioning Flight Optimizer</h2></div>
+      <div class="sh"><h2 data-ui="h2_positioning">🗺️ Positioning Flight Optimizer</h2></div>
       <div class="warn-box" style="margin-bottom:14px;">
-        <div class="warn-title">🗺️ מה זה Positioning?</div>
+        <div class="warn-title" data-ui="pos_warn_title">🗺️ מה זה Positioning?</div>
         לפעמים זול יותר לטוס TLV → אמסטרדם (100$) ואז AMS → NYC (280$) מאשר TLV → NYC ישיר (600$). <b>חיסכון של עד 40%!</b>
       </div>
 
       <div class="g2" style="margin-bottom:14px;">
         <div class="card">
-          <div class="card-title">🔍 מצא הזדמנויות Positioning</div>
+          <div class="card-title" data-ui="pos_find_title">🔍 מצא הזדמנויות Positioning</div>
           <div class="f2">
-            <div class="fg"><label>יעד סופי (IATA)</label><input type="text" id="pos-dest" placeholder="JFK / BKK / LAX" style="text-transform:uppercase;"></div>
-            <div class="fg"><label>תאריך יציאה</label><input type="date" id="pos-date"></div>
+            <div class="fg"><label data-ui="lbl_final_dest">יעד סופי (IATA)</label><input type="text" id="pos-dest" placeholder="JFK / BKK / LAX" style="text-transform:uppercase;"></div>
+            <div class="fg"><label data-ui="lbl_depart_date">תאריך יציאה</label><input type="date" id="pos-date"></div>
           </div>
           <div class="f2">
-            <div class="fg"><label>תאריך חזרה (אופציונלי)</label><input type="date" id="pos-ret"></div>
-            <div class="fg"><label>נוסעים</label><input type="number" id="pos-travelers" value="1" min="1" max="9"></div>
+            <div class="fg"><label data-ui="lbl_return_date_opt">תאריך חזרה (אופציונלי)</label><input type="date" id="pos-ret"></div>
+            <div class="fg"><label data-ui="lbl_travelers">נוסעים</label><input type="number" id="pos-travelers" value="1" min="1" max="9"></div>
           </div>
-          <div class="fg"><label>תקציב מקסימלי ($ — 0 = ללא הגבלה)</label><input type="number" id="pos-budget" value="0" min="0"></div>
-          <button class="btn btn-p" onclick="runPositioning()" id="pos-btn">🔍 מצא הזדמנויות</button>
+          <div class="fg"><label data-ui="lbl_budget_limit">תקציב מקסימלי ($)</label><input type="number" id="pos-budget" value="0" min="0"></div>
+          <button class="btn btn-p" onclick="runPositioning()" id="pos-btn" data-ui="btn_find_opps">🔍 מצא הזדמנויות</button>
         </div>
         <div class="card">
           <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
-            ✈️ נתיבי Positioning זולים מ-TLV
-            <button class="btn btn-g btn-sm" onclick="loadPositioningRoutes()">🔄 טען</button>
+            <span data-ui="pos_routes_title">✈️ נתיבי Positioning זולים מ-TLV</span>
+            <button class="btn btn-g btn-sm" onclick="loadPositioningRoutes()" data-ui="btn_load">🔄 טען</button>
           </div>
           <div id="pos-routes-res" style="font-size:.82rem;color:var(--muted);">לחץ "טען" לרשימת ה-hubs הזולים ביותר.</div>
         </div>
@@ -984,39 +984,39 @@ textarea{resize:vertical;min-height:70px;}
       <div id="pos-results" style="margin-bottom:14px;"></div>
 
       <div class="card">
-        <div class="card-title">🧮 מחשבון ROI — כדאי לעשות Positioning?</div>
+        <div class="card-title" data-ui="pos_roi_title">🧮 מחשבון ROI — כדאי לעשות Positioning?</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
           <div class="fg" style="margin:0;"><label>TLV → Hub ($)</label><input type="number" id="roi-hub" value="80" min="0"></div>
-          <div class="fg" style="margin:0;"><label>Hub → יעד ($)</label><input type="number" id="roi-dest" value="350" min="0"></div>
-          <div class="fg" style="margin:0;"><label>טיסה ישירה מ-TLV ($)</label><input type="number" id="roi-direct" value="600" min="0"></div>
+          <div class="fg" style="margin:0;"><label data-ui="lbl_hub_dest">Hub → יעד ($)</label><input type="number" id="roi-dest" value="350" min="0"></div>
+          <div class="fg" style="margin:0;"><label data-ui="lbl_direct_flight">טיסה ישירה מ-TLV ($)</label><input type="number" id="roi-direct" value="600" min="0"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-          <div class="fg" style="margin:0;"><label>זמן נוסף (שעות)</label><input type="number" id="roi-time" value="6" min="0" step="0.5"></div>
-          <div class="fg" style="margin:0;"><label>שווי שעתך ($)</label><input type="number" id="roi-rate" value="20" min="0"></div>
+          <div class="fg" style="margin:0;"><label data-ui="lbl_extra_time">זמן נוסף (שעות)</label><input type="number" id="roi-time" value="6" min="0" step="0.5"></div>
+          <div class="fg" style="margin:0;"><label data-ui="lbl_hourly_rate">שווי שעתך ($)</label><input type="number" id="roi-rate" value="20" min="0"></div>
         </div>
-        <button class="btn btn-p" onclick="calcROI()">🧮 חשב ROI</button>
+        <button class="btn btn-p" onclick="calcROI()" data-ui="btn_calc_roi">🧮 חשב ROI</button>
         <div id="roi-res" style="margin-top:14px;"></div>
       </div>
     </div>
 
     <!-- ══ WhatsApp Bot ══ -->
     <div class="page" id="page-whatsapp-bot">
-      <div class="sh"><h2>💬 WhatsApp Bot</h2></div>
+      <div class="sh"><h2 data-ui="h2_whatsapp_bot">💬 WhatsApp Bot</h2></div>
       <div class="warn-box" style="margin-bottom:14px;">
-        <div class="warn-title">💬 חיפוש טיסות בוואטסאפ</div>
+        <div class="warn-title" data-ui="wa_warn_title">💬 חיפוש טיסות בוואטסאפ</div>
         שלח "TLV NYC 15/06" בוואטסאפ וקבל מחירים תוך שניות. פקודות: <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">TLV NYC 15/06</code> · <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">דיל</code> · <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">מחירים</code> · <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;">עזרה</code>
       </div>
       <div class="tabs" id="wa-tabs">
-        <button class="tab-btn active" onclick="switchWaTab('setup')">⚙️ הגדרות Twilio</button>
-        <button class="tab-btn" onclick="switchWaTab('test')">🧪 בדיקה</button>
-        <button class="tab-btn" onclick="switchWaTab('stats')">📊 סטטיסטיקות</button>
+        <button class="tab-btn active" onclick="switchWaTab('setup')" data-ui="wa_tab_setup">⚙️ הגדרות Twilio</button>
+        <button class="tab-btn" onclick="switchWaTab('test')" data-ui="wa_tab_test">🧪 בדיקה</button>
+        <button class="tab-btn" onclick="switchWaTab('stats')" data-ui="wa_tab_stats">📊 סטטיסטיקות</button>
       </div>
 
       <!-- Setup -->
       <div class="tab-pane active" id="wa-setup">
         <div class="g2">
           <div class="card">
-            <div class="card-title">📖 הגדרת Twilio WhatsApp Sandbox</div>
+            <div class="card-title" data-ui="wa_setup_title">📖 הגדרת Twilio WhatsApp Sandbox</div>
             <ol style="font-size:.82rem;color:var(--muted);line-height:2;padding-right:16px;">
               <li>הירשם בחינם ב-<a href="https://twilio.com" target="_blank" style="color:var(--accent);">twilio.com</a></li>
               <li>קבל <b>Account SID</b> ו-<b>Auth Token</b> מלוח הבקרה</li>
@@ -1026,11 +1026,11 @@ textarea{resize:vertical;min-height:70px;}
             </ol>
           </div>
           <div class="card">
-            <div class="card-title">🔑 הגדרות Twilio</div>
+            <div class="card-title" data-ui="wa_settings_title">🔑 הגדרות Twilio</div>
             <div class="fg"><label>Account SID</label><input type="password" id="wa-sid" placeholder="ACxxxxxxxxxxxxxxxx"></div>
             <div class="fg"><label>Auth Token</label><input type="password" id="wa-auth" placeholder="••••••••••••••••••••"></div>
-            <div class="fg"><label>מספר WhatsApp שולח</label><input type="text" id="wa-from" placeholder="whatsapp:+14155238886"></div>
-            <button class="btn btn-p" onclick="saveWaSettings()">💾 שמור</button>
+            <div class="fg"><label data-ui="lbl_wa_sender">מספר WhatsApp שולח</label><input type="text" id="wa-from" placeholder="whatsapp:+14155238886"></div>
+            <button class="btn btn-p" onclick="saveWaSettings()" data-ui="btn_save_tg">💾 שמור</button>
           </div>
         </div>
       </div>
@@ -1039,17 +1039,17 @@ textarea{resize:vertical;min-height:70px;}
       <div class="tab-pane" id="wa-test">
         <div class="g2">
           <div class="card">
-            <div class="card-title">🧪 בדיקת הבוט (סימולציה)</div>
-            <div class="fg"><label>שלח הודעה לבוט (כמו ב-WhatsApp)</label><input type="text" id="wa-test-msg" placeholder="TLV NYC 15/06 / דיל / עזרה"></div>
-            <button class="btn btn-p" onclick="testWaBot()">📨 שלח</button>
-            <div class="card-title" style="margin-top:14px;">תגובת הבוט:</div>
-            <div class="ai-box ai-placeholder" id="wa-test-res">התגובה תופיע כאן…</div>
+            <div class="card-title" data-ui="wa_test_title">🧪 בדיקת הבוט (סימולציה)</div>
+            <div class="fg"><label data-ui="lbl_wa_test_msg">שלח הודעה לבוט (כמו ב-WhatsApp)</label><input type="text" id="wa-test-msg" placeholder="TLV NYC 15/06 / דיל / עזרה"></div>
+            <button class="btn btn-p" onclick="testWaBot()" data-ui="btn_wa_send">📨 שלח</button>
+            <div class="card-title" style="margin-top:14px;" data-ui="wa_bot_reply">תגובת הבוט:</div>
+            <div class="ai-box ai-placeholder" id="wa-test-res" data-ui="ph_ai_result">התגובה תופיע כאן…</div>
           </div>
           <div class="card">
-            <div class="card-title">📤 שלח הודעה אמיתית</div>
-            <div class="fg"><label>לאן לשלוח (מספר)</label><input type="text" id="wa-send-to" placeholder="+972501234567"></div>
-            <div class="fg"><label>הודעה</label><textarea id="wa-send-msg" placeholder="Hello! This is Noded..." style="min-height:70px;"></textarea></div>
-            <button class="btn btn-p" onclick="sendWaMessage()">📤 שלח WhatsApp</button>
+            <div class="card-title" data-ui="wa_send_real_title">📤 שלח הודעה אמיתית</div>
+            <div class="fg"><label data-ui="lbl_wa_send_to">לאן לשלוח (מספר)</label><input type="text" id="wa-send-to" placeholder="+972501234567"></div>
+            <div class="fg"><label data-ui="lbl_message">הודעה</label><textarea id="wa-send-msg" placeholder="Hello! This is Noded..." style="min-height:70px;"></textarea></div>
+            <button class="btn btn-p" onclick="sendWaMessage()" data-ui="btn_send_wa">📤 שלח WhatsApp</button>
           </div>
         </div>
       </div>
@@ -1057,12 +1057,12 @@ textarea{resize:vertical;min-height:70px;}
       <!-- Stats -->
       <div class="tab-pane" id="wa-stats">
         <div class="g4" id="wa-stats-grid">
-          <div class="stat"><div class="stat-lbl">סה״כ הודעות</div><div class="stat-val" id="wa-s-total">—</div></div>
-          <div class="stat"><div class="stat-lbl">משתמשים</div><div class="stat-val" id="wa-s-users">—</div></div>
-          <div class="stat"><div class="stat-lbl">היום</div><div class="stat-val" id="wa-s-today">—</div></div>
-          <div class="stat"><div class="stat-lbl">חיפושי טיסות</div><div class="stat-val" id="wa-s-flights">—</div></div>
+          <div class="stat"><div class="stat-lbl" data-ui="wa_total_msgs">סה״כ הודעות</div><div class="stat-val" id="wa-s-total">—</div></div>
+          <div class="stat"><div class="stat-lbl" data-ui="wa_users">משתמשים</div><div class="stat-val" id="wa-s-users">—</div></div>
+          <div class="stat"><div class="stat-lbl" data-ui="wa_today">היום</div><div class="stat-val" id="wa-s-today">—</div></div>
+          <div class="stat"><div class="stat-lbl" data-ui="wa_flight_searches">חיפושי טיסות</div><div class="stat-val" id="wa-s-flights">—</div></div>
         </div>
-        <button class="btn btn-g" style="margin-top:14px;" onclick="loadWaStats()">🔄 רענן</button>
+        <button class="btn btn-g" style="margin-top:14px;" onclick="loadWaStats()" data-ui="refresh">🔄 רענן</button>
       </div>
     </div>
 
@@ -1108,19 +1108,19 @@ textarea{resize:vertical;min-height:70px;}
 <!-- WizeLife Auth -->
 <div class="overlay" id="m-wl">
   <div class="modal" style="max-width:370px;">
-    <div class="modal-hdr"><h3>⭐ חשבון WizeLife</h3><button class="x-btn" onclick="closeModal('m-wl')">×</button></div>
+    <div class="modal-hdr"><h3 data-ui="wl_modal_title">⭐ חשבון WizeLife</h3><button class="x-btn" onclick="closeModal('m-wl')">×</button></div>
     <div id="wl-out">
-      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">התחבר לסנכרן תוכנית בין כל אפליקציות WizeLife.</p>
-      <div class="fg"><label>אימייל</label><input type="email" id="wl-email" placeholder="you@example.com"></div>
-      <div class="fg"><label>סיסמה</label><input type="password" id="wl-pwd" placeholder="••••••••"></div>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;" data-ui="wl_signin_desc">התחבר לסנכרן תוכנית בין כל אפליקציות WizeLife.</p>
+      <div class="fg"><label data-ui="lbl_email_wl">אימייל</label><input type="email" id="wl-email" placeholder="you@example.com"></div>
+      <div class="fg"><label data-ui="lbl_password_wl">סיסמה</label><input type="password" id="wl-pwd" placeholder="••••••••"></div>
       <div id="wl-err" style="color:#f87171;font-size:.78rem;margin-bottom:7px;display:none;"></div>
-      <button class="btn btn-p" onclick="wlSignIn()" style="width:100%;" id="wl-signin-btn">התחבר</button>
+      <button class="btn btn-p" onclick="wlSignIn()" style="width:100%;" id="wl-signin-btn" data-ui="btn_signin_wl">התחבר</button>
     </div>
     <div id="wl-in" style="display:none;text-align:center;">
       <div style="font-size:1.8rem;margin-bottom:8px;">👤</div>
       <div style="font-weight:700;margin-bottom:4px;" id="wl-email-d"></div>
       <div id="wl-plan-d" style="margin-bottom:14px;"></div>
-      <button class="btn btn-g btn-sm" onclick="wlSignOut()" style="width:100%;">התנתק</button>
+      <button class="btn btn-g btn-sm" onclick="wlSignOut()" style="width:100%;" data-ui="btn_signout_wl">התנתק</button>
     </div>
   </div>
 </div>
@@ -1140,33 +1140,36 @@ let _token=null, _plan="free", _user=null;
 async function wlSignIn(){
   const email=document.getElementById("wl-email").value.trim();
   const pwd=document.getElementById("wl-pwd").value;
-  if(!email||!pwd){showWlErr("נדרש אימייל וסיסמה");return;}
+  if(!email||!pwd){showWlErr(ui("wl_err_required"));return;}
   const btn=document.getElementById("wl-signin-btn");
-  btn.disabled=true;btn.textContent="מתחבר…";
+  btn.disabled=true;btn.textContent=ui("wl_connecting");
   try{
     const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FB_KEY}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pwd,returnSecureToken:true})});
     const d=await r.json();
-    if(!r.ok){showWlErr(d.error?.message==="INVALID_LOGIN_CREDENTIALS"?"אימייל או סיסמה שגויים":d.error?.message||"שגיאת כניסה");return;}
+    if(!r.ok){showWlErr(d.error?.message==="INVALID_LOGIN_CREDENTIALS"?ui("wl_err_invalid"):d.error?.message||ui("wl_err_invalid"));return;}
     _token=d.idToken;_user=email;
     _plan=await fetchPlan(d.localId,d.idToken);
     localStorage.setItem("noded_wl",JSON.stringify({token:_token,plan:_plan,email:_user}));
-    updatePlanUI();closeModal("m-wl");toast("✅ מחובר כ-"+email,"ok");
-  }catch(e){showWlErr("שגיאת רשת");}
-  finally{btn.disabled=false;btn.textContent="התחבר";}
+    updatePlanUI();closeModal("m-wl");toast(ui("wl_signed_in_as")+email,"ok");
+  }catch(e){showWlErr(ui("wl_err_network"));}
+  finally{btn.disabled=false;btn.textContent=ui("btn_signin_wl");}
 }
 async function fetchPlan(uid,tok){
   try{const r=await fetch(`https://firestore.googleapis.com/v1/projects/finzilla-7f1f9/databases/(default)/documents/users/${uid}`,{headers:{"Authorization":"Bearer "+tok}});if(!r.ok)return"free";const d=await r.json();return d.fields?.plan?.stringValue||"free";}catch{return"free";}
 }
-function wlSignOut(){_token=null;_plan="free";_user=null;localStorage.removeItem("noded_wl");updatePlanUI();closeModal("m-wl");toast("התנתקת","ok");}
+function wlSignOut(){_token=null;_plan="free";_user=null;localStorage.removeItem("noded_wl");updatePlanUI();closeModal("m-wl");toast(ui("wl_signed_out"),"ok");}
 function updatePlanUI(){
-  const pm={free:"חינמי",pro:"Pro ⚡",yolo:"YOLO 🔥"};
-  document.getElementById("plan-lbl").textContent=pm[_plan]||"חינמי";
-  document.getElementById("quota-display").textContent="תוכנית: "+(pm[_plan]||"חינמי");
+  let free,pro,yolo,planLabel,freeDesc,proDesc,yoloDesc;
+  try{free=ui("plan_free");pro=ui("plan_pro");yolo=ui("plan_yolo");planLabel=ui("plan_label");freeDesc=ui("plan_free_desc");proDesc=ui("plan_pro_desc");yoloDesc=ui("plan_yolo_desc");}
+  catch(e){free="חינמי";pro="Pro ⚡";yolo="YOLO 🔥";planLabel="תוכנית: ";freeDesc="⭐ חינמי — 5 AI/יום";proDesc="⚡ Pro — 20 AI/יום";yoloDesc="🔥 YOLO — 40 AI/יום";}
+  const pm={free,pro,yolo};
+  document.getElementById("plan-lbl").textContent=pm[_plan]||free;
+  document.getElementById("quota-display").textContent=planLabel+(pm[_plan]||free);
   if(_user){
     document.getElementById("wl-out").style.display="none";
     document.getElementById("wl-in").style.display="block";
     document.getElementById("wl-email-d").textContent=_user;
-    const pl={free:"⭐ חינמי — 5 AI/יום",pro:"⚡ Pro — 20 AI/יום",yolo:"🔥 YOLO — 40 AI/יום"};
+    const pl={free:freeDesc,pro:proDesc,yolo:yoloDesc};
     document.getElementById("wl-plan-d").innerHTML=`<span style="font-size:.85rem;color:var(--accent);">${pl[_plan]||_plan}</span>`;
   }else{document.getElementById("wl-out").style.display="block";document.getElementById("wl-in").style.display="none";}
 }
@@ -1552,7 +1555,7 @@ async function loadExchange(){
     const r=await api("GET","/api/exchange-rates");
     if(!r.rates||!Object.keys(r.rates).length){card.innerHTML=`<div style="color:var(--muted);">${ui("no_exchange")}</div>`;return;}
     const pairs=Object.entries(r.rates).slice(0,30);
-    card.innerHTML=`<div class="card-title">בסיס: ${r.base}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:9px;margin-top:10px;">`+pairs.map(([c,v])=>`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;"><div style="font-weight:700;">${c}</div><div style="color:var(--muted);font-size:.78rem;">${typeof v==="number"?v.toFixed(4):v}</div></div>`).join("")+`</div>`;
+    card.innerHTML=`<div class="card-title">${ui("exchange_base")}: ${r.base}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:9px;margin-top:10px;">`+pairs.map(([c,v])=>`<div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;"><div style="font-weight:700;">${c}</div><div style="color:var(--muted);font-size:.78rem;">${typeof v==="number"?v.toFixed(4):v}</div></div>`).join("")+`</div>`;
   }catch(e){card.innerHTML=`<div style="color:var(--muted);">${ui("error_exchange")}</div>`;}
 }
 
@@ -1562,7 +1565,7 @@ async function loadAlerts(){
     const alerts=await api("GET","/api/alerts");const tbody=document.getElementById("alerts-tbody");
     if(!alerts.length){tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:18px;color:var(--muted);">${ui("no_alerts")}</td></tr>`;return;}
     tbody.innerHTML=alerts.map(a=>{const c=typeof a.conditions==="string"?JSON.parse(a.conditions||"{}"):a.conditions||{};
-      return`<tr><td><b>${esc(a.name)}</b></td><td>${a.watch_id?`מעקב #${a.watch_id}`:"הכל"}</td><td style="font-size:.76rem;color:var(--muted);">${JSON.stringify(c)}</td><td><span class="tag t-on">פעיל</span></td><td><button class="btn btn-d btn-sm" onclick="deleteAlert(${a.id})">🗑</button></td></tr>`;
+      return`<tr><td><b>${esc(a.name)}</b></td><td>${a.watch_id?ui("watch_num")+a.watch_id:ui("all_watches")}</td><td style="font-size:.76rem;color:var(--muted);">${JSON.stringify(c)}</td><td><span class="tag t-on">${ui("active")}</span></td><td><button class="btn btn-d btn-sm" onclick="deleteAlert(${a.id})">🗑</button></td></tr>`;
     }).join("");
   }catch(e){toast(ui("error_loading_alerts"),"err");}
 }
@@ -2161,6 +2164,81 @@ const UI={
     h2_settings:"⚙️ הגדרות",h2_smart_tools:"🛠️ כלים חכמים",h2_price_calendar:"📆 לוח מחירים",
     h2_expiring_deals:"⏰ דילים פגי תוקף",h2_telegram_bot:"🤖 בוט Telegram",
     h2_auto_book:"⚡ Auto-Book Engine",h2_whatsapp_bot:"💬 WhatsApp Bot",h2_positioning:"🗺️ Positioning",
+    // Nav labels
+    nav_main:"ראשי",nav_ai_tools:"AI — כלים",nav_planning:"תכנון נסיעה",
+    nav_analysis:"ניתוח & חקר",nav_tools_lbl:"כלים",nav_smart:"כלים חכמים",
+    nav_bots:"בוטים",nav_system:"מערכת",
+    // Action buttons
+    btn_analyze:"🔮 נתח",btn_search_opps:"🌟 חפש הזדמנויות",
+    btn_plan_trip:"🗺️ תכנן",btn_plan_multi:"🌍 תכנן מסלול",
+    btn_search_stops:"🔁 חפש עצירות",btn_find_cheap_dates:"📅 מצא תאריכים זולים",
+    btn_predict_price:"📈 חזה מחיר",btn_calc_cost:"💰 חשב עלות מלאה",
+    btn_compare_pts:"💳 השווה",btn_analyze2:"📊 נתח",
+    btn_compare_prices:"🔍 השווה מחירים",btn_scan_rss:"📡 סרוק",
+    btn_analyze_sentiment:"נתח",btn_search_kiwi:"🔍 חפש ב-Kiwi",
+    // Telegram Bot page
+    tg_how_title:"📖 איך מגדירים? (3 שלבים)",tg_conn_title:"🔑 הגדרות חיבור",
+    btn_save_tg:"💾 שמור",btn_test_tg:"📨 בדוק חיבור",btn_get_chatid:"🔍 קבל Chat ID",
+    tg_notif_title:"⚙️ סוגי התראות",
+    tg_notif_price_drop:"✈️ ירידת מחיר בטיסות",tg_notif_low:"📉 מחיר נמוך היסטורי",
+    tg_notif_new_deal:"🔥 דיל חדש",tg_notif_expiry:"⏰ דיל עומד לפוג",
+    tg_notif_error_fare:"⚡ שגיאת מחיר",tg_notif_rise:"📈 עלייה חדה",
+    tg_manual_title:"📨 שלח הודעה ידנית",lbl_message:"הודעה",btn_send_now:"📨 שלח עכשיו",
+    // Auto-Book page
+    ab_warn_title:"⚡ הזמנה אוטומטית",ab_tab_rules:"📋 כללים",
+    ab_tab_log:"📜 לוג",ab_tab_passenger:"👤 פרטי נוסע",
+    ab_add_rule_title:"➕ הוסף כלל חדש",lbl_rule_name:"שם הכלל",lbl_mode:"מצב",
+    lbl_origin_iata:"מוצא (IATA)",lbl_dest_iata:"יעד (IATA)",
+    lbl_max_price_usd:"מחיר מקסימלי ($)",lbl_date_from_ab:"תאריך מ-",lbl_date_to_ab:"תאריך עד",
+    btn_add_rule:"➕ הוסף כלל",ab_active_rules:"📋 כללים פעילים",
+    ab_log_title:"📜 לוג הזמנות",
+    ab_passenger_title:"👤 פרטי נוסע לאוטו-מילוי",
+    ab_passenger_desc:"פרטים אלו ישמשו למילוי אוטומטי בטפסי הזמנה (auto_fill mode)",
+    lbl_first_name:"שם פרטי",lbl_last_name:"שם משפחה",
+    lbl_email:"אימייל",lbl_phone:"טלפון",
+    lbl_passport_num:"מספר דרכון",lbl_dob:"תאריך לידה",
+    // Positioning page
+    pos_warn_title:"🗺️ מה זה Positioning?",
+    pos_find_title:"🔍 מצא הזדמנויות Positioning",
+    lbl_final_dest:"יעד סופי (IATA)",lbl_depart_date:"תאריך יציאה",
+    lbl_return_date_opt:"תאריך חזרה (אופציונלי)",lbl_travelers:"נוסעים",
+    lbl_budget_limit:"תקציב מקסימלי ($)",
+    pos_routes_title:"✈️ נתיבי Positioning זולים מ-TLV",
+    btn_load:"🔄 טען",
+    pos_roi_title:"🧮 מחשבון ROI — כדאי לעשות Positioning?",
+    lbl_hub_dest:"Hub → יעד ($)",lbl_direct_flight:"טיסה ישירה מ-TLV ($)",
+    lbl_extra_time:"זמן נוסף (שעות)",lbl_hourly_rate:"שווי שעתך ($)",
+    btn_calc_roi:"🧮 חשב ROI",
+    // WhatsApp Bot page
+    wa_warn_title:"💬 חיפוש טיסות בוואטסאפ",
+    wa_tab_setup:"⚙️ הגדרות Twilio",wa_tab_test:"🧪 בדיקה",wa_tab_stats:"📊 סטטיסטיקות",
+    wa_setup_title:"📖 הגדרת Twilio WhatsApp Sandbox",
+    wa_settings_title:"🔑 הגדרות Twilio",lbl_wa_sender:"מספר WhatsApp שולח",
+    wa_test_title:"🧪 בדיקת הבוט (סימולציה)",
+    lbl_wa_test_msg:"שלח הודעה לבוט (כמו ב-WhatsApp)",
+    btn_wa_send:"📨 שלח",wa_bot_reply:"תגובת הבוט:",
+    wa_send_real_title:"📤 שלח הודעה אמיתית",lbl_wa_send_to:"לאן לשלוח (מספר)",
+    btn_send_wa:"📤 שלח WhatsApp",
+    wa_total_msgs:"סה״כ הודעות",wa_users:"משתמשים",wa_today:"היום",
+    wa_flight_searches:"חיפושי טיסות",
+    // Settings
+    ct_tg_alerts:"📲 התראות Telegram",ct_ntfy_alerts:"📱 התראות NTFY (Push)",
+    btn_save_settings_tg:"💾 שמור",btn_test_settings_tg:"🧪 שלח הודעת בדיקה",
+    btn_save_ntfy_settings:"💾 שמור",lbl_ntfy_server:"NTFY Server (ברירת מחדל: ntfy.sh)",
+    // WL Modal
+    wl_modal_title:"⭐ חשבון WizeLife",
+    wl_signin_desc:"התחבר לסנכרן תוכנית בין כל אפליקציות WizeLife.",
+    lbl_email_wl:"אימייל",lbl_password_wl:"סיסמה",
+    btn_signin_wl:"התחבר",btn_signout_wl:"התנתק",
+    wl_err_required:"נדרש אימייל וסיסמה",wl_err_invalid:"אימייל או סיסמה שגויים",
+    wl_err_network:"שגיאת רשת",wl_connecting:"מתחבר…",
+    wl_signed_in_as:"✅ מחובר כ-",wl_signed_out:"התנתקת",
+    // Plan labels
+    plan_pro:"Pro ⚡",plan_yolo:"YOLO 🔥",
+    plan_free_desc:"⭐ חינמי — 5 AI/יום",plan_pro_desc:"⚡ Pro — 20 AI/יום",
+    plan_yolo_desc:"🔥 YOLO — 40 AI/יום",
+    // Misc
+    exchange_base:"בסיס",watch_num:"מעקב #",
   },
   en:{
     active:"Active",inactive:"Off",loading:"Loading…",analyzing:"Analyzing…",searching:"Searching…",
@@ -2290,6 +2368,81 @@ const UI={
     h2_settings:"⚙️ Settings",h2_smart_tools:"🛠️ Smart Tools",h2_price_calendar:"📆 Price Calendar",
     h2_expiring_deals:"⏰ Expiring Deals",h2_telegram_bot:"🤖 Telegram Bot",
     h2_auto_book:"⚡ Auto-Book Engine",h2_whatsapp_bot:"💬 WhatsApp Bot",h2_positioning:"🗺️ Positioning",
+    // Nav labels
+    nav_main:"Main",nav_ai_tools:"AI — Tools",nav_planning:"Trip Planning",
+    nav_analysis:"Analysis & Research",nav_tools_lbl:"Tools",nav_smart:"Smart Tools",
+    nav_bots:"Bots",nav_system:"System",
+    // Action buttons
+    btn_analyze:"🔮 Analyze",btn_search_opps:"🌟 Find Opportunities",
+    btn_plan_trip:"🗺️ Plan Trip",btn_plan_multi:"🌍 Plan Route",
+    btn_search_stops:"🔁 Find Stopovers",btn_find_cheap_dates:"📅 Find Cheap Dates",
+    btn_predict_price:"📈 Predict Price",btn_calc_cost:"💰 Calculate Full Cost",
+    btn_compare_pts:"💳 Compare",btn_analyze2:"📊 Analyze",
+    btn_compare_prices:"🔍 Compare Prices",btn_scan_rss:"📡 Scan",
+    btn_analyze_sentiment:"Analyze",btn_search_kiwi:"🔍 Search Kiwi",
+    // Telegram Bot page
+    tg_how_title:"📖 Setup Guide (3 Steps)",tg_conn_title:"🔑 Connection Settings",
+    btn_save_tg:"💾 Save",btn_test_tg:"📨 Test Connection",btn_get_chatid:"🔍 Get Chat ID",
+    tg_notif_title:"⚙️ Notification Types",
+    tg_notif_price_drop:"✈️ Flight Price Drop",tg_notif_low:"📉 Historical Low Price",
+    tg_notif_new_deal:"🔥 New Deal",tg_notif_expiry:"⏰ Deal Expiring",
+    tg_notif_error_fare:"⚡ Error Fare",tg_notif_rise:"📈 Sharp Rise",
+    tg_manual_title:"📨 Send Manual Message",lbl_message:"Message",btn_send_now:"📨 Send Now",
+    // Auto-Book page
+    ab_warn_title:"⚡ Auto-Booking",ab_tab_rules:"📋 Rules",
+    ab_tab_log:"📜 Log",ab_tab_passenger:"👤 Passenger Details",
+    ab_add_rule_title:"➕ Add New Rule",lbl_rule_name:"Rule Name",lbl_mode:"Mode",
+    lbl_origin_iata:"Origin (IATA)",lbl_dest_iata:"Destination (IATA)",
+    lbl_max_price_usd:"Max Price ($)",lbl_date_from_ab:"Date From",lbl_date_to_ab:"Date To",
+    btn_add_rule:"➕ Add Rule",ab_active_rules:"📋 Active Rules",
+    ab_log_title:"📜 Booking Log",
+    ab_passenger_title:"👤 Passenger Details for Auto-Fill",
+    ab_passenger_desc:"These details will be used for auto-filling booking forms (auto_fill mode)",
+    lbl_first_name:"First Name",lbl_last_name:"Last Name",
+    lbl_email:"Email",lbl_phone:"Phone",
+    lbl_passport_num:"Passport Number",lbl_dob:"Date of Birth",
+    // Positioning page
+    pos_warn_title:"🗺️ What is Positioning?",
+    pos_find_title:"🔍 Find Positioning Opportunities",
+    lbl_final_dest:"Final Destination (IATA)",lbl_depart_date:"Departure Date",
+    lbl_return_date_opt:"Return Date (optional)",lbl_travelers:"Travelers",
+    lbl_budget_limit:"Max Budget ($)",
+    pos_routes_title:"✈️ Cheap Positioning Routes from TLV",
+    btn_load:"🔄 Load",
+    pos_roi_title:"🧮 ROI Calculator — Is Positioning Worth It?",
+    lbl_hub_dest:"Hub → Destination ($)",lbl_direct_flight:"Direct Flight from TLV ($)",
+    lbl_extra_time:"Extra Time (hours)",lbl_hourly_rate:"Hourly Rate ($)",
+    btn_calc_roi:"🧮 Calculate ROI",
+    // WhatsApp Bot page
+    wa_warn_title:"💬 WhatsApp Flight Search",
+    wa_tab_setup:"⚙️ Twilio Setup",wa_tab_test:"🧪 Test",wa_tab_stats:"📊 Statistics",
+    wa_setup_title:"📖 Twilio WhatsApp Sandbox Setup",
+    wa_settings_title:"🔑 Twilio Settings",lbl_wa_sender:"WhatsApp Sender Number",
+    wa_test_title:"🧪 Bot Test (Simulation)",
+    lbl_wa_test_msg:"Send message to bot (as in WhatsApp)",
+    btn_wa_send:"📨 Send",wa_bot_reply:"Bot Reply:",
+    wa_send_real_title:"📤 Send Real Message",lbl_wa_send_to:"Recipient (number)",
+    btn_send_wa:"📤 Send WhatsApp",
+    wa_total_msgs:"Total Messages",wa_users:"Users",wa_today:"Today",
+    wa_flight_searches:"Flight Searches",
+    // Settings
+    ct_tg_alerts:"📲 Telegram Alerts",ct_ntfy_alerts:"📱 NTFY Alerts (Push)",
+    btn_save_settings_tg:"💾 Save",btn_test_settings_tg:"🧪 Send Test Message",
+    btn_save_ntfy_settings:"💾 Save",lbl_ntfy_server:"NTFY Server (default: ntfy.sh)",
+    // WL Modal
+    wl_modal_title:"⭐ WizeLife Account",
+    wl_signin_desc:"Sign in to sync your plan across all WizeLife apps.",
+    lbl_email_wl:"Email",lbl_password_wl:"Password",
+    btn_signin_wl:"Sign In",btn_signout_wl:"Sign Out",
+    wl_err_required:"Email and password required",wl_err_invalid:"Invalid email or password",
+    wl_err_network:"Network error",wl_connecting:"Connecting…",
+    wl_signed_in_as:"✅ Signed in as ",wl_signed_out:"Signed out",
+    // Plan labels
+    plan_pro:"Pro ⚡",plan_yolo:"YOLO 🔥",
+    plan_free_desc:"⭐ Free — 5 AI/day",plan_pro_desc:"⚡ Pro — 20 AI/day",
+    plan_yolo_desc:"🔥 YOLO — 40 AI/day",
+    // Misc
+    exchange_base:"Base",watch_num:"Watch #",
   },
   pt:{
     active:"Ativo",inactive:"Off",loading:"Carregando…",analyzing:"Analisando…",searching:"Procurando…",
@@ -2419,6 +2572,81 @@ const UI={
     h2_settings:"⚙️ Configurações",h2_smart_tools:"🛠️ Ferramentas Inteligentes",h2_price_calendar:"📆 Calendário de Preços",
     h2_expiring_deals:"⏰ Ofertas Expirando",h2_telegram_bot:"🤖 Bot Telegram",
     h2_auto_book:"⚡ Motor Auto-Reserva",h2_whatsapp_bot:"💬 Bot WhatsApp",h2_positioning:"🗺️ Posicionamento",
+    // Nav labels
+    nav_main:"Principal",nav_ai_tools:"AI — Ferramentas",nav_planning:"Planejamento",
+    nav_analysis:"Análise & Pesquisa",nav_tools_lbl:"Ferramentas",nav_smart:"Ferramentas Inteligentes",
+    nav_bots:"Bots",nav_system:"Sistema",
+    // Action buttons
+    btn_analyze:"🔮 Analisar",btn_search_opps:"🌟 Buscar Oportunidades",
+    btn_plan_trip:"🗺️ Planejar",btn_plan_multi:"🌍 Planejar Rota",
+    btn_search_stops:"🔁 Buscar Escalas",btn_find_cheap_dates:"📅 Encontrar Datas Baratas",
+    btn_predict_price:"📈 Prever Preço",btn_calc_cost:"💰 Calcular Custo Total",
+    btn_compare_pts:"💳 Comparar",btn_analyze2:"📊 Analisar",
+    btn_compare_prices:"🔍 Comparar Preços",btn_scan_rss:"📡 Escanear",
+    btn_analyze_sentiment:"Analisar",btn_search_kiwi:"🔍 Buscar no Kiwi",
+    // Telegram Bot page
+    tg_how_title:"📖 Guia de Configuração (3 Passos)",tg_conn_title:"🔑 Configurações de Conexão",
+    btn_save_tg:"💾 Salvar",btn_test_tg:"📨 Testar Conexão",btn_get_chatid:"🔍 Obter Chat ID",
+    tg_notif_title:"⚙️ Tipos de Notificação",
+    tg_notif_price_drop:"✈️ Queda de Preço de Voos",tg_notif_low:"📉 Preço Mínimo Histórico",
+    tg_notif_new_deal:"🔥 Nova Oferta",tg_notif_expiry:"⏰ Oferta Expirando",
+    tg_notif_error_fare:"⚡ Tarifa de Erro",tg_notif_rise:"📈 Alta Acentuada",
+    tg_manual_title:"📨 Enviar Mensagem Manual",lbl_message:"Mensagem",btn_send_now:"📨 Enviar Agora",
+    // Auto-Book page
+    ab_warn_title:"⚡ Reserva Automática",ab_tab_rules:"📋 Regras",
+    ab_tab_log:"📜 Log",ab_tab_passenger:"👤 Dados do Passageiro",
+    ab_add_rule_title:"➕ Adicionar Nova Regra",lbl_rule_name:"Nome da Regra",lbl_mode:"Modo",
+    lbl_origin_iata:"Origem (IATA)",lbl_dest_iata:"Destino (IATA)",
+    lbl_max_price_usd:"Preço Máximo ($)",lbl_date_from_ab:"Data De",lbl_date_to_ab:"Data Até",
+    btn_add_rule:"➕ Adicionar Regra",ab_active_rules:"📋 Regras Ativas",
+    ab_log_title:"📜 Log de Reservas",
+    ab_passenger_title:"👤 Dados do Passageiro para Preenchimento",
+    ab_passenger_desc:"Estes dados serão usados para preenchimento automático de formulários",
+    lbl_first_name:"Nome",lbl_last_name:"Sobrenome",
+    lbl_email:"Email",lbl_phone:"Telefone",
+    lbl_passport_num:"Número do Passaporte",lbl_dob:"Data de Nascimento",
+    // Positioning page
+    pos_warn_title:"🗺️ O que é Posicionamento?",
+    pos_find_title:"🔍 Buscar Oportunidades de Posicionamento",
+    lbl_final_dest:"Destino Final (IATA)",lbl_depart_date:"Data de Partida",
+    lbl_return_date_opt:"Data de Retorno (opcional)",lbl_travelers:"Passageiros",
+    lbl_budget_limit:"Orçamento Máximo ($)",
+    pos_routes_title:"✈️ Rotas de Posicionamento Baratas de TLV",
+    btn_load:"🔄 Carregar",
+    pos_roi_title:"🧮 Calculadora ROI — Vale a Pena Posicionar?",
+    lbl_hub_dest:"Hub → Destino ($)",lbl_direct_flight:"Voo Direto de TLV ($)",
+    lbl_extra_time:"Tempo Extra (horas)",lbl_hourly_rate:"Valor da Hora ($)",
+    btn_calc_roi:"🧮 Calcular ROI",
+    // WhatsApp Bot page
+    wa_warn_title:"💬 Busca de Voos no WhatsApp",
+    wa_tab_setup:"⚙️ Configurar Twilio",wa_tab_test:"🧪 Teste",wa_tab_stats:"📊 Estatísticas",
+    wa_setup_title:"📖 Configuração do Sandbox Twilio",
+    wa_settings_title:"🔑 Configurações Twilio",lbl_wa_sender:"Número WhatsApp Remetente",
+    wa_test_title:"🧪 Teste do Bot (Simulação)",
+    lbl_wa_test_msg:"Enviar mensagem ao bot (como no WhatsApp)",
+    btn_wa_send:"📨 Enviar",wa_bot_reply:"Resposta do Bot:",
+    wa_send_real_title:"📤 Enviar Mensagem Real",lbl_wa_send_to:"Destinatário (número)",
+    btn_send_wa:"📤 Enviar WhatsApp",
+    wa_total_msgs:"Total de Mensagens",wa_users:"Usuários",wa_today:"Hoje",
+    wa_flight_searches:"Buscas de Voos",
+    // Settings
+    ct_tg_alerts:"📲 Alertas Telegram",ct_ntfy_alerts:"📱 Alertas NTFY (Push)",
+    btn_save_settings_tg:"💾 Salvar",btn_test_settings_tg:"🧪 Enviar Mensagem de Teste",
+    btn_save_ntfy_settings:"💾 Salvar",lbl_ntfy_server:"Servidor NTFY (padrão: ntfy.sh)",
+    // WL Modal
+    wl_modal_title:"⭐ Conta WizeLife",
+    wl_signin_desc:"Entre para sincronizar seu plano em todos os apps WizeLife.",
+    lbl_email_wl:"Email",lbl_password_wl:"Senha",
+    btn_signin_wl:"Entrar",btn_signout_wl:"Sair",
+    wl_err_required:"Email e senha obrigatórios",wl_err_invalid:"Email ou senha incorretos",
+    wl_err_network:"Erro de rede",wl_connecting:"Conectando…",
+    wl_signed_in_as:"✅ Conectado como ",wl_signed_out:"Desconectado",
+    // Plan labels
+    plan_pro:"Pro ⚡",plan_yolo:"YOLO 🔥",
+    plan_free_desc:"⭐ Gratuito — 5 AI/dia",plan_pro_desc:"⚡ Pro — 20 AI/dia",
+    plan_yolo_desc:"🔥 YOLO — 40 AI/dia",
+    // Misc
+    exchange_base:"Base",watch_num:"Monitoramento #",
   },
   es:{
     active:"Activo",inactive:"Off",loading:"Cargando…",analyzing:"Analizando…",searching:"Buscando…",
@@ -2548,6 +2776,81 @@ const UI={
     h2_settings:"⚙️ Configuración",h2_smart_tools:"🛠️ Herramientas Inteligentes",h2_price_calendar:"📆 Calendario de Precios",
     h2_expiring_deals:"⏰ Ofertas Expirando",h2_telegram_bot:"🤖 Bot Telegram",
     h2_auto_book:"⚡ Motor Auto-Reserva",h2_whatsapp_bot:"💬 Bot WhatsApp",h2_positioning:"🗺️ Posicionamiento",
+    // Nav labels
+    nav_main:"Principal",nav_ai_tools:"AI — Herramientas",nav_planning:"Planificación de Viaje",
+    nav_analysis:"Análisis & Investigación",nav_tools_lbl:"Herramientas",nav_smart:"Herramientas Inteligentes",
+    nav_bots:"Bots",nav_system:"Sistema",
+    // Action buttons
+    btn_analyze:"🔮 Analizar",btn_search_opps:"🌟 Buscar Oportunidades",
+    btn_plan_trip:"🗺️ Planear",btn_plan_multi:"🌍 Planear Ruta",
+    btn_search_stops:"🔁 Buscar Escalas",btn_find_cheap_dates:"📅 Encontrar Fechas Baratas",
+    btn_predict_price:"📈 Predecir Precio",btn_calc_cost:"💰 Calcular Costo Total",
+    btn_compare_pts:"💳 Comparar",btn_analyze2:"📊 Analizar",
+    btn_compare_prices:"🔍 Comparar Precios",btn_scan_rss:"📡 Escanear",
+    btn_analyze_sentiment:"Analizar",btn_search_kiwi:"🔍 Buscar en Kiwi",
+    // Telegram Bot page
+    tg_how_title:"📖 Guía de Configuración (3 Pasos)",tg_conn_title:"🔑 Configuración de Conexión",
+    btn_save_tg:"💾 Guardar",btn_test_tg:"📨 Probar Conexión",btn_get_chatid:"🔍 Obtener Chat ID",
+    tg_notif_title:"⚙️ Tipos de Notificación",
+    tg_notif_price_drop:"✈️ Bajada de Precio de Vuelos",tg_notif_low:"📉 Precio Mínimo Histórico",
+    tg_notif_new_deal:"🔥 Nueva Oferta",tg_notif_expiry:"⏰ Oferta Expirando",
+    tg_notif_error_fare:"⚡ Tarifa de Error",tg_notif_rise:"📈 Subida Fuerte",
+    tg_manual_title:"📨 Enviar Mensaje Manual",lbl_message:"Mensaje",btn_send_now:"📨 Enviar Ahora",
+    // Auto-Book page
+    ab_warn_title:"⚡ Reserva Automática",ab_tab_rules:"📋 Reglas",
+    ab_tab_log:"📜 Log",ab_tab_passenger:"👤 Datos del Pasajero",
+    ab_add_rule_title:"➕ Agregar Nueva Regla",lbl_rule_name:"Nombre de Regla",lbl_mode:"Modo",
+    lbl_origin_iata:"Origen (IATA)",lbl_dest_iata:"Destino (IATA)",
+    lbl_max_price_usd:"Precio Máximo ($)",lbl_date_from_ab:"Fecha Desde",lbl_date_to_ab:"Fecha Hasta",
+    btn_add_rule:"➕ Agregar Regla",ab_active_rules:"📋 Reglas Activas",
+    ab_log_title:"📜 Log de Reservas",
+    ab_passenger_title:"👤 Datos del Pasajero para Autocompletar",
+    ab_passenger_desc:"Estos datos se usarán para autocompletar formularios de reserva",
+    lbl_first_name:"Nombre",lbl_last_name:"Apellido",
+    lbl_email:"Email",lbl_phone:"Teléfono",
+    lbl_passport_num:"Número de Pasaporte",lbl_dob:"Fecha de Nacimiento",
+    // Positioning page
+    pos_warn_title:"🗺️ ¿Qué es Posicionamiento?",
+    pos_find_title:"🔍 Buscar Oportunidades de Posicionamiento",
+    lbl_final_dest:"Destino Final (IATA)",lbl_depart_date:"Fecha de Salida",
+    lbl_return_date_opt:"Fecha de Regreso (opcional)",lbl_travelers:"Viajeros",
+    lbl_budget_limit:"Presupuesto Máximo ($)",
+    pos_routes_title:"✈️ Rutas de Posicionamiento Baratas desde TLV",
+    btn_load:"🔄 Cargar",
+    pos_roi_title:"🧮 Calculadora ROI — ¿Vale la Pena Posicionar?",
+    lbl_hub_dest:"Hub → Destino ($)",lbl_direct_flight:"Vuelo Directo desde TLV ($)",
+    lbl_extra_time:"Tiempo Extra (horas)",lbl_hourly_rate:"Valor por Hora ($)",
+    btn_calc_roi:"🧮 Calcular ROI",
+    // WhatsApp Bot page
+    wa_warn_title:"💬 Búsqueda de Vuelos en WhatsApp",
+    wa_tab_setup:"⚙️ Configurar Twilio",wa_tab_test:"🧪 Prueba",wa_tab_stats:"📊 Estadísticas",
+    wa_setup_title:"📖 Configuración del Sandbox Twilio",
+    wa_settings_title:"🔑 Configuración Twilio",lbl_wa_sender:"Número WhatsApp Remitente",
+    wa_test_title:"🧪 Prueba del Bot (Simulación)",
+    lbl_wa_test_msg:"Enviar mensaje al bot (como en WhatsApp)",
+    btn_wa_send:"📨 Enviar",wa_bot_reply:"Respuesta del Bot:",
+    wa_send_real_title:"📤 Enviar Mensaje Real",lbl_wa_send_to:"Destinatario (número)",
+    btn_send_wa:"📤 Enviar WhatsApp",
+    wa_total_msgs:"Total de Mensajes",wa_users:"Usuarios",wa_today:"Hoy",
+    wa_flight_searches:"Búsquedas de Vuelos",
+    // Settings
+    ct_tg_alerts:"📲 Alertas Telegram",ct_ntfy_alerts:"📱 Alertas NTFY (Push)",
+    btn_save_settings_tg:"💾 Guardar",btn_test_settings_tg:"🧪 Enviar Mensaje de Prueba",
+    btn_save_ntfy_settings:"💾 Guardar",lbl_ntfy_server:"Servidor NTFY (por defecto: ntfy.sh)",
+    // WL Modal
+    wl_modal_title:"⭐ Cuenta WizeLife",
+    wl_signin_desc:"Inicia sesión para sincronizar tu plan en todos los apps WizeLife.",
+    lbl_email_wl:"Email",lbl_password_wl:"Contraseña",
+    btn_signin_wl:"Iniciar Sesión",btn_signout_wl:"Cerrar Sesión",
+    wl_err_required:"Email y contraseña requeridos",wl_err_invalid:"Email o contraseña incorrectos",
+    wl_err_network:"Error de red",wl_connecting:"Conectando…",
+    wl_signed_in_as:"✅ Conectado como ",wl_signed_out:"Sesión cerrada",
+    // Plan labels
+    plan_pro:"Pro ⚡",plan_yolo:"YOLO 🔥",
+    plan_free_desc:"⭐ Gratis — 5 AI/día",plan_pro_desc:"⚡ Pro — 20 AI/día",
+    plan_yolo_desc:"🔥 YOLO — 40 AI/día",
+    // Misc
+    exchange_base:"Base",watch_num:"Monitoreo #",
   }
 };
 function ui(k){const t=UI[_lang]||UI.en;const v=t[k];if(typeof v==="string")return v;const e=UI.en[k];if(typeof e==="string")return e;return k;}
@@ -2581,9 +2884,8 @@ function applyLang(){
   const dnaRes=document.getElementById("dna-res");if(dnaRes&&dnaRes.classList.contains("ai-placeholder"))dnaRes.textContent=ui("dna_placeholder");
   // Exchange loading
   const exchCard=document.getElementById("exch-card");if(exchCard&&exchCard.querySelector("[data-ui='exchange_loading']"))exchCard.querySelector("[data-ui='exchange_loading']").textContent=ui("exchange_loading");
-  // Quota / plan display
-  const qd=document.getElementById("quota-display");if(qd)qd.textContent=ui("plan_label")+ui("plan_free");
-  const pl=document.getElementById("plan-lbl");if(pl)pl.textContent=ui("plan_free");
+  // Update plan/quota display with current language
+  updatePlanUI();
 }
 
 // ── Init ──────────────────────────────────────────────────────
