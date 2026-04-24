@@ -295,7 +295,12 @@ textarea{resize:vertical;min-height:70px;}
       <span class="topbar-title" id="topbar-title">לוח בקרה</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <button class="btn btn-g btn-sm" id="lang-btn" onclick="toggleLang()">🌐 English</button>
+      <select id="lang-btn" onchange="setLang(this.value)" class="btn btn-g btn-sm" style="cursor:pointer;font-family:inherit;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 8px;">
+        <option value="he">🌐 עב</option>
+        <option value="en">🌐 EN</option>
+        <option value="pt">🌐 PT</option>
+        <option value="es">🌐 ES</option>
+      </select>
       <div id="topbar-btns"></div>
     </div>
   </header>
@@ -2018,6 +2023,7 @@ const NAV_EN={dashboard:"Dashboard",watches:"Watch List",history:"Price History"
 const NAV_HE={dashboard:"לוח בקרה",watches:"רשימת מעקב",history:"היסטוריית מחירים",chat:"סוכן נסיעות AI","wait-or-buy":"כדאי לחכות?","ai-opps":"הזדמנויות AI","deal-hunter":"ציד דילים",surprise:"יעד מפתיע","trip-planner":"תכנן טיול","multi-city":"מסלול מרובה ערים",stopovers:"עצירות חינם","flexible-dates":"תאריכים גמישים",predict:"חיזוי מחיר","true-cost":"עלות אמיתית","points-vs-cash":"נקודות vs מזומן","deal-insights":"תובנות ודפוסים","price-dna":"Price DNA",competitor:"השוואת אתרים",sentiment:"סנטימנט & חדשות",rss:"RSS & Reddit",visa:"בדיקת ויזה","hidden-city":"Hidden City",kiwi:"Kiwi טיסות",exchange:"שערי חליפין",alerts:"כללי התראה",settings:"הגדרות","smart-tools":"כלים חכמים","price-calendar":"לוח מחירים","expiring-deals":"דילים פגי תוקף",
   "telegram-bot":"בוט טלגרם","auto-book":"Auto-Book Engine","positioning":"Positioning","whatsapp-bot":"WhatsApp Bot"};
 
+function setLang(v){if(!["he","en","pt","es"].includes(v))return;_lang=v;localStorage.setItem("noded_lang",_lang);localStorage.setItem("wl_lang",_lang);applyLang();}
 function toggleLang(){const langs=["he","en","pt","es"];_lang=langs[(langs.indexOf(_lang)+1)%langs.length];localStorage.setItem("noded_lang",_lang);localStorage.setItem("wl_lang",_lang);applyLang();}
 
 function langSuffix(){return _lang==="he"?" ענה בעברית.":_lang==="pt"?" Respond in Portuguese.":_lang==="es"?" Respond in Spanish.":"";}
@@ -2859,10 +2865,9 @@ function spin(k){return`<div class="loading"><div class="spin"></div>${ui(k)}</d
 
 function applyLang(){
   const en=_lang!=="he";
-  const lblNext={he:"🌐 EN",en:"🌐 PT",pt:"🌐 ES",es:"🌐 עב"};
   document.documentElement.lang=_lang;
   document.documentElement.dir=(_lang==="he")?"rtl":"ltr";
-  document.getElementById("lang-btn").textContent=lblNext[_lang]||"🌐";
+  const langSel=document.getElementById("lang-btn");if(langSel&&langSel.tagName==="SELECT")langSel.value=_lang;
   document.querySelectorAll(".nav-btn[data-page]").forEach(btn=>{
     const p=btn.dataset.page;const ico=btn.querySelector(".ico")?.outerHTML||"";
     btn.innerHTML=ico+(en?NAV_EN[p]:NAV_HE[p])||p;
