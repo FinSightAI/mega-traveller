@@ -27,37 +27,49 @@ except Exception:
 
 import translations as i18n
 
+# ── Core modules (needed at startup) ───────────────────────────────────────────
 import database as db
 import agent
 import ai_client
 import monitor
-import notifiers
 import exchange_rates as fx
-import exporters
 import flexible_search
-import price_predictor
 import trip_planner
 import deal_hunter
 import smart_search
 import deal_scorer
-import competitor_check
-import sentiment_analyzer
 import visa_check
 import stopover_finder
 import cost_calculator
 import deal_insights
-import telegram_bot
 import kiwi_client
 import validators
 import nl_parser
-import weekly_digest
-import events_finder
-import hidden_city
-import rss_scanner
-import auto_book
-import price_dna
-import positioning
-import whatsapp_bot
+
+# ── Lazy module loader — heavy/rarely-used modules load on first access ─────────
+class _Lazy:
+    """Transparent lazy import proxy. Usage identical to a regular import."""
+    def __init__(self, name): self._n = name; self._m = None
+    def __getattr__(self, a):
+        if self._m is None:
+            import importlib
+            self._m = importlib.import_module(self._n)
+        return getattr(self._m, a)
+
+notifiers        = _Lazy('notifiers')
+exporters        = _Lazy('exporters')
+price_predictor  = _Lazy('price_predictor')
+competitor_check = _Lazy('competitor_check')
+sentiment_analyzer = _Lazy('sentiment_analyzer')
+telegram_bot     = _Lazy('telegram_bot')
+weekly_digest    = _Lazy('weekly_digest')
+events_finder    = _Lazy('events_finder')
+hidden_city      = _Lazy('hidden_city')
+rss_scanner      = _Lazy('rss_scanner')
+auto_book        = _Lazy('auto_book')
+price_dna        = _Lazy('price_dna')
+positioning      = _Lazy('positioning')
+whatsapp_bot     = _Lazy('whatsapp_bot')
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(

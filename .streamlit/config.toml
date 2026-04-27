@@ -1,9 +1,18 @@
 [server]
 headless = true
 port = 8501
+fileWatcherType = "none"
+enableStaticServing = true
+
+[browser]
+gatherUsageStats = false
 
 [client]
 toolbarMode = "viewer"
+showErrorDetails = false
+
+[runner]
+fastReruns = true
 
 [theme]
 base = "dark"
