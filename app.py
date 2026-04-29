@@ -1007,6 +1007,9 @@ if not st.session_state.get("_ob_injected"):
         "pt": {"title":"Bem-vindo ao WizeTravel","sub":"Encontre passagens incríveis com IA","color":"#3b82f6",
                "features":["✈️ Busca de voos inteligente com IA","🔔 Alertas de preço — saiba quando cair","🗺️ Planejamento completo de viagem"],
                "btn":"Vamos lá →","nosee":"Não mostrar na inicialização","dir":"ltr"},
+        "es": {"title":"Bienvenido a WizeTravel","sub":"Encuentra vuelos increíbles con IA","color":"#3b82f6",
+               "features":["✈️ Búsqueda de vuelos inteligente con IA","🔔 Alertas de precio — sabe cuándo bajan","🗺️ Planificación completa del viaje"],
+               "btn":"¡Vamos! →","nosee":"No mostrar al iniciar","dir":"ltr"},
     }
     _ob = _ob_data.get(_lang, _ob_data["en"])
     components.html(f"""
