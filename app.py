@@ -1637,6 +1637,7 @@ elif page == "➕ הוסף מעקב":
             _t("תאר את המעקב שלך:", "Describe your watch:"),
             placeholder=_t("טיסה לטוקיו בספטמבר עד 800 דולר", "flight to Tokyo in September up to $800"),
             key="nl_input_field",
+            max_chars=500,
         )
         nl_btn = st.button(_t("🤖 נתח ומלא", "🤖 Parse & fill"), key="nl_parse_btn")
 
@@ -1710,6 +1711,7 @@ elif page == "➕ הוסף מעקב":
             _t("שאילתה מותאמת אישית (אופציונלי)", "Custom query (optional)"),
             placeholder=_t("מצא טיסה זולה מ-TLV לברצלונה בתחילת מאי, כולל מזוודה", "Find cheap flight from TLV to Barcelona early May, with luggage"),
             height=80,
+            max_chars=1000,
         )
 
         check_now = st.checkbox(_t("בדוק מחיר מיד לאחר הוספה", "Check price immediately after adding"), value=True)
@@ -1911,6 +1913,7 @@ elif page in ("💬 סוכן נסיעות AI", "💬 AI Travel Agent"):
     _user_input = st.chat_input(
         _t("שאל אותי כל דבר על נסיעות...", "Ask me anything about travel..."),
         key="agent_chat_input",
+        max_chars=2000,
     ) or _pending
 
     if _user_input:
@@ -5958,7 +5961,7 @@ with st.expander(_chat_label, expanded=st.session_state.chat_open):
             st.markdown(_cm["content"])
 
     # Input
-    _chat_input = st.chat_input(_t("כתוב שאלה...", "Type a question..."), key="global_chat")
+    _chat_input = st.chat_input(_t("כתוב שאלה...", "Type a question..."), key="global_chat", max_chars=2000)
     if _chat_input:
         st.session_state.chat_messages.append({"role": "user", "content": _chat_input})
         st.session_state.chat_open = True

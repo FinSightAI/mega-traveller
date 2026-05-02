@@ -18,6 +18,8 @@ def parse_watch_request(text: str) -> dict:
     if not ai_client.is_configured():
         return {"error": "GEMINI_API_KEY not configured"}
 
+    text = str(text)[:500]  # cap input size
+
     now = datetime.now()
     current_year = now.year
     current_month = now.month
