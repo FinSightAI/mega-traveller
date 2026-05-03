@@ -478,18 +478,66 @@ code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-family:var(--f
 /* ── Mobile ── */
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;}
 .sidebar-overlay.active{display:block;}
+/* ── Mobile bottom nav ── */
+.bnav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  height:60px;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.bnav-items{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  height:100%;
+}
+.bnav-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;border:none;background:none;
+  color:var(--muted);font-family:var(--ff-body);transition:color .15s;
+  padding-bottom:4px;
+}
+.bnav-item.active{color:var(--c);}
+.bnav-item .bnav-ico{font-size:1.25rem;line-height:1;}
+.bnav-item .bnav-lbl{font-size:.6rem;font-weight:700;letter-spacing:.3px;}
+/* Sidebar drawer overlay */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;z-index:49;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(2px);
+}
+.sidebar-overlay.show{display:block;}
+
 @media(max-width:768px){
-  #sidebar{position:fixed;right:-240px;top:0;bottom:0;z-index:50;width:240px;transition:right .25s;}
+  #sidebar{
+    position:fixed;right:-260px;top:0;bottom:0;z-index:50;
+    width:260px;transition:right .3s cubic-bezier(.4,0,.2,1);
+    box-shadow:-4px 0 24px rgba(0,0,0,.4);
+  }
   #sidebar.open{right:0;}
   .mob-btn{display:block;}
-  #main{margin-right:0;}
-  .topbar{padding:0 16px;}
-  .chat-bar{padding:10px 16px 14px;}
-  .chat-msgs{padding:16px;}
-  .sh{padding:16px 16px 14px;}
+  #main{margin-right:0;padding-bottom:60px;}
+  .topbar{padding:0 12px;}
+  .topbar-title{display:block!important;font-size:.9rem;font-weight:800;}
+  .chat-bar{padding:10px 12px 14px;}
+  .chat-msgs{padding:12px;}
+  .sh{padding:14px 14px 12px;}
+  .sh h2{font-size:1.1rem;}
+  .page-content{padding:0 12px 12px;}
   .g4{grid-template-columns:1fr 1fr;}
   .g3{grid-template-columns:1fr 1fr;}
   .f2{grid-template-columns:1fr;}
+  .panel-body{padding:12px 14px;}
+  .stat-card,.stat{min-width:0;}
+  .bnav{display:flex;align-items:stretch;}
+  /* hide lang selector in topbar on mobile — too cramped */
+  #lang-btn{display:none;}
+  /* wl-bar stays, topbar sits right below it */
+  #topbar-btns{display:none;}
+}
+@media(max-width:400px){
+  .g4{grid-template-columns:1fr;}
+  .g3{grid-template-columns:1fr;}
 }
 body.ltr #sidebar{right:auto;left:0;border-right:1px solid var(--border);border-left:none;}
 body.ltr .nav-btn,.body.ltr .nav-item{text-align:left;}
@@ -588,6 +636,23 @@ body.ltr .nav-btn,.body.ltr .nav-item{text-align:left;}
       </div>
       <span style="font-size:.8rem;color:var(--muted);">⭐</span>
     </div>
+  </div>
+</nav>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<nav class="bnav" id="bnav">
+  <div class="bnav-items">
+    <button class="bnav-item active" id="bnav-search" onclick="bnavGo('dashboard',0)">
+      <span class="bnav-ico">✈️</span><span class="bnav-lbl">Search</span>
+    </button>
+    <button class="bnav-item" id="bnav-alerts" onclick="bnavGo('watches',1)">
+      <span class="bnav-ico">🔔</span><span class="bnav-lbl">Alerts</span>
+    </button>
+    <button class="bnav-item" id="bnav-history" onclick="bnavGo('history',2)">
+      <span class="bnav-ico">📋</span><span class="bnav-lbl">History</span>
+    </button>
+    <button class="bnav-item" id="bnav-account" onclick="bnavGo(null,3)">
+      <span class="bnav-ico">👤</span><span class="bnav-lbl">Account</span>
+    </button>
   </div>
 </nav>
 
@@ -1552,6 +1617,22 @@ function updatePlanUI(){
 function showWlErr(m){const e=document.getElementById("wl-err");e.textContent=m;e.style.display="block";}
 function openWL(){document.getElementById("wl-err").style.display="none";openModal("m-wl");}
 
+function bnavGo(page, idx){
+  // Update active state
+  ['bnav-search','bnav-alerts','bnav-history','bnav-account'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active', i===idx);
+  });
+  if(page){
+    // navigate to page
+    const btn=document.querySelector(`[data-page="${page}"]`);
+    if(btn) btn.click();
+  } else {
+    // Account → open WizeLife modal
+    openWL();
+  }
+}
+
 // ── Navigation ────────────────────────────────────────────────
 const PAGE_TITLES={
   dashboard:"🏠 לוח בקרה",watches:"👁 רשימת מעקב",history:"📊 היסטוריית מחירים",
@@ -1594,7 +1675,17 @@ function navigate(p){
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>{navigate(b.dataset.page);closeSidebar();}));
 
 // ── Sidebar ───────────────────────────────────────────────────
-function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");}
+function toggleSidebar(){
+  const s=document.getElementById("sidebar");
+  const ov=document.getElementById("sidebar-overlay");
+  s.classList.toggle("open");
+  if(ov) ov.classList.toggle("show", s.classList.contains("open"));
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  const ov=document.getElementById("sidebar-overlay");
+  if(ov) ov.classList.remove("show");
+}
 function closeSidebar(){document.getElementById("sidebar").classList.remove("open");}
 
 // ── Modals ────────────────────────────────────────────────────
