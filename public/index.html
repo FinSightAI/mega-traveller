@@ -1468,6 +1468,24 @@ let _token=null, _plan="free", _user=null, _nick="";
       if (t) existing.token = t;
       if (n) existing.nick = decodeURIComponent(n);
       localStorage.setItem('noded_wl', JSON.stringify(existing));
+      // Fetch plan from Firestore using new token
+      if (t) {
+        try {
+          const pl = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+          const uid = pl.user_id || pl.sub;
+          if (uid) {
+            fetch(`https://firestore.googleapis.com/v1/projects/finzilla-7f1f9/databases/(default)/documents/users/${uid}`,
+              {headers:{Authorization:'Bearer '+t}})
+              .then(r=>r.json()).then(doc=>{
+                const plan = doc.fields?.plan?.stringValue || 'free';
+                const s = JSON.parse(localStorage.getItem('noded_wl')||'{}');
+                s.plan = plan; s.uid = uid;
+                localStorage.setItem('noded_wl', JSON.stringify(s));
+                _plan = plan; updatePlanUI();
+              }).catch(()=>{});
+          }
+        } catch(e) {}
+      }
       const url = new URL(window.location.href);
       url.searchParams.delete('wl_token');
       url.searchParams.delete('wl_nick');
@@ -1475,7 +1493,10 @@ let _token=null, _plan="free", _user=null, _nick="";
     }
   } catch(e) {}
 })();
-try{const s=JSON.parse(localStorage.getItem("noded_wl")||"{}");if(s.token){_token=s.token;_plan=s.plan||"free";_user=s.email;_nick=s.nick||"";updatePlanUI();}}catch(e){}
+try{const s=JSON.parse(localStorage.getItem("noded_wl")||"{}");if(s.token){_token=s.token;_plan=s.plan||"free";_user=s.email;_nick=s.nick||"";updatePlanUI();
+  const uid=s.uid||(()=>{try{const p=JSON.parse(atob(s.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return p.user_id||p.sub;}catch{return null;}})();
+  if(uid)fetchPlan(uid,s.token).then(plan=>{if(plan!==_plan){_plan=plan;const ns=JSON.parse(localStorage.getItem('noded_wl')||'{}');ns.plan=plan;ns.uid=uid;localStorage.setItem('noded_wl',JSON.stringify(ns));updatePlanUI();}});
+}}catch(e){}
 })();
 
 async function wlSignIn(){
