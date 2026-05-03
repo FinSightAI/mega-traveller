@@ -1581,7 +1581,7 @@ let _token=null, _plan="free", _user=null, _nick="";
 })();
 try{const s=JSON.parse(localStorage.getItem("noded_wl")||"{}");if(s.token){_token=s.token;_plan=s.plan||"free";_user=s.email;_nick=s.nick||"";updatePlanUI();
   const uid=s.uid||(()=>{try{const p=JSON.parse(atob(s.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return p.user_id||p.sub;}catch{return null;}})();
-  if(uid)fetchPlan(uid,s.token).then(plan=>{if(plan!==_plan){_plan=plan;const ns=JSON.parse(localStorage.getItem('noded_wl')||'{}');ns.plan=plan;ns.uid=uid;localStorage.setItem('noded_wl',JSON.stringify(ns));updatePlanUI();}});
+  if(uid)fetchPlan(uid,s.token).then(plan=>{if(plan!==null&&plan!==_plan){_plan=plan;const ns=JSON.parse(localStorage.getItem('noded_wl')||'{}');ns.plan=plan;ns.uid=uid;localStorage.setItem('noded_wl',JSON.stringify(ns));updatePlanUI();}});
 }}catch(e){}
 })();
 
@@ -1603,7 +1603,7 @@ async function wlSignIn(){
   finally{btn.disabled=false;btn.textContent=ui("btn_signin_wl");}
 }
 async function fetchPlan(uid,tok){
-  try{const r=await fetch(`https://firestore.googleapis.com/v1/projects/finzilla-7f1f9/databases/(default)/documents/users/${uid}`,{headers:{"Authorization":"Bearer "+tok}});if(!r.ok)return"free";const d=await r.json();return d.fields?.plan?.stringValue||"free";}catch{return"free";}
+  try{const r=await fetch(`https://firestore.googleapis.com/v1/projects/finzilla-7f1f9/databases/(default)/documents/users/${uid}`,{headers:{"Authorization":"Bearer "+tok}});if(!r.ok)return null;const d=await r.json();return d.fields?.plan?.stringValue||"free";}catch{return null;}
 }
 function wlSignOut(){_token=null;_plan="free";_user=null;_nick="";localStorage.removeItem("noded_wl");updatePlanUI();closeModal("m-wl");toast(ui("wl_signed_out"),"ok");}
 function updatePlanUI(){
