@@ -10,3 +10,6 @@ python-multipart>=0.0.9
 amadeus>=8.1.0
 twilio>=9.0.0
 openpyxl>=3.1.2
+streamlit>=1.32.0
+streamlit-autorefresh>=0.0.1
+plotly>=5.18.0
