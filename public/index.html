@@ -1737,9 +1737,41 @@ function toast(msg,type=""){
 }
 
 // ── Dashboard ─────────────────────────────────────────────────
+
+// ── WizeAI Context Sync ───────────────────────────────────────────────────────
+async function syncTravelContext(watches){
+  try{
+    const wl = JSON.parse(localStorage.getItem('noded_wl')||'{}');
+    const uid = wl.uid; const tok = wl.token;
+    if(!uid || !tok) return;
+    const lastSync = parseInt(localStorage.getItem('wizeai_travel_sync')||'0');
+    if(Date.now()-lastSync < 5*60*1000) return;
+    const enabled = watches.filter(w=>w.enabled);
+    const ctx = {
+      watchedRoutes: enabled.map(w=>(w.origin||'')+'-'+(w.destination||'')).slice(0,5),
+      watchCount: enabled.length,
+      travelBudget: enabled.reduce((s,w)=>s+(w.budget||0),0),
+      topDestinations: [...new Set(enabled.map(w=>w.destination).filter(Boolean))].slice(0,3),
+      syncedAt: new Date().toISOString()
+    };
+    const url = 'https://firestore.googleapis.com/v1/projects/finzilla-7f1f9/databases/(default)/documents/users/'+uid+'/context/travel';
+    const body = {fields:{
+      watchedRoutes:{arrayValue:{values:ctx.watchedRoutes.map(r=>({stringValue:r}))}},
+      watchCount:{integerValue:ctx.watchCount},
+      travelBudget:{integerValue:ctx.travelBudget},
+      topDestinations:{arrayValue:{values:ctx.topDestinations.map(d=>({stringValue:d}))}},
+      syncedAt:{stringValue:ctx.syncedAt}
+    }};
+    await fetch(url+'?updateMask.fieldPaths=watchedRoutes&updateMask.fieldPaths=watchCount&updateMask.fieldPaths=travelBudget&updateMask.fieldPaths=topDestinations&updateMask.fieldPaths=syncedAt',
+      {method:'PATCH',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    localStorage.setItem('wizeai_travel_sync', String(Date.now()));
+  }catch(e){ console.warn('WizeAI travel sync:',e); }
+}
+
 async function loadDashboard(){
   try{
     const watches=await api("GET","/api/watches");
+    syncTravelContext(watches);
     document.getElementById("s-watches").textContent=watches.filter(w=>w.enabled).length;
     let low=Infinity,cur="USD";
     const el=document.getElementById("db-watches");
