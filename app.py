@@ -1367,6 +1367,43 @@ with st.sidebar:
 _inject_css(_rtl)
 
 
+# ── WizeLife WizeBar with language pills ──
+_qs_lang = st.query_params.get("wl_lang", _lang) if hasattr(st, "query_params") else _lang
+if _qs_lang in ["he", "en", "pt", "es"] and _qs_lang != st.session_state.get("lang"):
+    st.session_state.lang = _qs_lang
+
+st.markdown(f"""
+<div id="wl-bar" style="position:fixed;top:0;left:0;right:0;height:36px;z-index:99999;background:rgba(5,6,15,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-family:Inter,-apple-system,sans-serif;box-sizing:border-box;direction:ltr;">
+  <a href="https://finsightai.github.io/wizelife/dashboard.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;line-height:1;">
+    <svg width="20" height="20" viewBox="0 0 100 100" style="flex-shrink:0"><defs><linearGradient id="wlbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#wlbg)"/><text x="50" y="72" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="58" fill="white">W</text></svg>
+    <span style="font-size:13px;font-weight:800;color:#eef2ff;letter-spacing:-0.3px;font-family:'Plus Jakarta Sans',sans-serif">WizeLife</span>
+    <span style="font-size:11px;font-weight:600;color:#3b82f6;background:rgba(59,130,246,0.12);padding:2px 8px;border-radius:99px;line-height:1.4">WizeTravel</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div id="wl-lang-pills" style="display:flex;gap:2px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:3px">
+      <button data-lang="he" onclick="wlSetLang('he')" style="background:{('rgba(59,130,246,0.18)' if _qs_lang=='he' else 'none')};border:none;color:{('#60a5fa' if _qs_lang=='he' else '#7b88ad')};padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.4px">עב</button>
+      <button data-lang="en" onclick="wlSetLang('en')" style="background:{('rgba(59,130,246,0.18)' if _qs_lang=='en' else 'none')};border:none;color:{('#60a5fa' if _qs_lang=='en' else '#7b88ad')};padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.4px">EN</button>
+      <button data-lang="pt" onclick="wlSetLang('pt')" style="background:{('rgba(59,130,246,0.18)' if _qs_lang=='pt' else 'none')};border:none;color:{('#60a5fa' if _qs_lang=='pt' else '#7b88ad')};padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.4px">PT</button>
+      <button data-lang="es" onclick="wlSetLang('es')" style="background:{('rgba(59,130,246,0.18)' if _qs_lang=='es' else 'none')};border:none;color:{('#60a5fa' if _qs_lang=='es' else '#7b88ad')};padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.4px">ES</button>
+    </div>
+    <a href="https://finsightai.github.io/wizelife/dashboard.html" style="font-size:12px;color:#7b88ad;text-decoration:none;font-weight:500;white-space:nowrap">← All Tools</a>
+  </div>
+</div>
+<script>
+function wlSetLang(l) {{
+  try {{ localStorage.setItem('wl_lang', l); }} catch(e){{}}
+  var u = new URL(window.location.href);
+  u.searchParams.set('wl_lang', l);
+  window.location.href = u.toString();
+}}
+// Add top padding to body for the WizeBar
+var s = document.createElement('style');
+s.textContent = 'body, [data-testid="stAppViewContainer"] {{ padding-top: 36px !important; }}';
+document.head.appendChild(s);
+</script>
+""", unsafe_allow_html=True)
+
+
 
 # ── WizeLife right panel ──
 st.markdown("""
