@@ -1367,13 +1367,6 @@ with st.sidebar:
 _inject_css(_rtl)
 
 
-# ── WizeAI FAB ──
-st.markdown("""
-<a id="wl-ai-fab" href="https://wizelife.ai/wize-ai.html" target="_blank" rel="noopener" aria-label="WizeAI" style="position:fixed;bottom:22px;right:22px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 8px 28px rgba(99,102,241,0.45);display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:9990;transition:all .18s ease">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 3-1.5 5.5-4 7l-4 2-4-2c-2.5-1.5-4-4-4-7a8 8 0 0 1 8-8z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/><path d="M9 14s1 1.5 3 1.5 3-1.5 3-1.5"/></svg>
-</a>
-""", unsafe_allow_html=True)
-
 
 # ── WizeLife right panel ──
 st.markdown("""
