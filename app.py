@@ -211,6 +211,20 @@ def _inject_css(rtl: bool):
 
     st.markdown(f"""
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+  html, body, [data-testid="stAppViewContainer"] {{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  }}
+  h1, h2, h3, h4, h5, h6,
+  [data-testid="stHeading"] h1,
+  [data-testid="stHeading"] h2,
+  [data-testid="stHeading"] h3 {{
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    letter-spacing: -0.4px !important;
+    font-weight: 800 !important;
+  }}
+
   /* ── Direction ── */
   html, body {{ direction: {d} !important; }}
   [data-testid="stAppViewContainer"],
@@ -258,7 +272,7 @@ def _inject_css(rtl: bool):
 
   /* ── Background ── */
   [data-testid="stAppViewContainer"] {{
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    background: #030508 !important;
   }}
 
   /* ── Light mode ── */
