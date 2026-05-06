@@ -781,6 +781,41 @@ def _inject_css(rtl: bool):
     border-color: rgba(59,130,246,0.3) !important;
   }
 
+
+
+  /* ── WizeTravel right panel (fixed overlay on desktop) ── */
+  @media (min-width: 1280px) {{
+    #wl-travel-rpanel {{
+      position: fixed; top: 36px; left: 0;
+      width: 240px; height: calc(100vh - 36px);
+      background: #060810; border-right: 1px solid rgba(255,255,255,0.07);
+      padding: 14px; z-index: 50; overflow-y: auto;
+      font-family: 'Inter', sans-serif; direction: ltr;
+    }}
+    [data-testid="stAppViewContainer"] {{
+      padding-left: 240px !important;
+    }}
+  }}
+  @media (max-width: 1279px) {{
+    #wl-travel-rpanel {{ display: none !important; }}
+  }}
+  #wl-travel-rpanel .rp-card {{
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 12px; margin-bottom: 12px;
+  }}
+  #wl-travel-rpanel .rp-label {{
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); margin-bottom: 8px;
+  }}
+  #wl-travel-rpanel .rp-tip {{
+    font-size: 11.5px; line-height: 1.55;
+    color: #94a3b8; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }}
+  #wl-travel-rpanel .rp-tip:last-child {{ border-bottom: none; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1318,6 +1353,29 @@ with st.sidebar:
 
 # ── Inject CSS (after lang is determined) ──────────────────────────────────────
 _inject_css(_rtl)
+
+
+# ── WizeLife right panel ──
+st.markdown("""
+<div id="wl-travel-rpanel">
+  <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:800;color:#eef2ff;margin-bottom:10px">AI Insights</div>
+  <div class="rp-card">
+    <div class="rp-label">Active Hunts</div>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:900;color:#3b82f6;letter-spacing:-0.5px">&mdash;</div>
+    <div style="font-size:10px;color:#6b7280;margin-top:4px">Start a hunt above</div>
+  </div>
+  <div class="rp-card">
+    <div class="rp-label">Pro Tips</div>
+    <div class="rp-tip">Tuesday morning flights are 23% cheaper</div>
+    <div class="rp-tip">Hidden City can save 40% &mdash; but no checked bag</div>
+    <div class="rp-tip">Book 6-8 weeks before holidays</div>
+  </div>
+  <div class="rp-card">
+    <div class="rp-label">WizeAI</div>
+    <a href="https://wizelife.ai/wize-ai.html" target="_blank" style="display:flex;align-items:center;gap:6px;text-decoration:none;color:#a5b4fc;font-size:12px;font-weight:600;padding:8px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:8px">&#129302; Cross-app advisor &rarr;</a>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 # Only inject PWA JS once per session, not on every rerun
 if not st.session_state.get("_pwa_injected"):
     _inject_pwa()
