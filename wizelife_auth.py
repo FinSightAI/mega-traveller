@@ -76,6 +76,32 @@ def sync_cross_app_data(id_token: str, app_id: str, app_name: str, summary: str)
         return False
 
 
+def sync_travel_context(uid: str, id_token: str, destination: str, budget: float,
+                        date_from: str = "", date_to: str = "", style: str = "") -> bool:
+    """Write latest trip plan to Firestore context/travel for WizeAI."""
+    if not uid or not id_token:
+        return False
+    try:
+        import datetime
+        ctx = {"fields": {
+            "lastDestination": {"stringValue": destination or ""},
+            "estimatedBudgetUSD": {"doubleValue": float(budget or 0)},
+            "dateFrom": {"stringValue": date_from or ""},
+            "dateTo": {"stringValue": date_to or ""},
+            "travelStyle": {"stringValue": style or ""},
+            "syncedAt": {"stringValue": datetime.datetime.utcnow().isoformat() + "Z"},
+        }}
+        r = httpx.patch(
+            f"{_FIRESTORE_BASE}/users/{uid}/context/travel",
+            headers={"Authorization": f"Bearer {id_token}", "Content-Type": "application/json"},
+            json=ctx,
+            timeout=5,
+        )
+        return r.is_success
+    except Exception:
+        return False
+
+
 def refresh_token(refresh_tok: str) -> Optional[str]:
     """Exchange a refresh token for a fresh ID token (call before token expiry ~1hr)."""
     try:
