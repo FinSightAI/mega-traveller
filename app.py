@@ -211,7 +211,7 @@ def _inject_css(rtl: bool):
 
     st.markdown(f"""
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   html, body, [data-testid="stAppViewContainer"] {{
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -341,7 +341,8 @@ def _inject_css(rtl: bool):
     transform: translateY(-2px) !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
   }}
-  [data-testid="stMetricValue"] {{
+  [data-testid="stMetricValue"] {
+    font-variant-numeric: tabular-nums !important;{
     color: #a78bfa !important;
     font-size: 1.8rem !important;
     font-weight: 700 !important;
@@ -544,6 +545,7 @@ def _inject_css(rtl: bool):
     color: var(--wl-muted) !important;
   }
   [data-testid="stMetricValue"] {
+    font-variant-numeric: tabular-nums !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 22px !important;
     font-weight: 800 !important;
