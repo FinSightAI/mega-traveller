@@ -637,6 +637,148 @@ def _inject_css(rtl: bool):
   ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.25); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
 
+
+
+  /* ── Sidebar overhaul — matches web-apps.html sidebar exactly ── */
+  section[data-testid="stSidebar"] {
+    background: #060810 !important;
+    border-color: var(--wl-border) !important;
+    width: 240px !important;
+    min-width: 240px !important;
+  }
+
+  /* Sidebar radio buttons — vertical nav-item look */
+  section[data-testid="stSidebar"] [data-testid="stRadio"] > div {
+    flex-direction: column !important;
+    gap: 4px !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  section[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    background: transparent !important;
+    border: none !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12.5px !important;
+    transition: all .15s !important;
+    color: rgba(255,255,255,0.55) !important;
+  }
+  section[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+    background: rgba(255,255,255,0.04) !important;
+    color: rgba(255,255,255,0.9) !important;
+  }
+
+  /* Sidebar headings */
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    color: rgba(255,255,255,0.3) !important;
+    margin-bottom: 8px !important;
+    margin-top: 14px !important;
+  }
+
+  /* Sidebar buttons */
+  section[data-testid="stSidebar"] [data-testid="stButton"] > button {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid var(--wl-border) !important;
+    color: rgba(255,255,255,0.8) !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+  }
+  section[data-testid="stSidebar"] [data-testid="stButton"] > button:hover {
+    background: rgba(59,130,246,0.08) !important;
+    border-color: rgba(59,130,246,0.3) !important;
+  }
+
+  /* Sidebar text inputs */
+  section[data-testid="stSidebar"] [data-testid="stTextInput"] input,
+  section[data-testid="stSidebar"] [data-testid="stTextArea"] textarea {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid var(--wl-border) !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+  }
+
+  /* Sidebar expanders */
+  section[data-testid="stSidebar"] [data-testid="stExpander"] {
+    background: rgba(255,255,255,0.02) !important;
+    border: 1px solid var(--wl-border) !important;
+    border-radius: 10px !important;
+  }
+  section[data-testid="stSidebar"] [data-testid="stExpander"] summary {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+  }
+
+  /* ── Main page header banner area ── */
+  /* When user adds a custom st.markdown banner, it gets this treatment */
+  .wl-page-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .wl-page-banner .icon {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(59,130,246,0.15);
+    flex-shrink: 0;
+  }
+  .wl-page-banner .title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: #eef2ff;
+    letter-spacing: -0.4px;
+    margin-bottom: 2px;
+  }
+  .wl-page-banner .sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+  }
+
+  /* ── Aggressive chrome hiding ── */
+  [data-testid="stToolbar"] { display: none !important; }
+  [data-testid="stDecoration"] { display: none !important; }
+  [data-testid="stStatusWidget"] { display: none !important; }
+  [data-testid="stAppDeployButton"] { display: none !important; }
+  [data-testid="stToolbarActionButton"] { display: none !important; }
+  div[data-testid="stToolbar"] { display: none !important; }
+
+  /* Remove default top padding so sidebar starts at very top */
+  section[data-testid="stSidebar"] > div:first-child {
+    padding-top: 12px !important;
+  }
+
+  /* Button on main page — primary look */
+  [data-testid="stButton"] > button {
+    border: 1px solid var(--wl-border) !important;
+    background: rgba(255,255,255,0.04) !important;
+    transition: all .15s !important;
+  }
+  [data-testid="stButton"] > button:hover {
+    background: rgba(59,130,246,0.08) !important;
+    border-color: rgba(59,130,246,0.3) !important;
+  }
+
 </style>
 """, unsafe_allow_html=True)
 
