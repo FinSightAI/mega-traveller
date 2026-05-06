@@ -466,6 +466,177 @@ def _inject_css(rtl: bool):
   footer,
   [data-testid="stBottom"],
   [data-testid="stBottomBlockContainer"]  {{ display: none !important; }}
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     WizeLife Design System — Streamlit overrides (visual unification)
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* Travel accent variable */
+  :root {
+    --wl-c: #3b82f6;
+    --wl-bg: #030508;
+    --wl-bg-2: #060810;
+    --wl-bg-3: #0d1020;
+    --wl-border: rgba(255,255,255,.08);
+    --wl-text: #eef2ff;
+    --wl-muted: #6b7280;
+  }
+
+  /* Top app container */
+  [data-testid="stAppViewContainer"] {
+    background: var(--wl-bg) !important;
+  }
+
+  /* Block containers — cleaner padding */
+  .block-container {
+    padding-top: 24px !important;
+    padding-bottom: 80px !important;
+    max-width: 1400px !important;
+  }
+
+  /* ── Tab list → visually styled as nav rail ── */
+  [data-baseweb="tab-list"] {
+    background: var(--wl-bg-2) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    gap: 4px !important;
+    border: 1px solid var(--wl-border) !important;
+    margin-bottom: 16px !important;
+  }
+  [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 14px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    color: rgba(255,255,255,0.55) !important;
+    transition: all .15s !important;
+  }
+  [data-baseweb="tab"]:hover {
+    color: rgba(255,255,255,0.85) !important;
+    background: rgba(255,255,255,0.04) !important;
+  }
+  [data-baseweb="tab"][aria-selected="true"] {
+    color: var(--wl-c) !important;
+    background: color-mix(in srgb, var(--wl-c) 12%, transparent) !important;
+  }
+  [data-baseweb="tab-highlight"] {
+    background: var(--wl-c) !important;
+    height: 2px !important;
+  }
+  [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ── Stat cards (st.metric → designed look) ── */
+  [data-testid="stMetric"] {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid var(--wl-border) !important;
+    border-radius: 12px !important;
+    padding: 14px 16px !important;
+  }
+  [data-testid="stMetricLabel"] {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    color: var(--wl-muted) !important;
+  }
+  [data-testid="stMetricValue"] {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: var(--wl-text) !important;
+    letter-spacing: -0.5px !important;
+  }
+  [data-testid="stMetricDelta"] {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+  }
+
+  /* ── Buttons ── */
+  [data-testid="stButton"] > button {
+    border-radius: 10px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 700 !important;
+    transition: all .15s !important;
+  }
+  [data-testid="stButton"] > button[kind="primary"] {
+    background: linear-gradient(135deg, #3b82f6, #6366f1) !important;
+    border: none !important;
+  }
+  [data-testid="stButton"] > button[kind="primary"]:hover {
+    opacity: .9 !important;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.25) !important;
+  }
+
+  /* ── Inputs ── */
+  [data-testid="stTextInput"] input,
+  [data-testid="stTextArea"] textarea,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stDateInput"] input,
+  [data-testid="stSelectbox"] [data-baseweb="select"] {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid var(--wl-border) !important;
+    border-radius: 10px !important;
+    color: var(--wl-text) !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--wl-c) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wl-c) 15%, transparent) !important;
+  }
+
+  /* ── Sidebar (existing) refinements ── */
+  section[data-testid="stSidebar"] {
+    background: var(--wl-bg-2) !important;
+    border-color: var(--wl-border) !important;
+  }
+  section[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12.5px !important;
+  }
+
+  /* ── Headers ── */
+  [data-testid="stHeading"] h1,
+  [data-testid="stHeading"] h2,
+  [data-testid="stHeading"] h3 {
+    color: var(--wl-text) !important;
+    letter-spacing: -0.4px !important;
+  }
+
+  /* ── Expander ── */
+  [data-testid="stExpander"] {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid var(--wl-border) !important;
+    border-radius: 12px !important;
+  }
+
+  /* ── DataFrames / tables ── */
+  [data-testid="stDataFrame"] {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    border: 1px solid var(--wl-border) !important;
+  }
+
+  /* ── Alerts (info/warning/error/success) ── */
+  [data-testid="stAlert"] {
+    border-radius: 10px !important;
+    border-width: 1px !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  /* ── Hide all default Streamlit chrome ── */
+  #MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden !important; height: 0 !important; }
+
+  /* ── Scrollbar global ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--wl-bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.25); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
+
 </style>
 """, unsafe_allow_html=True)
 
