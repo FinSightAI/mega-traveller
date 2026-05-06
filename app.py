@@ -530,32 +530,44 @@ def _inject_css(rtl: bool):
   }
   [data-baseweb="tab-border"] { display: none !important; }
 
-  /* ── Stat cards (st.metric → designed look) ── */
-  [data-testid="stMetric"] {
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid var(--wl-border) !important;
-    border-radius: 12px !important;
-    padding: 14px 16px !important;
-  }
-  [data-testid="stMetricLabel"] {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.8px !important;
-    color: var(--wl-muted) !important;
-  }
-  [data-testid="stMetricValue"] {
-    font-variant-numeric: tabular-nums !important;
+  /* ── Stat cards (st.metric → premium designed look) ── */
+  [data-testid="stMetric"] {{
+    background: linear-gradient(135deg, rgba(59,130,246,0.04), rgba(99,102,241,0.02)) !important;
+    border: 1px solid rgba(59,130,246,0.15) !important;
+    border-radius: 14px !important;
+    padding: 16px 18px !important;
+    transition: all .15s !important;
+  }}
+  [data-testid="stMetric"]:hover {{
+    border-color: rgba(59,130,246,0.3) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.1) !important;
+  }}
+  [data-testid="stMetricLabel"] {{
     font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 22px !important;
-    font-weight: 800 !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    color: var(--wl-muted) !important;
+    margin-bottom: 6px !important;
+  }}
+  [data-testid="stMetricValue"] {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+    font-variant-numeric: tabular-nums !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
     color: var(--wl-text) !important;
     letter-spacing: -0.5px !important;
-  }
-  [data-testid="stMetricDelta"] {
-    font-size: 11px !important;
-    font-weight: 700 !important;
-  }
+    line-height: 1.1 !important;
+  }}
+  [data-testid="stMetricDelta"] {{
+    font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+    font-variant-numeric: tabular-nums !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    margin-top: 4px !important;
+  }}
 
   /* ── Buttons ── */
   [data-testid="stButton"] > button {
