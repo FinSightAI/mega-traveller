@@ -341,8 +341,8 @@ def _inject_css(rtl: bool):
     transform: translateY(-2px) !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
   }}
-  [data-testid="stMetricValue"] {
-    font-variant-numeric: tabular-nums !important;{
+  [data-testid="stMetricValue"] {{
+    font-variant-numeric: tabular-nums !important;
     color: #a78bfa !important;
     font-size: 1.8rem !important;
     font-weight: 700 !important;
