@@ -579,30 +579,279 @@ async def weather(city: str, date: Optional[str] = None):
 
 
 @app.get("/api/events")
-async def events(city: str, date: Optional[str] = None):
-    """Events at destination — uses Gemini grounded with Google Search.
-    Returns concerts, sports, festivals around the date."""
-    import ai_client
+async def events(city: str, date: Optional[str] = None, types: Optional[str] = None):
+    """Multi-source event aggregator with attribution.
+    Sources: Resident Advisor (electronic/clubs), Bandsintown (DJ tours),
+             Ticketmaster (concerts/sports), Eventbrite (festivals/culture),
+             Skiddle (UK clubs), Gemini fallback.
+    Returns: { events: [{name, date, venue, type, source, url, ...}], sources_used: [...] }
+    """
+    import httpx, ai_client, json as _json, re as _re
+    from datetime import datetime, timedelta
+
+    target = None
     try:
-        date_str = date or "next 30 days"
-        prompt = (
-            f"List notable events happening in {city} around {date_str}. "
-            f"Include: concerts, sports games (especially football/basketball), festivals, exhibitions, theater. "
-            f"For each event provide: name, date, venue, type (concert/sports/festival/etc), and a 1-line description. "
-            f"Format as JSON: {{\"events\": [{{\"name\":\"...\", \"date\":\"...\", \"venue\":\"...\", \"type\":\"...\", \"desc\":\"...\"}}]}}. "
-            f"Return ONLY valid JSON, no markdown."
+        if date:
+            target = datetime.fromisoformat(date)
+    except: pass
+    if not target:
+        target = datetime.now() + timedelta(days=30)
+
+    start_iso = target.replace(hour=0, minute=0, second=0).isoformat()
+    end_iso = (target + timedelta(days=7)).replace(hour=23, minute=59).isoformat()
+    date_str = target.strftime("%Y-%m-%d")
+
+    all_events = []
+    sources_used = []
+    sources_failed = []
+
+    async with httpx.AsyncClient(timeout=15) as client:
+
+        # ── 1. Resident Advisor (electronic / clubs) — GraphQL scrape ──
+        async def fetch_ra():
+            try:
+                # Get RA city ID
+                area_query = {
+                    "operationName": "GET_AREA_BY_NAME",
+                    "variables": {"areaName": city},
+                    "query": "query GET_AREA_BY_NAME($areaName: String!) { areas(filter: { name: { eq: $areaName } }) { id name urlName country { name } } }"
+                }
+                area_res = await client.post("https://ra.co/graphql", json=area_query, headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": "Mozilla/5.0",
+                    "Referer": "https://ra.co/",
+                })
+                areas = area_res.json().get("data", {}).get("areas", [])
+                if not areas: return []
+                area_id = areas[0]["id"]
+                # Get events for area
+                ev_query = {
+                    "operationName": "GET_EVENT_LISTINGS",
+                    "variables": {
+                        "filters": {"areas": {"eq": int(area_id)}, "listingDate": {"gte": start_iso, "lte": end_iso}},
+                        "filterOptions": {"genre": True}, "pageSize": 20, "page": 1,
+                    },
+                    "query": "query GET_EVENT_LISTINGS($filters: FilterInputDtoInput, $filterOptions: FilterOptionsInputDtoInput, $page: Int, $pageSize: Int) { eventListings(filters: $filters, filterOptions: $filterOptions, pageSize: $pageSize, page: $page) { data { id event { id title date startTime venue { name } artists { name } contentUrl } } } }"
+                }
+                ev_res = await client.post("https://ra.co/graphql", json=ev_query, headers={
+                    "Content-Type": "application/json", "User-Agent": "Mozilla/5.0", "Referer": "https://ra.co/",
+                })
+                listings = ev_res.json().get("data", {}).get("eventListings", {}).get("data", [])
+                out = []
+                for item in listings[:15]:
+                    e = item.get("event", {})
+                    artists = ", ".join([a.get("name","") for a in (e.get("artists") or [])[:3]])
+                    out.append({
+                        "name": e.get("title","Unknown"),
+                        "date": e.get("date",""),
+                        "venue": (e.get("venue") or {}).get("name",""),
+                        "type": "electronic",
+                        "artists": artists,
+                        "url": "https://ra.co" + (e.get("contentUrl") or ""),
+                        "source": "Resident Advisor",
+                        "verified": True,
+                    })
+                return out
+            except Exception as e:
+                sources_failed.append(f"RA: {str(e)[:60]}")
+                return []
+
+        # ── 2. Bandsintown (DJ tours / live music) ──
+        async def fetch_bandsintown():
+            app_id = os.environ.get("BANDSINTOWN_APP_ID")
+            if not app_id: return []
+            try:
+                # Bandsintown is artist-centric; need to search by city via venues endpoint
+                # Free API doesn't support city search directly. Use trending artists in city.
+                res = await client.get(
+                    f"https://rest.bandsintown.com/artists/topartists.json",
+                    params={"app_id": app_id, "location": city}
+                )
+                if res.status_code != 200: return []
+                # Top artists' upcoming events
+                artists = res.json()[:5] if isinstance(res.json(), list) else []
+                out = []
+                for a in artists:
+                    name = a.get("name")
+                    if not name: continue
+                    ev_res = await client.get(
+                        f"https://rest.bandsintown.com/artists/{name}/events",
+                        params={"app_id": app_id, "date": "upcoming"}
+                    )
+                    if ev_res.status_code != 200: continue
+                    for e in (ev_res.json() or [])[:3]:
+                        venue = e.get("venue", {})
+                        if venue.get("city","").lower() != city.lower(): continue
+                        out.append({
+                            "name": f"{name} live",
+                            "date": e.get("datetime","")[:10],
+                            "venue": venue.get("name",""),
+                            "type": "concert",
+                            "artists": name,
+                            "url": e.get("url",""),
+                            "source": "Bandsintown",
+                            "verified": True,
+                        })
+                return out
+            except Exception as e:
+                sources_failed.append(f"Bandsintown: {str(e)[:60]}")
+                return []
+
+        # ── 3. Ticketmaster (concerts + sports + theater) ──
+        async def fetch_ticketmaster():
+            key = os.environ.get("TICKETMASTER_API_KEY")
+            if not key: return []
+            try:
+                params = {
+                    "apikey": key, "city": city, "size": 20,
+                    "startDateTime": start_iso[:19] + "Z",
+                    "endDateTime": end_iso[:19] + "Z",
+                    "sort": "date,asc",
+                }
+                res = await client.get("https://app.ticketmaster.com/discovery/v2/events.json", params=params)
+                if res.status_code != 200: return []
+                events_data = res.json().get("_embedded", {}).get("events", [])
+                out = []
+                for e in events_data[:15]:
+                    venue = (e.get("_embedded",{}).get("venues",[{}]) or [{}])[0]
+                    classifications = e.get("classifications",[{}])[0] if e.get("classifications") else {}
+                    seg = (classifications.get("segment") or {}).get("name","")
+                    out.append({
+                        "name": e.get("name","Unknown"),
+                        "date": e.get("dates",{}).get("start",{}).get("localDate",""),
+                        "venue": venue.get("name",""),
+                        "type": seg.lower() if seg else "event",
+                        "url": e.get("url",""),
+                        "source": "Ticketmaster",
+                        "verified": True,
+                    })
+                return out
+            except Exception as e:
+                sources_failed.append(f"Ticketmaster: {str(e)[:60]}")
+                return []
+
+        # ── 4. Eventbrite (festivals / culture) ──
+        async def fetch_eventbrite():
+            token = os.environ.get("EVENTBRITE_TOKEN")
+            if not token: return []
+            try:
+                # Eventbrite v3 API requires geocoding the city
+                geo = (await client.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1")).json()
+                if not geo.get("results"): return []
+                loc = geo["results"][0]
+                res = await client.get(
+                    "https://www.eventbriteapi.com/v3/events/search/",
+                    params={
+                        "location.latitude": loc["latitude"], "location.longitude": loc["longitude"],
+                        "location.within": "25km",
+                        "start_date.range_start": start_iso[:19] + "Z",
+                        "start_date.range_end": end_iso[:19] + "Z",
+                        "expand": "venue",
+                    },
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+                if res.status_code != 200: return []
+                events_data = res.json().get("events", [])
+                out = []
+                for e in events_data[:15]:
+                    out.append({
+                        "name": (e.get("name") or {}).get("text","Unknown"),
+                        "date": (e.get("start") or {}).get("local","")[:10],
+                        "venue": ((e.get("venue") or {}).get("name") or ""),
+                        "type": "festival",
+                        "url": e.get("url",""),
+                        "source": "Eventbrite",
+                        "verified": True,
+                    })
+                return out
+            except Exception as e:
+                sources_failed.append(f"Eventbrite: {str(e)[:60]}")
+                return []
+
+        # ── 5. Skiddle (UK clubs / underground) ──
+        async def fetch_skiddle():
+            key = os.environ.get("SKIDDLE_API_KEY")
+            if not key: return []
+            try:
+                params = {
+                    "api_key": key, "keyword": city,
+                    "minDate": start_iso[:10], "maxDate": end_iso[:10],
+                    "limit": 15,
+                }
+                res = await client.get("https://www.skiddle.com/api/v1/events/", params=params)
+                if res.status_code != 200: return []
+                data = res.json().get("results", [])
+                out = []
+                for e in data[:15]:
+                    out.append({
+                        "name": e.get("eventname","Unknown"),
+                        "date": e.get("date",""),
+                        "venue": (e.get("venue") or {}).get("name",""),
+                        "type": "club",
+                        "url": e.get("link",""),
+                        "source": "Skiddle",
+                        "verified": True,
+                    })
+                return out
+            except Exception as e:
+                sources_failed.append(f"Skiddle: {str(e)[:60]}")
+                return []
+
+        # ── 6. Gemini fallback (Instagram/Facebook public posts via Google Search) ──
+        async def fetch_gemini():
+            try:
+                prompt = (
+                    f"List underground music events, DJ sets, and parties in {city} around {date_str}. "
+                    f"Search Instagram/Facebook posts of clubs and promoters in that city. "
+                    f"Focus on: techno/house/electronic underground parties, club nights, DJ residencies. "
+                    f"Return JSON: {{\"events\":[{{\"name\":\"...\",\"date\":\"...\",\"venue\":\"...\",\"type\":\"underground\",\"artists\":\"...\",\"url\":\"...\"}}]}}. "
+                    f"Set verified=false for each. ONLY JSON."
+                )
+                loop = asyncio.get_event_loop()
+                result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1500))
+                m = _re.search(r'\{[\s\S]*\}', result or "")
+                if m:
+                    try:
+                        data = _json.loads(m.group())
+                        events = data.get("events", [])
+                        for e in events:
+                            e["source"] = "Gemini (verify)"
+                            e["verified"] = False
+                        return events[:10]
+                    except: pass
+                return []
+            except Exception as e:
+                sources_failed.append(f"Gemini: {str(e)[:60]}")
+                return []
+
+        # Run all sources in parallel
+        results = await asyncio.gather(
+            fetch_ra(), fetch_bandsintown(), fetch_ticketmaster(),
+            fetch_eventbrite(), fetch_skiddle(), fetch_gemini(),
+            return_exceptions=True
         )
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1500))
-        # Try to parse as JSON
-        import json as _json, re as _re
-        m = _re.search(r'\{[\s\S]*\}', result or "")
-        if m:
-            try: return _json.loads(m.group())
-            except: pass
-        return {"raw": result, "city": city, "date": date}
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        source_names = ["RA","Bandsintown","Ticketmaster","Eventbrite","Skiddle","Gemini"]
+        for i, r in enumerate(results):
+            if isinstance(r, Exception): continue
+            if r:
+                all_events.extend(r)
+                sources_used.append(source_names[i])
+
+    # Filter by types if requested (comma-separated: electronic,concert,festival,sports,...)
+    if types:
+        wanted = set(t.strip().lower() for t in types.split(","))
+        all_events = [e for e in all_events if (e.get("type","").lower() in wanted or e.get("source","").lower() in wanted)]
+
+    # Sort by date
+    all_events.sort(key=lambda x: x.get("date",""))
+
+    return {
+        "city": city, "date": date,
+        "events": all_events,
+        "sources_used": sources_used,
+        "sources_failed": sources_failed,
+        "total": len(all_events),
+    }
 
 
 @app.post("/api/where-to-go")
