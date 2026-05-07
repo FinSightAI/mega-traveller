@@ -1,0 +1,78 @@
+name: Price Monitor
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:        # manual trigger
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # opt-in to Node.js 24
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore price DB
+        uses: actions/cache@v4
+        with:
+          path: prices.db
+          key: prices-db-persistent          # fixed key so same DB restored every run
+          restore-keys: prices-db-
+
+      - name: Run price monitor
+        env:
+          GEMINI_API_KEY:          ${{ secrets.GEMINI_API_KEY }}
+          AMADEUS_CLIENT_ID:       ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET:   ${{ secrets.AMADEUS_CLIENT_SECRET }}
+          NTFY_TOPIC:              ${{ secrets.NTFY_TOPIC }}
+          TELEGRAM_BOT_TOKEN:      ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:        ${{ secrets.TELEGRAM_CHAT_ID }}
+          TWILIO_ACCOUNT_SID:      ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:       ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM:    ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          WHATSAPP_TO:             ${{ secrets.WHATSAPP_TO }}
+          SMTP_USER:               ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD:           ${{ secrets.SMTP_PASSWORD }}
+          ALERT_EMAIL:             ${{ secrets.ALERT_EMAIL }}
+          DISCORD_WEBHOOK_URL:     ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "⚠️  GEMINI_API_KEY not set — skipping AI checks"
+            exit 0
+          fi
+          python run_monitor.py
+
+      - name: Keep app awake
+        run: |
+          URL="${{ vars.RENDER_URL }}"
+          if [ -n "$URL" ]; then
+            curl -sf --max-time 30 "$URL/_stcore/health" \
+              && echo "✅ App pinged" || echo "⚠️ Ping failed"
+          fi
+
+      - name: Save price DB
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: prices.db
+          key: prices-db-persistent
+
+      - name: Upload price DB artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prices-db-${{ github.run_number }}
+          path: prices.db
+          retention-days: 30
