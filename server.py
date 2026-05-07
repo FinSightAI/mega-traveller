@@ -510,6 +510,101 @@ async def export_excel():
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
+@app.get("/api/weather")
+async def weather(city: str, date: Optional[str] = None):
+    """Weather forecast/climate for a destination. Open-Meteo (no key, free, ECMWF+GFS).
+    If date within 16 days → forecast. If date further out → climate normals (monthly avg)."""
+    import httpx
+    from datetime import date as _date_cls
+    try:
+        # 1) Geocode city name to lat/lon
+        async with httpx.AsyncClient(timeout=10) as client:
+            geo_res = await client.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json")
+            geo_data = geo_res.json()
+            if not geo_data.get("results"):
+                return JSONResponse({"error": f"city '{city}' not found"}, status_code=404)
+            loc = geo_data["results"][0]
+            lat, lon = loc["latitude"], loc["longitude"]
+            country = loc.get("country", "")
+
+            # 2) Decide forecast vs climate
+            target_dt = None
+            try:
+                if date:
+                    target_dt = _date_cls.fromisoformat(date)
+            except: pass
+
+            today = _date_cls.today()
+            days_out = (target_dt - today).days if target_dt else 0
+
+            if target_dt and 0 <= days_out <= 15:
+                # Forecast (next 16 days)
+                fc_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code,uv_index_max&timezone=auto&forecast_days=16"
+                fc_res = await client.get(fc_url)
+                fc_data = fc_res.json()
+                daily = fc_data.get("daily", {})
+                # Pick the target day
+                idx = days_out
+                return {
+                    "city": city, "country": country, "date": date,
+                    "type": "forecast",
+                    "temp_max": daily.get("temperature_2m_max", [None])[idx] if idx < len(daily.get("temperature_2m_max", [])) else None,
+                    "temp_min": daily.get("temperature_2m_min", [None])[idx] if idx < len(daily.get("temperature_2m_min", [])) else None,
+                    "precip_mm": daily.get("precipitation_sum", [None])[idx] if idx < len(daily.get("precipitation_sum", [])) else None,
+                    "weather_code": daily.get("weather_code", [None])[idx] if idx < len(daily.get("weather_code", [])) else None,
+                    "uv": daily.get("uv_index_max", [None])[idx] if idx < len(daily.get("uv_index_max", [])) else None,
+                    "all_days": daily,
+                }
+            else:
+                # Climate normal (monthly averages — for far-future dates)
+                month = target_dt.month if target_dt else today.month
+                year = today.year
+                start = f"{year}-{month:02d}-01"
+                end = f"{year}-{month:02d}-28"
+                cl_url = f"https://climate-api.open-meteo.com/v1/climate?latitude={lat}&longitude={lon}&start_date={start}&end_date={end}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&models=MRI_AGCM3_2_S&temporal_resolution=monthly"
+                cl_res = await client.get(cl_url)
+                cl_data = cl_res.json()
+                # Fallback: just call regular forecast for current week
+                fc_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&forecast_days=7"
+                fc_res = await client.get(fc_url)
+                fc_data = fc_res.json()
+                return {
+                    "city": city, "country": country, "date": date, "month": month,
+                    "type": "climate",
+                    "climate_normal": cl_data.get("daily", {}),
+                    "current_week": fc_data.get("daily", {}),
+                }
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/api/events")
+async def events(city: str, date: Optional[str] = None):
+    """Events at destination — uses Gemini grounded with Google Search.
+    Returns concerts, sports, festivals around the date."""
+    import ai_client
+    try:
+        date_str = date or "next 30 days"
+        prompt = (
+            f"List notable events happening in {city} around {date_str}. "
+            f"Include: concerts, sports games (especially football/basketball), festivals, exhibitions, theater. "
+            f"For each event provide: name, date, venue, type (concert/sports/festival/etc), and a 1-line description. "
+            f"Format as JSON: {{\"events\": [{{\"name\":\"...\", \"date\":\"...\", \"venue\":\"...\", \"type\":\"...\", \"desc\":\"...\"}}]}}. "
+            f"Return ONLY valid JSON, no markdown."
+        )
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1500))
+        # Try to parse as JSON
+        import json as _json, re as _re
+        m = _re.search(r'\{[\s\S]*\}', result or "")
+        if m:
+            try: return _json.loads(m.group())
+            except: pass
+        return {"raw": result, "city": city, "date": date}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 @app.get("/api/expiring-deals")
 async def expiring_deals(hours_ahead: float = 3.0):
     """Deals that are about to expire."""
