@@ -1058,6 +1058,130 @@ async def where_to_go(body: dict):
     return {"origin": origin, "budget": budget, "days": days, "ranked": ranked}
 
 
+@app.get("/api/best-time-to-book")
+async def best_time_to_book(origin: str, destination: str, depart_month: Optional[str] = None):
+    """When is the cheapest time to book/fly a route.
+    Returns: { months: [{month, avg_price, sample_date}], best_month, best_advance_days }
+    Uses Amadeus Flight Inspiration Search + flexible-dates aggregator."""
+    import httpx
+    from datetime import date as _date, timedelta as _td
+    amadeus_id = os.environ.get("AMADEUS_CLIENT_ID")
+    amadeus_secret = os.environ.get("AMADEUS_CLIENT_SECRET")
+    if not (amadeus_id and amadeus_secret):
+        return JSONResponse({"error": "AMADEUS keys missing"}, status_code=500)
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            tok = (await client.post("https://test.api.amadeus.com/v1/security/oauth2/token",
+                headers={"Content-Type":"application/x-www-form-urlencoded"},
+                content=f"grant_type=client_credentials&client_id={amadeus_id}&client_secret={amadeus_secret}")).json()
+            token = tok.get("access_token")
+            if not token:
+                return JSONResponse({"error": "Amadeus auth failed"}, status_code=500)
+
+            # Sample 12 months ahead, one date per month (15th)
+            today = _date.today()
+            results = []
+            for i in range(0, 12):
+                m_date = today.replace(day=15) + _td(days=i*30)
+                ret_date = m_date + _td(days=7)
+                try:
+                    params = {
+                        "originLocationCode": origin.upper(),
+                        "destinationLocationCode": destination.upper(),
+                        "departureDate": m_date.isoformat(),
+                        "returnDate": ret_date.isoformat(),
+                        "adults": "1", "max": "5", "currencyCode": "USD",
+                    }
+                    r = await client.get("https://test.api.amadeus.com/v2/shopping/flight-offers",
+                        params=params, headers={"Authorization": f"Bearer {token}"})
+                    data = r.json()
+                    if data.get("data"):
+                        prices = [float(o["price"]["total"]) for o in data["data"][:5]]
+                        avg = sum(prices) / len(prices)
+                        results.append({
+                            "month": m_date.strftime("%Y-%m"),
+                            "month_name": m_date.strftime("%b %Y"),
+                            "avg_price": round(avg, 0),
+                            "min_price": round(min(prices), 0),
+                            "sample_date": m_date.isoformat(),
+                            "samples": len(prices),
+                        })
+                except Exception: continue
+
+            # Best month (lowest avg)
+            if not results:
+                return {"months": [], "error": "no data found for route"}
+            best = min(results, key=lambda x: x["avg_price"])
+            avg_overall = sum(r["avg_price"] for r in results) / len(results)
+            savings_pct = round((avg_overall - best["avg_price"]) / avg_overall * 100, 1) if avg_overall > 0 else 0
+
+            return {
+                "origin": origin, "destination": destination,
+                "months": results,
+                "best_month": best,
+                "avg_overall": round(avg_overall, 0),
+                "savings_pct_vs_avg": savings_pct,
+                "advice_advance_weeks": "6-8",
+                "advice_day_of_week": "Tuesday-Wednesday",
+            }
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/api/costs")
+async def destination_costs(city: str, lang: Optional[str] = "en"):
+    """Cost of living + travel costs for destination — Numbeo-based.
+    Falls back to AI estimate if Numbeo key missing."""
+    import httpx, ai_client
+    numbeo_key = os.environ.get("NUMBEO_API_KEY")
+
+    if numbeo_key:
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                # Numbeo cost-of-living indices
+                r = await client.get(f"https://www.numbeo.com/api/city_prices?api_key={numbeo_key}&query={city}")
+                if r.status_code == 200:
+                    data = r.json()
+                    prices = data.get("prices", [])
+                    # Group by category
+                    grouped = {}
+                    for p in prices:
+                        cat = p.get("item_id_category", {}).get("name", "Other")
+                        grouped.setdefault(cat, []).append({
+                            "name": p.get("item_name"),
+                            "avg": p.get("average_price"),
+                            "currency": p.get("currency"),
+                        })
+                    return {"city": city, "source": "Numbeo", "categories": grouped, "raw": data}
+        except Exception: pass
+
+    # Fallback: AI estimate
+    lang_inst = "Respond in Hebrew." if lang == "he" else "Respond in English."
+    prompt = (
+        f"Provide typical costs for tourists in {city} in USD. "
+        f"Cover: 1) Hotels (3*/4*/5* per night), 2) Meals (cheap/midrange/fine dining), "
+        f"3) Transport (single ticket, day pass, taxi 5km, Uber average), "
+        f"4) Drinks (coffee, beer at bar, water bottle), "
+        f"5) Activities (museum entry, day tour, club entry). "
+        f"Format JSON: {{\"hotels\":{{\"3star\":N,\"4star\":N,\"5star\":N}}, "
+        f"\"meals\":{{\"cheap\":N,\"midrange\":N,\"luxury\":N}}, "
+        f"\"transport\":{{\"single\":N,\"day_pass\":N,\"taxi_5km\":N,\"uber\":N}}, "
+        f"\"drinks\":{{\"coffee\":N,\"beer\":N,\"water\":N}}, "
+        f"\"activities\":{{\"museum\":N,\"day_tour\":N,\"club\":N}}}}. "
+        f"ONLY JSON. {lang_inst}"
+    )
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1000))
+    import json as _json, re as _re
+    m = _re.search(r'\{[\s\S]*\}', result or "")
+    if m:
+        try:
+            return {"city": city, "source": "AI estimate", "data": _json.loads(m.group())}
+        except: pass
+    return {"city": city, "source": "AI estimate", "raw": result}
+
+
 @app.post("/api/destination/compare")
 async def destination_compare(body: dict):
     """Compare multiple destinations side-by-side (weather + AI summary).
