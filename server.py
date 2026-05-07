@@ -605,6 +605,207 @@ async def events(city: str, date: Optional[str] = None):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
+@app.post("/api/where-to-go")
+async def where_to_go(body: dict):
+    """Smart 'where should I travel?' agent.
+    Body: {
+      origin: 'TLV',
+      depart: 'YYYY-MM-DD',
+      return: 'YYYY-MM-DD',
+      budget: 1500,            # USD total per person
+      days: 7,                 # trip length
+      candidates?: ['LIS','BCN','LON','...'],  # optional, else AI suggests
+      preferences?: 'beach,nightlife',         # optional vibe
+      lang?: 'he'/'en'
+    }
+    Returns ranked destinations by overall value score."""
+    import httpx, ai_client
+    import json as _json, re as _re
+    origin = body.get("origin", "TLV")
+    depart = body.get("depart")
+    ret = body.get("return")
+    budget = float(body.get("budget", 1500))
+    days = int(body.get("days", 7))
+    candidates = body.get("candidates", [])
+    preferences = body.get("preferences", "")
+    lang = body.get("lang", "en")
+
+    # Step 1: if no candidates, ask AI for 8 destinations matching budget+vibe
+    if not candidates:
+        suggest_prompt = (
+            f"Suggest 8 international travel destinations (city codes) for a {days}-day trip "
+            f"from {origin} with budget ${budget} per person. "
+            f"{('Preferences: ' + preferences + '.') if preferences else ''} "
+            f"Return JSON: {{\"codes\": [\"LIS\",\"BCN\",...]}}. ONLY JSON."
+        )
+        loop = asyncio.get_event_loop()
+        s = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=suggest_prompt, web_search=False, max_tokens=300))
+        m = _re.search(r'\{[\s\S]*\}', s or "")
+        if m:
+            try: candidates = _json.loads(m.group()).get("codes", [])
+            except: pass
+        if not candidates:
+            candidates = ["LIS","BCN","BUD","ATH","IST","BKK","TBS","KUT"]
+
+    # Step 2: in parallel — fetch flight price (Amadeus test env) + weather for each
+    async def score_one(code: str):
+        info = {"code": code, "flight_price_usd": None, "weather": None, "city_name": code}
+        async with httpx.AsyncClient(timeout=15) as client:
+            # Flight price via Amadeus
+            try:
+                amadeus_id = os.environ.get("AMADEUS_CLIENT_ID")
+                amadeus_secret = os.environ.get("AMADEUS_CLIENT_SECRET")
+                if amadeus_id and amadeus_secret and depart:
+                    tok = (await client.post("https://test.api.amadeus.com/v1/security/oauth2/token",
+                        headers={"Content-Type":"application/x-www-form-urlencoded"},
+                        content=f"grant_type=client_credentials&client_id={amadeus_id}&client_secret={amadeus_secret}")).json()
+                    if tok.get("access_token"):
+                        params = f"originLocationCode={origin}&destinationLocationCode={code}&departureDate={depart}&adults=1&max=1&currencyCode=USD"
+                        if ret: params += f"&returnDate={ret}"
+                        offers = (await client.get(f"https://test.api.amadeus.com/v2/shopping/flight-offers?{params}",
+                            headers={"Authorization": f"Bearer {tok['access_token']}"})).json()
+                        if offers.get("data"):
+                            info["flight_price_usd"] = float(offers["data"][0]["price"]["total"])
+            except Exception: pass
+
+            # Weather (Open-Meteo)
+            try:
+                geo = (await client.get(f"https://geocoding-api.open-meteo.com/v1/search?name={code}&count=1&language=en&format=json")).json()
+                if geo.get("results"):
+                    loc = geo["results"][0]
+                    info["city_name"] = loc.get("name", code)
+                    info["country"] = loc.get("country", "")
+                    lat, lon = loc["latitude"], loc["longitude"]
+                    fc = (await client.get(f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&forecast_days=7")).json()
+                    daily = fc.get("daily", {})
+                    if daily.get("temperature_2m_max"):
+                        info["weather"] = {
+                            "avg_high": round(sum(daily["temperature_2m_max"]) / len(daily["temperature_2m_max"]), 1),
+                            "avg_low": round(sum(daily["temperature_2m_min"]) / len(daily["temperature_2m_min"]), 1),
+                            "rainy_days": sum(1 for p in daily.get("precipitation_sum", []) if p > 1),
+                        }
+            except Exception: pass
+        return info
+
+    results = await asyncio.gather(*[score_one(c) for c in candidates[:10]])
+
+    # Step 3: AI estimates daily costs + vibe for each
+    cities_str = ", ".join([r.get("city_name", r["code"]) for r in results])
+    lang_inst = "Respond in Hebrew." if lang == "he" else "Respond in English."
+    cost_prompt = (
+        f"For each city: {cities_str}. "
+        f"Provide: 1) daily traveler cost USD (mid-range, all-in: hotel+food+transport+activities), "
+        f"2) vibe in one short phrase, 3) safety 1-10, 4) value score 1-10. "
+        f"Format JSON: {{\"cities\": [{{\"city\":\"...\", \"daily_cost\":N, \"vibe\":\"...\", \"safety\":N, \"value\":N}}]}}. "
+        f"ONLY JSON. {lang_inst}"
+    )
+    loop = asyncio.get_event_loop()
+    ai_resp = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=cost_prompt, web_search=True, max_tokens=1500))
+    ai_data = {}
+    m = _re.search(r'\{[\s\S]*\}', ai_resp or "")
+    if m:
+        try: ai_data = _json.loads(m.group())
+        except: pass
+
+    # Step 4: Compute final score per city
+    ranked = []
+    for r in results:
+        ai_match = next((a for a in ai_data.get("cities", []) if a.get("city","").lower() in r["city_name"].lower() or r["city_name"].lower() in a.get("city","").lower()), {})
+        flight = r.get("flight_price_usd")
+        daily = ai_match.get("daily_cost", 0)
+        total_cost = (flight or 0) + (daily * days)
+        within_budget = total_cost > 0 and total_cost <= budget
+        leftover = budget - total_cost if total_cost > 0 else 0
+        # Simple value score: closer to budget without exceeding = higher
+        value = ai_match.get("value", 5)
+        if total_cost == 0:
+            score = 0
+        elif total_cost <= budget:
+            score = round(value * 10 + (leftover / budget) * 30, 1)
+        else:
+            score = round(value * 5 - ((total_cost - budget) / budget) * 30, 1)
+        ranked.append({
+            **r,
+            "daily_cost": daily,
+            "vibe": ai_match.get("vibe", ""),
+            "safety": ai_match.get("safety", 0),
+            "value": value,
+            "total_cost": round(total_cost, 0) if total_cost > 0 else None,
+            "within_budget": within_budget,
+            "leftover": round(leftover, 0) if leftover else None,
+            "score": score,
+        })
+
+    ranked.sort(key=lambda x: x["score"], reverse=True)
+    return {"origin": origin, "budget": budget, "days": days, "ranked": ranked}
+
+
+@app.post("/api/destination/compare")
+async def destination_compare(body: dict):
+    """Compare multiple destinations side-by-side (weather + AI summary).
+    body: { cities: ["Lisbon", "Barcelona", ...], date?: "YYYY-MM-DD", lang?: "he"/"en" }
+    """
+    import httpx
+    import ai_client
+    cities = body.get("cities", [])
+    date = body.get("date")
+    lang = body.get("lang", "en")
+    if not cities or not isinstance(cities, list):
+        return JSONResponse({"error": "missing cities array"}, status_code=400)
+
+    async def fetch_one(city: str):
+        result = {"city": city, "weather": None, "summary": None}
+        async with httpx.AsyncClient(timeout=10) as client:
+            try:
+                geo = (await client.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json")).json()
+                if geo.get("results"):
+                    loc = geo["results"][0]
+                    lat, lon = loc["latitude"], loc["longitude"]
+                    result["country"] = loc.get("country", "")
+                    fc = (await client.get(f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&forecast_days=7")).json()
+                    daily = fc.get("daily", {})
+                    if daily.get("temperature_2m_max"):
+                        result["weather"] = {
+                            "avg_high": sum(daily["temperature_2m_max"]) / len(daily["temperature_2m_max"]),
+                            "avg_low": sum(daily["temperature_2m_min"]) / len(daily["temperature_2m_min"]),
+                            "total_precip": sum(daily.get("precipitation_sum", [0])),
+                            "code": daily["weather_code"][0] if daily.get("weather_code") else None,
+                        }
+            except Exception:
+                pass
+        return result
+
+    weather_results = await asyncio.gather(*[fetch_one(c) for c in cities])
+
+    # AI summary in parallel (cost of living, vibe, best season)
+    lang_inst = "Respond in Hebrew." if lang == "he" else "Respond in English."
+    ai_prompt = (
+        f"Compare these destinations: {', '.join(cities)}. "
+        f"For each, provide: 1) approx daily traveler cost (USD budget+midrange+luxury), "
+        f"2) vibe/atmosphere in 1 short sentence, 3) best time of year to visit, "
+        f"4) top 1 must-see attraction, 5) safety rating 1-10. "
+        f"Format JSON: {{\"comparison\": [{{\"city\":\"...\", \"daily_cost\":{{\"budget\":N, \"mid\":N, \"luxury\":N}}, \"vibe\":\"...\", \"best_season\":\"...\", \"top_attraction\":\"...\", \"safety\":N}}]}}. "
+        f"Return ONLY valid JSON, no markdown. {lang_inst}"
+    )
+    loop = asyncio.get_event_loop()
+    ai_result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=ai_prompt, web_search=True, max_tokens=2000))
+    import json as _json, re as _re
+    ai_data = {"comparison": []}
+    if ai_result:
+        m = _re.search(r'\{[\s\S]*\}', ai_result)
+        if m:
+            try: ai_data = _json.loads(m.group())
+            except: pass
+
+    # Merge weather + AI
+    merged = []
+    for w in weather_results:
+        ai_match = next((c for c in ai_data.get("comparison", []) if c.get("city", "").lower() in w["city"].lower() or w["city"].lower() in c.get("city", "").lower()), {})
+        merged.append({**w, **ai_match})
+
+    return {"cities": merged, "raw_ai": ai_result if not ai_data.get("comparison") else None}
+
+
 @app.get("/api/expiring-deals")
 async def expiring_deals(hours_ahead: float = 3.0):
     """Deals that are about to expire."""
