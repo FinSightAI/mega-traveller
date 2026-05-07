@@ -495,6 +495,60 @@ async def export_csv():
     )
 
 
+@app.get("/api/export/excel")
+async def export_excel():
+    """Excel export of all watches and prices."""
+    import exporters
+    try:
+        data = exporters.export_excel()
+        return StreamingResponse(
+            iter([data]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=noded-export.xlsx"}
+        )
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/api/expiring-deals")
+async def expiring_deals(hours_ahead: float = 3.0):
+    """Deals that are about to expire."""
+    import deal_hunter as dh
+    try:
+        deals = dh.get_expiring_deals(hours_ahead=hours_ahead)
+        return {"deals": deals, "hours_ahead": hours_ahead}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/api/insights/patterns")
+async def insights_patterns():
+    """Pattern analysis from local DB (best day, best hour, top destinations)."""
+    import deal_insights
+    try:
+        patterns = deal_insights.get_deal_patterns()
+        return patterns
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/calendar")
+async def price_calendar(body: dict):
+    """Visual price calendar — wraps flexible_dates and returns daily prices."""
+    import flexible_search
+    try:
+        origin = body.get("origin") or body.get("from")
+        destination = body.get("destination") or body.get("to")
+        month = body.get("month")  # YYYY-MM
+        if not origin or not destination or not month:
+            return JSONResponse({"error": "missing origin/destination/month"}, status_code=400)
+        year, mon = map(int, month.split("-"))
+        result = flexible_search.find_cheapest_days(origin, destination, year=year, month=mon)
+        return {"calendar": result, "origin": origin, "destination": destination, "month": month}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 # ════════════════════════════════════════════════════════════
 # SETTINGS (env-based)
 # ════════════════════════════════════════════════════════════
