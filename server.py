@@ -896,28 +896,84 @@ async def where_to_go(body: dict):
         if not candidates:
             candidates = ["LIS","BCN","BUD","ATH","IST","BKK","TBS","KUT"]
 
-    # Step 2: in parallel — fetch flight price (Amadeus test env) + weather for each
-    async def score_one(code: str):
-        info = {"code": code, "flight_price_usd": None, "weather": None, "city_name": code}
-        async with httpx.AsyncClient(timeout=15) as client:
-            # Flight price via Amadeus
-            try:
-                amadeus_id = os.environ.get("AMADEUS_CLIENT_ID")
-                amadeus_secret = os.environ.get("AMADEUS_CLIENT_SECRET")
-                if amadeus_id and amadeus_secret and depart:
-                    tok = (await client.post("https://test.api.amadeus.com/v1/security/oauth2/token",
-                        headers={"Content-Type":"application/x-www-form-urlencoded"},
-                        content=f"grant_type=client_credentials&client_id={amadeus_id}&client_secret={amadeus_secret}")).json()
-                    if tok.get("access_token"):
-                        params = f"originLocationCode={origin}&destinationLocationCode={code}&departureDate={depart}&adults=1&max=1&currencyCode=USD"
-                        if ret: params += f"&returnDate={ret}"
-                        offers = (await client.get(f"https://test.api.amadeus.com/v2/shopping/flight-offers?{params}",
-                            headers={"Authorization": f"Bearer {tok['access_token']}"})).json()
-                        if offers.get("data"):
-                            info["flight_price_usd"] = float(offers["data"][0]["price"]["total"])
-            except Exception: pass
+    # Step 2: in parallel — fetch flight price + hotel price + weather for each
+    amadeus_id = os.environ.get("AMADEUS_CLIENT_ID")
+    amadeus_secret = os.environ.get("AMADEUS_CLIENT_SECRET")
 
-            # Weather (Open-Meteo)
+    # Get one shared Amadeus token for all parallel calls
+    amadeus_token = None
+    if amadeus_id and amadeus_secret:
+        try:
+            async with httpx.AsyncClient(timeout=10) as _c:
+                tok = (await _c.post("https://test.api.amadeus.com/v1/security/oauth2/token",
+                    headers={"Content-Type":"application/x-www-form-urlencoded"},
+                    content=f"grant_type=client_credentials&client_id={amadeus_id}&client_secret={amadeus_secret}")).json()
+                amadeus_token = tok.get("access_token")
+        except: pass
+
+    async def score_one(code: str):
+        info = {"code": code, "flight_price_usd": None, "weather": None, "city_name": code, "hotel_median_usd": None, "hotel_count": 0}
+        async with httpx.AsyncClient(timeout=15) as client:
+            # ── Flight price ──
+            if amadeus_token and depart:
+                try:
+                    params = f"originLocationCode={origin}&destinationLocationCode={code}&departureDate={depart}&adults=1&max=1&currencyCode=USD"
+                    if ret: params += f"&returnDate={ret}"
+                    offers = (await client.get(f"https://test.api.amadeus.com/v2/shopping/flight-offers?{params}",
+                        headers={"Authorization": f"Bearer {amadeus_token}"})).json()
+                    if offers.get("data"):
+                        info["flight_price_usd"] = float(offers["data"][0]["price"]["total"])
+                except Exception: pass
+
+            # ── Hotel median price ──
+            if amadeus_token and depart:
+                try:
+                    # Step A: list hotels by city
+                    hotels_list = (await client.get(
+                        f"https://test.api.amadeus.com/v1/reference-data/locations/hotels/by-city?cityCode={code}",
+                        headers={"Authorization": f"Bearer {amadeus_token}"}
+                    )).json()
+                    hotel_ids = [h["hotelId"] for h in (hotels_list.get("data") or [])[:20] if h.get("hotelId")]
+                    if hotel_ids:
+                        # Step B: get offers
+                        check_in = depart
+                        check_out = ret or depart
+                        params2 = {
+                            "hotelIds": ",".join(hotel_ids[:15]),
+                            "checkInDate": check_in,
+                            "checkOutDate": check_out,
+                            "adults": "1",
+                            "currency": "USD",
+                            "bestRateOnly": "true",
+                        }
+                        offers2 = (await client.get(
+                            "https://test.api.amadeus.com/v3/shopping/hotel-offers",
+                            params=params2,
+                            headers={"Authorization": f"Bearer {amadeus_token}"}
+                        )).json()
+                        prices = []
+                        for entry in (offers2.get("data") or []):
+                            for offer in (entry.get("offers") or []):
+                                p = (offer.get("price") or {}).get("total")
+                                if p:
+                                    try: prices.append(float(p))
+                                    except: pass
+                        if prices:
+                            prices.sort()
+                            mid = prices[len(prices)//2]
+                            # Convert total stay to per-night
+                            from datetime import date as _date_cls
+                            try:
+                                nights = max(1, (_date_cls.fromisoformat(check_out) - _date_cls.fromisoformat(check_in)).days)
+                            except:
+                                nights = 1
+                            info["hotel_median_usd"] = round(mid / nights, 0)
+                            info["hotel_count"] = len(prices)
+                            info["hotel_min_usd"] = round(min(prices) / nights, 0)
+                            info["hotel_max_usd"] = round(max(prices) / nights, 0)
+                except Exception: pass
+
+            # ── Weather (Open-Meteo) ──
             try:
                 geo = (await client.get(f"https://geocoding-api.open-meteo.com/v1/search?name={code}&count=1&language=en&format=json")).json()
                 if geo.get("results"):
@@ -956,16 +1012,27 @@ async def where_to_go(body: dict):
         try: ai_data = _json.loads(m.group())
         except: pass
 
-    # Step 4: Compute final score per city
+    # Step 4: Compute final score per city — use REAL hotel data when available
     ranked = []
     for r in results:
         ai_match = next((a for a in ai_data.get("cities", []) if a.get("city","").lower() in r["city_name"].lower() or r["city_name"].lower() in a.get("city","").lower()), {})
         flight = r.get("flight_price_usd")
-        daily = ai_match.get("daily_cost", 0)
+        # Use real hotel median when present, fallback to AI estimate
+        hotel_per_night = r.get("hotel_median_usd")
+        ai_daily = ai_match.get("daily_cost", 0)
+        # Real daily = real hotel + (AI daily - assumed AI hotel ~50%)
+        # If we have hotel data, calculate: hotel + ~50% extra for food/transport/activities
+        if hotel_per_night:
+            real_daily = round(hotel_per_night * 1.5, 0)  # hotel + 50% buffer
+            daily = real_daily
+            data_source = "real (hotel) + estimate (food/activities)"
+        else:
+            daily = ai_daily
+            data_source = "AI estimate"
+
         total_cost = (flight or 0) + (daily * days)
         within_budget = total_cost > 0 and total_cost <= budget
         leftover = budget - total_cost if total_cost > 0 else 0
-        # Simple value score: closer to budget without exceeding = higher
         value = ai_match.get("value", 5)
         if total_cost == 0:
             score = 0
@@ -976,6 +1043,7 @@ async def where_to_go(body: dict):
         ranked.append({
             **r,
             "daily_cost": daily,
+            "ai_daily_estimate": ai_daily,
             "vibe": ai_match.get("vibe", ""),
             "safety": ai_match.get("safety", 0),
             "value": value,
@@ -983,6 +1051,7 @@ async def where_to_go(body: dict):
             "within_budget": within_budget,
             "leftover": round(leftover, 0) if leftover else None,
             "score": score,
+            "cost_source": data_source,
         })
 
     ranked.sort(key=lambda x: x["score"], reverse=True)
