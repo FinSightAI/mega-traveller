@@ -3,9 +3,8 @@ title: WizeTravel
 emoji: ✈️
 colorFrom: blue
 colorTo: indigo
-sdk: streamlit
-sdk_version: 1.32.0
-app_file: app.py
+sdk: docker
+app_port: 7860
 pinned: false
 license: mit
 short_description: AI-powered travel planner — flights, hotels, deals, alerts
@@ -27,7 +26,7 @@ AI-powered travel planning suite. Part of [WizeLife](https://wizelife.ai).
 - 📋 Visa checker
 - 📅 Weekly digest
 
-**Stack:** Streamlit + FastAPI + Google Gemini + Amadeus + SQLite
+**Stack:** Streamlit + Google Gemini + Amadeus + SQLite (running in Docker on HF Spaces)
 
 ## Required environment variables (Space Secrets)
 
