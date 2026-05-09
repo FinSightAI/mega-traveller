@@ -385,9 +385,24 @@ async def check_visa(body: VisaQuery, request: Request):
     if not allowed:
         raise HTTPException(429, f"Daily AI limit reached on {plan} plan. Upgrade at wizelife.ai")
     loop = asyncio.get_event_loop()
-    prompt = f"Visa requirements for {body.passport} passport holder traveling to {body.destination}. Include: visa required? cost? processing time? on-arrival available?"
-    result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=512))
-    return {"result": result or ""}
+    prompt = (
+        f"You are a visa-requirements assistant. Provide a concise, accurate, "
+        f"up-to-date answer about visa requirements for a {body.passport} passport "
+        f"holder traveling to {body.destination}.\n\n"
+        f"Required sections (use markdown headings):\n"
+        f"- **Visa required?** (yes/no/visa-on-arrival/eVisa/visa-free)\n"
+        f"- **Allowed stay**: number of days\n"
+        f"- **Cost**: in USD\n"
+        f"- **Processing time**\n"
+        f"- **Application route**: embassy / online / on arrival\n"
+        f"- **Notes**: any special conditions, recent rule changes\n\n"
+        f"Cite at least one official source URL at the end."
+    )
+    result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
+    if not result or not result.strip():
+        # Bubble a real error so the FE can show something useful
+        raise HTTPException(503, "AI service temporarily unavailable (rate limit or upstream error). Try again in ~30 seconds.")
+    return {"result": result}
 
 
 # ════════════════════════════════════════════════════════════
