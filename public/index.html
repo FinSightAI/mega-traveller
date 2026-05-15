@@ -1551,8 +1551,9 @@ let _token=null, _plan="free", _user=null, _nick="";
 (function(){
   try {
     const p = new URLSearchParams(window.location.search);
-    const t = p.get('wl_token');
-    const n = p.get('wl_nick');
+    const hp = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+    const t = hp.get('wl_token') || p.get('wl_token');
+    const n = hp.get('wl_nick')  || p.get('wl_nick');
     if (t || n) {
       const existing = JSON.parse(localStorage.getItem('noded_wl')||'{}');
       if (t) existing.token = t;
@@ -1579,7 +1580,14 @@ let _token=null, _plan="free", _user=null, _nick="";
       const url = new URL(window.location.href);
       url.searchParams.delete('wl_token');
       url.searchParams.delete('wl_nick');
-      window.history.replaceState({}, '', url.toString());
+      let newHash = '';
+      if (url.hash) {
+        const hs = new URLSearchParams(url.hash.replace(/^#/, ''));
+        hs.delete('wl_token'); hs.delete('wl_nick'); hs.delete('wl_plan');
+        const hstr = hs.toString();
+        if (hstr) newHash = '#' + hstr;
+      }
+      window.history.replaceState({}, '', url.pathname + (url.search || '') + newHash);
     }
   } catch(e) {}
 })();
@@ -1720,12 +1728,28 @@ document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{
 
 // ── API ───────────────────────────────────────────────────────
 async const API_BASE=location.hostname==="travel.wizelife.ai"?"https://nodedai.onrender.com":"";
+function _showTrialExhausted(){
+  try{
+    const msg = (_lang==="he") ? "ניצלת את כל הניסיונות החינמיים — התחבר/י כדי להמשיך"
+              : (_lang==="pt") ? "Você usou seu teste gratuito — entre para continuar"
+              : (_lang==="es") ? "Has usado tu prueba gratis — inicia sesión para continuar"
+              :                  "You've used your free trial — sign in to continue";
+    toast(msg,"err");
+    if(typeof openWL==="function") openWL();
+  }catch(e){}
+}
 function api(method,path,body){
   const opts={method,headers:{"Content-Type":"application/json"}};
   if(_token)opts.headers["Authorization"]="Bearer "+_token;
   if(body)opts.body=JSON.stringify(body);
   const r=await fetch(API_BASE+path,opts);
-  if(!r.ok){const t=await r.text();throw new Error(t);}
+  if(!r.ok){
+    const t=await r.text();
+    if(r.status===429 && /free_trial_exhausted/.test(t) && !_token){
+      _showTrialExhausted();
+    }
+    throw new Error(t);
+  }
   return r.json();
 }
 
@@ -1954,6 +1978,11 @@ async function sendChat(){
   try{
     const web=document.getElementById("web-tog").checked;
     const r=await fetch(API_BASE+"/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json",...(_token?{"Authorization":"Bearer "+_token}:{})},body:JSON.stringify({messages:chatHist,system:ui("chat_system"),web_search:web})});
+    if(!r.ok){
+      const t=await r.text();
+      if(r.status===429 && /free_trial_exhausted/.test(t) && !_token){ _showTrialExhausted(); }
+      throw new Error(t);
+    }
     ai.classList.remove("typing");let full="";
     const reader=r.body.getReader();const dec=new TextDecoder();
     while(true){const{done,value}=await reader.read();if(done)break;

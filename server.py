@@ -4,6 +4,7 @@ Replaces Streamlit. All Python logic stays in existing modules.
 """
 import os
 import json
+import time
 import asyncio
 from datetime import datetime, date
 from pathlib import Path
@@ -13,7 +14,7 @@ from collections import defaultdict
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -81,6 +82,98 @@ def _check_ai_quota(request: Request) -> tuple[bool, str, str]:
         return False, plan, key
     entry["count"] += 1
     return True, plan, key
+
+
+# ── Firebase Admin (graceful fallback if env not configured) ─────────────────
+_firebase_ready = False
+
+def _init_firebase_admin():
+    """Init firebase-admin SDK. Accepts:
+       - FIREBASE_SERVICE_ACCOUNT_JSON (full JSON string), OR
+       - FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY, OR
+       - GOOGLE_APPLICATION_CREDENTIALS (path to JSON), OR
+       - ApplicationDefault (Render/GCP metadata).
+       If none work, logs a warning and continues — anonymous trial path still works."""
+    global _firebase_ready
+    try:
+        import firebase_admin
+        from firebase_admin import credentials
+        if firebase_admin._apps:
+            _firebase_ready = True
+            return
+        cred = None
+        sa_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+        if sa_json:
+            cred = credentials.Certificate(json.loads(sa_json))
+        elif os.getenv("FIREBASE_PROJECT_ID") and os.getenv("FIREBASE_CLIENT_EMAIL") and os.getenv("FIREBASE_PRIVATE_KEY"):
+            sa_dict = {
+                "type": "service_account",
+                "project_id":    os.environ["FIREBASE_PROJECT_ID"],
+                "client_email":  os.environ["FIREBASE_CLIENT_EMAIL"],
+                "private_key":   os.environ["FIREBASE_PRIVATE_KEY"].replace("\\n", "\n"),
+                "token_uri":     "https://oauth2.googleapis.com/token",
+            }
+            cred = credentials.Certificate(sa_dict)
+        else:
+            try:
+                cred = credentials.ApplicationDefault()
+            except Exception:
+                cred = None
+        if cred is None:
+            print("[server] firebase-admin not configured — running in trial-only mode (no auth verification)")
+            return
+        firebase_admin.initialize_app(cred, {"projectId": os.getenv("FIREBASE_PROJECT_ID", "finzilla-7f1f9")})
+        _firebase_ready = True
+        print("[server] firebase-admin initialized")
+    except ImportError:
+        print("[server] firebase_admin not installed — running in trial-only mode")
+    except Exception as e:
+        print(f"[server] firebase-admin init failed: {e} — running in trial-only mode")
+
+_init_firebase_admin()
+
+
+# ── Anonymous free-trial gate (per-IP per-24h, across all AI endpoints) ──────
+FREE_TRIAL_PER_IP_PER_DAY = 5
+WINDOW = 86400  # seconds
+_anon_counts: dict[str, list[float]] = {}
+
+
+def verify_or_trial(request: Request, authorization: Optional[str] = Header(None)):
+    """Gate dependency for AI endpoints.
+
+    Authenticated (valid Firebase ID token in Authorization header): returns
+        {"uid": <uid>, "tier": "auth"} — plan-quota is still enforced by
+        the existing _check_ai_quota call inside each endpoint.
+    Invalid token: 401.
+    Anonymous: counts requests per IP per 24h. Beyond
+        FREE_TRIAL_PER_IP_PER_DAY → 429 free_trial_exhausted.
+    """
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ", 1)[1]
+        if _firebase_ready:
+            try:
+                from firebase_admin import auth as _fb_auth
+                decoded = _fb_auth.verify_id_token(token)
+                return {"uid": decoded["uid"], "tier": "auth"}
+            except Exception:
+                raise HTTPException(status_code=401, detail="invalid_token")
+        # firebase-admin not available — accept the token presence as "auth-attempted"
+        # so we don't block legit users; existing _check_ai_quota still polices via
+        # the Firebase REST identitytoolkit endpoint.
+        return {"uid": None, "tier": "auth"}
+
+    # Anonymous path — per-IP per-24h trial counter
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    bucket = _anon_counts.get(ip, [])
+    bucket = [t for t in bucket if now - t < WINDOW]
+    if len(bucket) >= FREE_TRIAL_PER_IP_PER_DAY:
+        raise HTTPException(status_code=429, detail="free_trial_exhausted")
+    bucket.append(now)
+    _anon_counts[ip] = bucket
+    return {"uid": None, "tier": "anon", "trial_remaining": FREE_TRIAL_PER_IP_PER_DAY - len(bucket)}
+
 
 
 # ── Validation helpers ────────────────────────────────────────────────────────
@@ -284,7 +377,7 @@ class ChatMsg(BaseModel):
 
 
 @app.post("/api/ai/chat")
-async def ai_chat(body: ChatMsg, request: Request):
+async def ai_chat(body: ChatMsg, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, key = _check_ai_quota(request)
     if not allowed:
         limit = _AI_DAILY_LIMITS.get(plan, 5)
@@ -315,7 +408,7 @@ async def ai_chat(body: ChatMsg, request: Request):
 
 
 @app.post("/api/ai/quick")
-async def ai_quick(body: dict, request: Request):
+async def ai_quick(body: dict, request: Request, caller: dict = Depends(verify_or_trial)):
     prompt = body.get("prompt", "")
     if not prompt:
         raise HTTPException(400, "prompt required")
@@ -360,7 +453,7 @@ class DealHuntQuery(BaseModel):
 
 
 @app.post("/api/deal-hunter")
-async def hunt_deals(body: DealHuntQuery, request: Request):
+async def hunt_deals(body: DealHuntQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, f"Daily AI limit reached on {plan} plan. Upgrade at wizelife.ai")
@@ -380,7 +473,7 @@ class VisaQuery(BaseModel):
 
 
 @app.post("/api/visa-check")
-async def check_visa(body: VisaQuery, request: Request):
+async def check_visa(body: VisaQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, f"Daily AI limit reached on {plan} plan. Upgrade at wizelife.ai")
@@ -421,7 +514,7 @@ class HiddenCityQuery(BaseModel):
 
 
 @app.post("/api/hidden-city")
-async def hidden_city_search(body: HiddenCityQuery, request: Request):
+async def hidden_city_search(body: HiddenCityQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, f"Daily AI limit reached on {plan} plan. Upgrade at wizelife.ai")
@@ -870,7 +963,7 @@ async def events(city: str, date: Optional[str] = None, types: Optional[str] = N
 
 
 @app.post("/api/where-to-go")
-async def where_to_go(body: dict):
+async def where_to_go(body: dict, request: Request, caller: dict = Depends(verify_or_trial)):
     """Smart 'where should I travel?' agent.
     Body: {
       origin: 'TLV',
@@ -1398,7 +1491,7 @@ class AIQuery(BaseModel):
 
 
 @app.post("/api/wait-or-buy")
-async def wait_or_buy(body: AIQuery, request: Request):
+async def wait_or_buy(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1409,7 +1502,7 @@ async def wait_or_buy(body: AIQuery, request: Request):
 
 
 @app.post("/api/ai-opps")
-async def ai_opportunities(body: AIQuery, request: Request):
+async def ai_opportunities(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1420,7 +1513,7 @@ async def ai_opportunities(body: AIQuery, request: Request):
 
 
 @app.post("/api/surprise")
-async def surprise_destination(body: AIQuery, request: Request):
+async def surprise_destination(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1433,7 +1526,7 @@ async def surprise_destination(body: AIQuery, request: Request):
 
 
 @app.post("/api/trip-planner")
-async def trip_planner(body: AIQuery, request: Request):
+async def trip_planner(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1444,7 +1537,7 @@ async def trip_planner(body: AIQuery, request: Request):
 
 
 @app.post("/api/multi-city")
-async def multi_city(body: AIQuery, request: Request):
+async def multi_city(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1455,7 +1548,7 @@ async def multi_city(body: AIQuery, request: Request):
 
 
 @app.post("/api/stopovers")
-async def stopovers(body: AIQuery, request: Request):
+async def stopovers(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1466,7 +1559,7 @@ async def stopovers(body: AIQuery, request: Request):
 
 
 @app.post("/api/flexible-dates")
-async def flexible_dates(body: AIQuery, request: Request):
+async def flexible_dates(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1477,7 +1570,7 @@ async def flexible_dates(body: AIQuery, request: Request):
 
 
 @app.post("/api/predict")
-async def predict_price(body: AIQuery, request: Request):
+async def predict_price(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1488,7 +1581,7 @@ async def predict_price(body: AIQuery, request: Request):
 
 
 @app.post("/api/true-cost")
-async def true_cost(body: AIQuery, request: Request):
+async def true_cost(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1499,7 +1592,7 @@ async def true_cost(body: AIQuery, request: Request):
 
 
 @app.post("/api/points-vs-cash")
-async def points_vs_cash(body: AIQuery, request: Request):
+async def points_vs_cash(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1510,7 +1603,7 @@ async def points_vs_cash(body: AIQuery, request: Request):
 
 
 @app.post("/api/deal-insights")
-async def deal_insights_endpoint(body: AIQuery, request: Request):
+async def deal_insights_endpoint(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1521,7 +1614,7 @@ async def deal_insights_endpoint(body: AIQuery, request: Request):
 
 
 @app.post("/api/competitor")
-async def competitor_check(body: AIQuery, request: Request):
+async def competitor_check(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1532,7 +1625,7 @@ async def competitor_check(body: AIQuery, request: Request):
 
 
 @app.post("/api/kiwi")
-async def kiwi_search(body: AIQuery, request: Request):
+async def kiwi_search(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
@@ -1543,7 +1636,7 @@ async def kiwi_search(body: AIQuery, request: Request):
 
 
 @app.post("/api/rss")
-async def rss_scan(body: AIQuery, request: Request):
+async def rss_scan(body: AIQuery, request: Request, caller: dict = Depends(verify_or_trial)):
     allowed, plan, _ = _check_ai_quota(request)
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
