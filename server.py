@@ -134,9 +134,63 @@ _init_firebase_admin()
 
 
 # ── Anonymous free-trial gate (per-IP per-24h, across all AI endpoints) ──────
+# Updated 2026-05-16: counter is now persisted to Firestore so cold-start
+# resets don't let attackers rack up unbounded free calls. In-memory dict is
+# kept ONLY as a fallback for local-dev when firebase-admin isn't initialised.
 FREE_TRIAL_PER_IP_PER_DAY = 5
 WINDOW = 86400  # seconds
-_anon_counts: dict[str, list[float]] = {}
+_anon_counts: dict[str, list[float]] = {}  # local-dev fallback only
+
+
+def _ip_doc_id(ip: str) -> str:
+    """Firestore doc IDs disallow '.' — replace with '-' for IPv4."""
+    return "anon_" + ip.replace(".", "-").replace(":", "_")
+
+
+def _check_anon_trial_firestore(ip: str) -> int:
+    """Atomically read + update the IP's trial counter. Returns the new count.
+    Raises 429 if over the limit. Falls back to in-memory dict on Firestore
+    failure so local-dev keeps working.
+    """
+    try:
+        from firebase_admin import firestore as _fs
+        db = _fs.client()
+        ref = db.collection("rate_limits").document(_ip_doc_id(ip))
+        now_s = time.time()
+
+        @_fs.transactional
+        def _tx(tx, ref):
+            snap = ref.get(transaction=tx)
+            if snap.exists:
+                data = snap.to_dict() or {}
+                start = data.get("window_start_at", 0)
+                count = int(data.get("count", 0))
+                if now_s - float(start or 0) > WINDOW:
+                    new_count = 1
+                    tx.set(ref, {"count": 1, "window_start_at": now_s, "last_seen_at": now_s})
+                else:
+                    new_count = count + 1
+                    tx.update(ref, {"count": new_count, "last_seen_at": now_s})
+                return new_count
+            tx.set(ref, {"count": 1, "window_start_at": now_s, "last_seen_at": now_s})
+            return 1
+
+        new_count = _tx(db.transaction(), ref)
+        if new_count > FREE_TRIAL_PER_IP_PER_DAY:
+            raise HTTPException(status_code=429, detail="free_trial_exhausted")
+        return new_count
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Firestore unreachable / no creds — fall back to in-memory dict
+        print(f"[server] anon trial firestore fallback: {e}")
+        now_s = time.time()
+        bucket = [t for t in _anon_counts.get(ip, []) if now_s - t < WINDOW]
+        if len(bucket) >= FREE_TRIAL_PER_IP_PER_DAY:
+            raise HTTPException(status_code=429, detail="free_trial_exhausted")
+        bucket.append(now_s)
+        _anon_counts[ip] = bucket
+        return len(bucket)
 
 
 def verify_or_trial(request: Request, authorization: Optional[str] = Header(None)):
@@ -146,7 +200,7 @@ def verify_or_trial(request: Request, authorization: Optional[str] = Header(None
         {"uid": <uid>, "tier": "auth"} — plan-quota is still enforced by
         the existing _check_ai_quota call inside each endpoint.
     Invalid token: 401.
-    Anonymous: counts requests per IP per 24h. Beyond
+    Anonymous: counts requests per IP per 24h via Firestore. Beyond
         FREE_TRIAL_PER_IP_PER_DAY → 429 free_trial_exhausted.
     """
     if authorization and authorization.startswith("Bearer "):
@@ -163,16 +217,10 @@ def verify_or_trial(request: Request, authorization: Optional[str] = Header(None
         # the Firebase REST identitytoolkit endpoint.
         return {"uid": None, "tier": "auth"}
 
-    # Anonymous path — per-IP per-24h trial counter
+    # Anonymous path — per-IP per-24h trial counter (Firestore-backed)
     ip = request.client.host if request.client else "unknown"
-    now = time.time()
-    bucket = _anon_counts.get(ip, [])
-    bucket = [t for t in bucket if now - t < WINDOW]
-    if len(bucket) >= FREE_TRIAL_PER_IP_PER_DAY:
-        raise HTTPException(status_code=429, detail="free_trial_exhausted")
-    bucket.append(now)
-    _anon_counts[ip] = bucket
-    return {"uid": None, "tier": "anon", "trial_remaining": FREE_TRIAL_PER_IP_PER_DAY - len(bucket)}
+    count = _check_anon_trial_firestore(ip)
+    return {"uid": None, "tier": "anon", "trial_remaining": max(0, FREE_TRIAL_PER_IP_PER_DAY - count)}
 
 
 
@@ -199,8 +247,18 @@ app = FastAPI(title="Noded API", version="3.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://wizelife.ai", "https://finsightai.github.io", "https://travel.wizelife.ai", "https://wizetravel-next.vercel.app", "http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    # CORS pinned 2026-05-16 — wildcard regex (*.vercel.app) dropped. Any third
+    # party on Vercel was previously able to call these endpoints and burn the
+    # Gemini/Amadeus quota. Explicit list only.
+    allow_origins=[
+        "https://wizelife.ai",
+        "https://finsightai.github.io",
+        "https://travel.wizelife.ai",
+        "https://wizetravel-next.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
