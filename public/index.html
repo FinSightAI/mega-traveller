@@ -1727,7 +1727,9 @@ function closeModal(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("open");}));
 
 // ── API ───────────────────────────────────────────────────────
-async const API_BASE=location.hostname==="travel.wizelife.ai"?"https://nodedai.onrender.com":"";
+// Always same-origin (HF Space serves both frontend + API). Was previously
+// pointing to nodedai.onrender.com (deprecated old deploy) — removed.
+const API_BASE="";
 function _showTrialExhausted(){
   try{
     const msg = (_lang==="he") ? "ניצלת את כל הניסיונות החינמיים — התחבר/י כדי להמשיך"
