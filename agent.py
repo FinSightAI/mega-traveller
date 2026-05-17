@@ -154,6 +154,7 @@ def search_price(item: dict) -> dict:
 
     prompt = build_search_prompt(item)
     system = SYSTEM_PROMPT + (" Respond in English." if _lang == "en" else " השב בעברית.")
+    system = ai_client.with_affiliate(system)
     text = ai_client.ask_with_search(prompt=prompt, system=system, max_tokens=1024)
 
     if text is None:
@@ -203,5 +204,6 @@ def smart_search_opportunities(destinations: list) -> list:
     lang_system = "You are a travel expert searching for price opportunities." + (
         " Respond in English." if _lang == "en" else ""
     )
+    lang_system = ai_client.with_affiliate(lang_system)
     text = ai_client.ask_with_search(prompt=prompt, system=lang_system, max_tokens=2048)
     return ai_client.extract_json_array(text or "")

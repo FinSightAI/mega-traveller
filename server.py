@@ -444,6 +444,10 @@ async def ai_chat(body: ChatMsg, request: Request, caller: dict = Depends(verify
     history  = body.messages[:-1]
     last_msg = body.messages[-1]["parts"][0]["text"] if body.messages else ""
 
+    # Append the Travelpayouts affiliate-link instruction to the chat system
+    # prompt so destination/hotel/flight suggestions surface deep-links.
+    sys_prompt = ai_client.with_affiliate(body.system)
+
     async def stream():
         loop = asyncio.get_event_loop()
         reply = await loop.run_in_executor(
@@ -451,7 +455,7 @@ async def ai_chat(body: ChatMsg, request: Request, caller: dict = Depends(verify
             lambda: ai_client.chat_turn(
                 history=history,
                 user_message=last_msg,
-                system=body.system,
+                system=sys_prompt,
                 web_search=body.web_search,
             )
         )
@@ -516,7 +520,7 @@ async def hunt_deals(body: DealHuntQuery, request: Request, caller: dict = Depen
     if not allowed:
         raise HTTPException(429, f"Daily AI limit reached on {plan} plan. Upgrade at wizelife.ai")
     loop = asyncio.get_event_loop()
-    prompt = f"Find best flight deals from {body.origin}. Budget: {body.budget or 'any'}. Dates: {body.dates or 'flexible'}. {body.preferences} {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Find best flight deals from {body.origin}. Budget: {body.budget or 'any'}. Dates: {body.dates or 'flexible'}. {body.preferences} {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1024))
     return {"result": result or "No deals found"}
 
@@ -577,7 +581,7 @@ async def hidden_city_search(body: HiddenCityQuery, request: Request, caller: di
     if not allowed:
         raise HTTPException(429, f"Daily AI limit reached on {plan} plan. Upgrade at wizelife.ai")
     loop = asyncio.get_event_loop()
-    prompt = f"Find hidden city ticketing opportunities from {body.origin} to {body.destination} on {body.date or 'any date'}. Look for flights where {body.destination} is a layover in a cheaper itinerary."
+    prompt = f"Find hidden city ticketing opportunities from {body.origin} to {body.destination} on {body.date or 'any date'}. Look for flights where {body.destination} is a layover in a cheaper itinerary.{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1565,7 +1569,7 @@ async def ai_opportunities(body: AIQuery, request: Request, caller: dict = Depen
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Find the best travel deals and opportunities right now for: {body.text or 'any destination'}. Focus on flash sales, error fares, last-minute deals. Be specific with prices and airlines. {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Find the best travel deals and opportunities right now for: {body.text or 'any destination'}. Focus on flash sales, error fares, last-minute deals. Be specific with prices and airlines. {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1000))
     return {"result": result or ""}
 
@@ -1578,7 +1582,7 @@ async def surprise_destination(body: AIQuery, request: Request, caller: dict = D
     loop = asyncio.get_event_loop()
     budget = body.text or "500 USD"
     prefs = body.extra or ""
-    prompt = f"Suggest 3 surprising, underrated travel destinations for budget {budget}. {prefs} Include: why it's special, best time to go, estimated flight cost. Make it exciting and unexpected. {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Suggest 3 surprising, underrated travel destinations for budget {budget}. {prefs} Include: why it's special, best time to go, estimated flight cost. Make it exciting and unexpected. {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1589,7 +1593,7 @@ async def trip_planner(body: AIQuery, request: Request, caller: dict = Depends(v
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Create a detailed travel itinerary: {body.text}. Include: day-by-day plan, accommodation tips, must-see attractions, local food, transportation, estimated budget breakdown. {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Create a detailed travel itinerary: {body.text}. Include: day-by-day plan, accommodation tips, must-see attractions, local food, transportation, estimated budget breakdown. {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=1200))
     return {"result": result or ""}
 
@@ -1600,7 +1604,7 @@ async def multi_city(body: AIQuery, request: Request, caller: dict = Depends(ver
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Plan a multi-city route: {body.text}. Find the most cost-efficient order to visit these cities, best airlines for each leg, estimated prices. {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Plan a multi-city route: {body.text}. Find the most cost-efficient order to visit these cities, best airlines for each leg, estimated prices. {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=900))
     return {"result": result or ""}
 
@@ -1611,7 +1615,7 @@ async def stopovers(body: AIQuery, request: Request, caller: dict = Depends(veri
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Find free stopover opportunities for route: {body.text}. Which airlines offer free stopovers on this route? How much extra time is allowed? What to do during the stopover? Respond in Hebrew."
+    prompt = f"Find free stopover opportunities for route: {body.text}. Which airlines offer free stopovers on this route? How much extra time is allowed? What to do during the stopover? Respond in Hebrew.{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1622,7 +1626,7 @@ async def flexible_dates(body: AIQuery, request: Request, caller: dict = Depends
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Find cheapest travel dates for: {body.text}. Compare prices across different weeks/months. Identify the cheapest day of week to fly. {_lang_instruction(body.lang or 'he')} Include a clear price comparison table."
+    prompt = f"Find cheapest travel dates for: {body.text}. Compare prices across different weeks/months. Identify the cheapest day of week to fly. {_lang_instruction(body.lang or 'he')} Include a clear price comparison table.{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1644,7 +1648,7 @@ async def true_cost(body: AIQuery, request: Request, caller: dict = Depends(veri
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Calculate the true total cost of this trip: {body.text}. Break down: flights, accommodation, food, transport, activities, visas, travel insurance, luggage fees, airport transfers. Give realistic daily budget. {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Calculate the true total cost of this trip: {body.text}. Break down: flights, accommodation, food, transport, activities, visas, travel insurance, luggage fees, airport transfers. Give realistic daily budget. {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=900))
     return {"result": result or ""}
 
@@ -1666,7 +1670,7 @@ async def deal_insights_endpoint(body: AIQuery, request: Request, caller: dict =
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Deep deal analysis for: {body.text}. Identify patterns: best booking window, cheapest months, airline price strategies, hidden fees. {_lang_instruction(body.lang or 'he')}"
+    prompt = f"Deep deal analysis for: {body.text}. Identify patterns: best booking window, cheapest months, airline price strategies, hidden fees. {_lang_instruction(body.lang or 'he')}{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1677,7 +1681,7 @@ async def competitor_check(body: AIQuery, request: Request, caller: dict = Depen
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Compare prices across booking sites for: {body.text}. Check Google Flights, Kayak, Skyscanner, Kiwi, direct airline. Which site currently has the best price? Any exclusive deals? Respond in Hebrew."
+    prompt = f"Compare prices across booking sites for: {body.text}. Check Google Flights, Kayak, Skyscanner, Kiwi, direct airline. Which site currently has the best price? Any exclusive deals? Respond in Hebrew.{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1688,7 +1692,7 @@ async def kiwi_search(body: AIQuery, request: Request, caller: dict = Depends(ve
     if not allowed:
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
-    prompt = f"Search Kiwi.com for: {body.text}. Find creative routes using Kiwi's virtual interlining — combinations of low-cost carriers that Kiwi connects. What are the cheapest options? Respond in Hebrew."
+    prompt = f"Search Kiwi.com for: {body.text}. Find creative routes using Kiwi's virtual interlining — combinations of low-cost carriers that Kiwi connects. What are the cheapest options? Respond in Hebrew.{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=800))
     return {"result": result or ""}
 
@@ -1700,7 +1704,7 @@ async def rss_scan(body: AIQuery, request: Request, caller: dict = Depends(verif
         raise HTTPException(429, _quota_exceeded_msg(plan))
     loop = asyncio.get_event_loop()
     dest = body.text or "general travel"
-    prompt = f"Find the latest travel deal alerts and discussions from Reddit (r/churning, r/solotravel, r/flights), travel blogs, and deal sites for: {dest}. What are people talking about right now? Any hot deals? Respond in Hebrew."
+    prompt = f"Find the latest travel deal alerts and discussions from Reddit (r/churning, r/solotravel, r/flights), travel blogs, and deal sites for: {dest}. What are people talking about right now? Any hot deals? Respond in Hebrew.{ai_client.AFFILIATE_INSTRUCTION}"
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=900))
     return {"result": result or ""}
 
@@ -1883,6 +1887,7 @@ async def find_positioning(body: PositioningQuery, request: Request):
         f"Find positioning flight opportunities from TLV to {body.destination} on {body.travel_date}. "
         f"Budget: ${body.budget or 'any'}. Is it cheaper to fly TLV→Hub→{body.destination}? "
         f"List top 3 hubs with estimated prices, savings%, and tips. {_lang_instruction(body.lang or 'he')}"
+        f"{ai_client.AFFILIATE_INSTRUCTION}"
     )
     result = await loop.run_in_executor(None, lambda: ai_client.ask(prompt=prompt, web_search=True, max_tokens=900))
     return {"opportunities": [], "ai_result": result or ""}
@@ -1898,7 +1903,9 @@ async def positioning_routes(request: Request):
         routes = await loop.run_in_executor(None, mod.get_cheapest_tlv_positioning_routes)
         return {"routes": routes or []}
     result = await loop.run_in_executor(None, lambda: ai_client.ask(
-        prompt="What are the 5 cheapest positioning hubs from TLV? List city, airport code, price from TLV, best airline, and why it's good for positioning.",
+        prompt=("What are the 5 cheapest positioning hubs from TLV? "
+                "List city, airport code, price from TLV, best airline, and why it's good for positioning."
+                + ai_client.AFFILIATE_INSTRUCTION),
         web_search=True, max_tokens=600
     ))
     return {"routes": [], "ai_result": result or ""}

@@ -15,6 +15,34 @@ from typing import Optional
 
 _client = None
 
+# ── Affiliate / monetization instruction ──────────────────────────────────────
+# Appended to system prompts (or user prompts) on AI routes that surface
+# destination / hotel / flight / activity recommendations. The marker `529725`
+# is our Travelpayouts affiliate ID. Routes that return pure facts (visa rules,
+# math, error messages, conversational replies) intentionally skip this.
+AFFILIATE_INSTRUCTION = (
+    "\n\nAFFILIATE LINKS — when suggesting destinations, hotels, or flights, "
+    "ALWAYS include a markdown link with the Travelpayouts affiliate marker:\n"
+    "- Hotels: [\U0001F3E8 Find hotels in <CITY> →]"
+    "(https://search.hotellook.com/?marker=529725&destination=<CITY>&utm_source=wizetravel)\n"
+    "- Flights: [✈️ Find flights to <CITY> →]"
+    "(https://www.aviasales.com/search/<IATA>?marker=529725) where <IATA> is the 3-letter airport code\n"
+    "- Activities: [\U0001F3AB Things to do in <CITY> →]"
+    "(https://www.tiqets.com/en/?marker=529725&utm_source=wizetravel) (skip if uncertain)\n\n"
+    "ALWAYS URL-encode city names with spaces (use %20 or +).\n"
+    "Place affiliate links naturally within recommendations, not in a separate \"Links\" section.\n"
+    "Don't include affiliate links in: replies that are pure facts (e.g. visa requirements), "
+    "replies that are conversational (\"good morning\"), error messages."
+)
+
+
+def with_affiliate(system_prompt: str = "") -> str:
+    """Append the affiliate-link instruction to a system prompt.
+    Use on AI routes that surface destination / hotel / flight / activity suggestions.
+    Safe to call with an empty string."""
+    return (system_prompt or "") + AFFILIATE_INSTRUCTION
+
+
 # ── Per-session daily rate limiting ───────────────────────────────────────────
 import time as _time
 
