@@ -43,6 +43,24 @@ def with_affiliate(system_prompt: str = "") -> str:
     return (system_prompt or "") + AFFILIATE_INSTRUCTION
 
 
+# Phase 1 + 2 anti-hallucination guardrails — prepended to every system prompt
+# via ask(). Kills creative drift from default Gemini temp (~0.7) and forces
+# the model to admit uncertainty rather than invent flight prices / hotel
+# rates / visa rules that may be wrong.
+ANTI_HALLUCINATION_PREFIX = """🛑 ANTI-HALLUCINATION GUARDRAILS (must follow):
+
+1. NEVER state a specific flight price, hotel rate, visa rule, schedule, or date without grounding it in either:
+   (a) The web_search result returned in this same turn, OR
+   (b) Data explicitly provided in the user's question.
+   If neither is available, say "I don't know — please check on Aviasales/Hotellook/government site" + provide the affiliate link.
+2. Banned hedge words (any language): approximately / around / probably / I believe / generally / as far as I know / בערך / סביב / לרוב / aproximadamente / cerca de / alrededor. Use exact numbers from sources, or admit ignorance.
+3. Every numerical claim must include a source tag: [web-search 2026-{date}], [user input], or [Travelpayouts 2026].
+4. If confidence < 70%, prefix the response with "⚠️".
+5. End travel advice with: "ℹ️ Prices/rules change daily. Verify before booking."
+
+"""
+
+
 # ── Per-session daily rate limiting ───────────────────────────────────────────
 import time as _time
 
@@ -135,11 +153,18 @@ def ask(
     try:
         from google.genai import types
 
+        # Phase 1 + 2 anti-hallucination: deterministic decoding + always
+        # prepend the guardrails prefix to whatever system prompt the caller
+        # supplied. Safe — if caller already includes anti-hallucination, the
+        # prefix just reinforces. Cost: ~200 extra tokens per request.
+        guarded_system = ANTI_HALLUCINATION_PREFIX + (system or "")
+
         config_kwargs = {
             "max_output_tokens": max_tokens,
+            "temperature": 0,
+            "top_p": 0.1,
+            "system_instruction": guarded_system,
         }
-        if system:
-            config_kwargs["system_instruction"] = system
         if web_search:
             config_kwargs["tools"] = [types.Tool(google_search=types.GoogleSearch())]
 
