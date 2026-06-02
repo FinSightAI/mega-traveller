@@ -6,8 +6,10 @@
 #  `repository_dispatch` event of type `ceo-agent-task`; this workflow picks it
 #  up, runs Claude Code on the task, and opens a pull request with the result.
 #
-#  Required repo secret:
-#    ANTHROPIC_API_KEY — your Anthropic API key.
+#  Required repo (or org) secret:
+#    CLAUDE_CODE_OAUTH_TOKEN — from a Claude Pro/Max subscription. Generate with
+#    `claude setup-token` in the Claude Code CLI, then add it as a secret.
+#    (Alternatively, use anthropic_api_key with an Anthropic API key.)
 #
 #  The dashboard side needs GITHUB_TOKEN (a PAT with contents:write on this repo)
 #  set in the CEO project's Vercel env.
@@ -33,7 +35,7 @@ jobs:
       - name: Run Claude Code on the task
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The free-text instruction sent from the CEO dashboard:
           prompt: |
             You are working on the "${{ github.event.client_payload.app }}" app.
