@@ -1,18 +1,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  CEO agent-task workflow
 #
-#  Copy this to `.github/workflows/claude-task.yml` in ANY repo you want the CEO
-#  dashboard to be able to send coding tasks to. The dashboard fires a
-#  `repository_dispatch` event of type `ceo-agent-task`; this workflow picks it
-#  up, runs Claude Code on the task, and opens a pull request with the result.
+#  Copy this to `.github/workflows/claude-task.yml` in ANY repo the CEO dashboard
+#  should be able to fix. The dashboard fires a `repository_dispatch` of type
+#  `ceo-agent-task`; Claude edits the files, then the workflow commits to a new
+#  branch and opens a PR for your review (it never deploys/merges).
 #
 #  Required repo (or org) secret:
-#    CLAUDE_CODE_OAUTH_TOKEN — from a Claude Pro/Max subscription. Generate with
-#    `claude setup-token` in the Claude Code CLI, then add it as a secret.
-#    (Alternatively, use anthropic_api_key with an Anthropic API key.)
-#
-#  The dashboard side needs GITHUB_TOKEN (a PAT with contents:write on this repo)
-#  set in the CEO project's Vercel env.
+#    CLAUDE_CODE_OAUTH_TOKEN — from a Claude Pro/Max subscription.
+#    Generate with `claude setup-token`, then:
+#      gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <owner>/<repo>
+#    (Or use anthropic_api_key with an Anthropic API key instead.)
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: CEO Agent Task
@@ -32,17 +30,48 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Run Claude Code on the task
+      - name: Create work branch
+        id: branch
+        run: |
+          BR="claude/ceo-${GITHUB_RUN_ID}"
+          git checkout -b "$BR"
+          echo "branch=$BR" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code on the task (edits only)
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # The free-text instruction sent from the CEO dashboard:
           prompt: |
             You are working on the "${{ github.event.client_payload.app }}" app.
             Task from the CEO dashboard:
 
             ${{ github.event.client_payload.task }}
 
-            Make the change on a new branch and open a pull request describing
-            what you did. Keep the change focused and production-safe.
+            Make the necessary code/file changes directly in the working tree.
+            Keep the change focused and production-safe. Do NOT commit, push, or
+            open a pull request yourself — the workflow handles that.
+
+      - name: Commit, push & open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP: ${{ github.event.client_payload.app }}
+          TASK: ${{ github.event.client_payload.task }}
+          BR: ${{ steps.branch.outputs.branch }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          git config user.name "claude[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "🤖 CEO agent: $APP"
+          fi
+          if [ -z "$(git rev-list "origin/$BASE..HEAD" 2>/dev/null)" ]; then
+            echo "No changes produced by the agent — nothing to open a PR for."
+            exit 0
+          fi
+          git push -u origin "$BR"
+          printf '%s\n\n**Task:**\n%s\n' "Automated by the CEO dashboard." "$TASK" > /tmp/pr-body.md
+          gh pr create --title "🤖 CEO fix: $APP" --body-file /tmp/pr-body.md --base "$BASE" --head "$BR"
