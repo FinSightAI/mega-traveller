@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  CEO agent-task workflow
+#
+#  Copy this to `.github/workflows/claude-task.yml` in ANY repo you want the CEO
+#  dashboard to be able to send coding tasks to. The dashboard fires a
+#  `repository_dispatch` event of type `ceo-agent-task`; this workflow picks it
+#  up, runs Claude Code on the task, and opens a pull request with the result.
+#
+#  Required repo secret:
+#    ANTHROPIC_API_KEY — your Anthropic API key.
+#
+#  The dashboard side needs GITHUB_TOKEN (a PAT with contents:write on this repo)
+#  set in the CEO project's Vercel env.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CEO Agent Task
+
+on:
+  repository_dispatch:
+    types: [ceo-agent-task]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Code on the task
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The free-text instruction sent from the CEO dashboard:
+          prompt: |
+            You are working on the "${{ github.event.client_payload.app }}" app.
+            Task from the CEO dashboard:
+
+            ${{ github.event.client_payload.task }}
+
+            Make the change on a new branch and open a pull request describing
+            what you did. Keep the change focused and production-safe.
