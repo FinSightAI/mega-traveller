@@ -44,6 +44,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Auto-accept file edits so the agent can actually change files
+          # (without this it runs read-only and produces no diff).
+          claude_args: "--permission-mode acceptEdits"
           prompt: |
             You are working on the "${{ github.event.client_payload.app }}" app.
             Task from the CEO dashboard:
