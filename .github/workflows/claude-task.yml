@@ -24,6 +24,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write # required by claude-code-action (OIDC)
 
 jobs:
   run-agent:
