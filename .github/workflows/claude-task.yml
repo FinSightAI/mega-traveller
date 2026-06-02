@@ -75,6 +75,8 @@ jobs:
             echo "No changes produced by the agent — nothing to open a PR for."
             exit 0
           fi
-          git push -u origin "$BR"
+          # claude-code-action strips the checkout auth header, so push with the
+          # token embedded in the remote URL.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BR"
           printf '%s\n\n**Task:**\n%s\n' "Automated by the CEO dashboard." "$TASK" > /tmp/pr-body.md
           gh pr create --title "🤖 CEO fix: $APP" --body-file /tmp/pr-body.md --base "$BASE" --head "$BR"
