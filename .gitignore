@@ -21,3 +21,4 @@ alerts.log
 
 # OS
 .DS_Store
+.venv/
